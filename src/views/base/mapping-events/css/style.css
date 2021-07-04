@@ -1,0 +1,12 @@
+.testimonialText {
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    width: 150px;
+    height: 309px;
+    vertical-align: middle;
+    text-align: center;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-style: italic;
+    padding: 1em 0 1em 0;
+  }
