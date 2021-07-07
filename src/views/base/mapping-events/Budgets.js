@@ -4,6 +4,7 @@ import ReactMapGL from 'react-map-gl';
 import DataTable from 'react-data-table-component'
 import './css/style.css'
 import { useHistory } from "react-router-dom";
+// import {Projects} from './components/Projects'
 
 import {
   CCard,
@@ -24,6 +25,7 @@ import {
   CInputGroupText,
 
 } from '@coreui/react'
+import { Projects } from './components/Projects';
 
 
 const columns = [  
@@ -227,6 +229,7 @@ function Budgets(props){
   return (
       
     <div>
+         <Projects></Projects>
     {/* //menu */}
         <div class="pills-regular">
             <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
@@ -249,122 +252,46 @@ function Budgets(props){
             </ul>
         </div>
 
-        {/* data project */}
+        {/* data</Projects> project */}
+   
+
+        {/* Members */}
         <CCard>
             <CCardHeader>
-                <div>
-                    <span><strong>Data Project</strong></span>  
+                <div style={{float:'right',width:'100%'}}>
+                    <div style={{float:'left',position:'absolute'}}>
+                        <span>
+                            <strong>
+                                Anggaran Project
+                            </strong>
+                        </span>
+                    </div>
+                    <div  style={{textAlign: 'right'}}>
+                      <CButton  size="sm"  className="btn-brand mr-1 mb-1" color='primary'>
+                        <span> {tempIsloadingMembers==true?<i class="fas fa-circle-notch fa-spin"/>:<i class="fa fa-plus"/>} Tambah</span>
+                      </CButton> 
+                  </div>
+                                    
                 </div>
             </CCardHeader>
             <CCardBody>
+                {tempMembers==''?
+                    <div style={{textAlign:'center'}}>
+                        <img 
+                            src="https://arenzha.s3.ap-southeast-1.amazonaws.com/eo/icons/budget.png"
+                            alt="new"
+                            style={{width:'10%',height:'10%'}}
+                        />
+                         <br/>
+                          <span>Belum ada Anggaran Project</span>
+                    </div>
+
+                :
+                <CButton>tes</CButton>
+                }
             
-            <CFormGroup row className="my-0">
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel htmlFor="Project_number">No. Project</CLabel>
-                   <CInput readOnly  required id="project_number" placeholder="" name="project_number"  value={tempProjectNumber} />
-                 </CFormGroup>
-               </CCol>
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel  htmlFor="Project_created_date">Tanggal Buat Project</CLabel>
-                   <CInput type="date"  readOnly required id="project_created_date" name="project_created_date" placeholder=""  value={tempProjectCreatedDate}/>
-                 </CFormGroup>
-               </CCol>
-
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel htmlFor="project_start_date">Tanggal Mulai Project</CLabel>
-                   <CInput type="date"  readOnly required id="project_start_date" name="project_start_date" placeholder=""  value={tempProjectStartedDate}/>
-                 </CFormGroup>
-               </CCol>
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel  htmlFor="project_end_date">Tanggal Akhir Project</CLabel>
-                   <CInput type="date"  readOnly required  id="project_end_date" name="project_end_date"  placeholder=""   value={tempProjectEndDate}/>
-                 </CFormGroup>
-               </CCol>
-
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel required htmlFor="event_customer">Customer Event</CLabel>
-                   <CInput readOnly  id="event_customer" name="event_customer"   placeholder=""  value={tempEventCustomer} />
-                 </CFormGroup>
-               </CCol>
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel htmlFor="event_pic">PIC Event</CLabel>
-                   <CInput readOnly id="event_pic" name="event_pic" placeholder="" value={tempEventPic}/>
-                 </CFormGroup>
-               </CCol>
-
-               <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel htmlFor="description">Deskripsi</CLabel>
-                   <CInput readOnly id="description" name="description" placeholder=""  value={tempDescription} />
-                 </CFormGroup>
-               </CCol>
-               <CCol xs="6">
-               <CFormGroup>
-                 <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
-                  <CInputGroup>
-                    <CInputGroupPrepend>
-                      <CInputGroupText>IDR</CInputGroupText>
-                    </CInputGroupPrepend>
-                    <CInput readOnly style={{textAlign:'right'}} id="total_project_cost"  name="total_project_cost"  value={tempTotalProjectCost}/>                  
-                  </CInputGroup>
-                </CFormGroup>
-               </CCol>
-               
-               <CCol xs="5">
-                 <CFormGroup>
-                   <CLabel htmlFor="latitude">Latitude</CLabel>
-                   <CInput readOnly id="latitude" name="latitude" placeholder=""   value={tempLatitude} />
-                 </CFormGroup>
-               </CCol>
-               <CCol xs="5">
-                 <CFormGroup>
-                   <CLabel htmlFor="longtitude">Longitude</CLabel>
-                   <CInput readOnly id="longtitude" name="longtitude" placeholder=""  value={tempLongtitude} />
-                 </CFormGroup>
-               </CCol>
-               <CCol xs="2">
-                 <CFormGroup>
-
-                 <div   style={{textAlign: 'right',marginTop:'35px',width:'100%'}}>                                     
-                 <CButton color="primary" onClick={() => setTempMap(!tempMap)} size="sm" block> <i class="fa fa-map-marker" aria-hidden="true"></i></CButton>
-                  </div>
-                 </CFormGroup>
-               </CCol>
-             </CFormGroup>
             </CCardBody>
-
-            {/* Modal map */}
-            <CModal 
-              show={tempMap} 
-              onClose={() => setTempMap(!tempMap)}
-              size="lg col-50">
-              <CModalHeader closeButton>
-                <CModalTitle></CModalTitle>
-              </CModalHeader>
-              <CModalBody>
-              <ReactMapGL
-                  {...viewport}
-                  mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
-                  width="100%"
-                  height="100%"
-                  mapStyle="mapbox://styles/mapbox/streets-v11"
-                   onViewportChange={(viewport) => setViewport(viewport)}
-            />  
-              </CModalBody>
-              <CModalFooter>
-
-                {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
-                <CButton color="secondary" onClick={() => setTempMap(!tempMap)}>Tutup</CButton>
-              </CModalFooter>
-            </CModal>
-
-                   {/* //modal members */}
+                              {/* //modal members */}
           <CModal 
               show={modalMembers} 
               onClose={() => setModalMembers(!modalMembers)}
@@ -422,53 +349,7 @@ function Budgets(props){
 
               </CModalFooter>
             </CModal>
-        </CCard>
 
-        {/* Members */}
-        <CCard>
-            <CCardHeader>
-                <div style={{float:'right',width:'100%'}}>
-                    <div style={{float:'left',position:'absolute'}}>
-                        <span>
-                            <strong>
-                                Anggaran Project
-                            </strong>
-                        </span>
-                    </div>
-                    <div  style={{textAlign: 'right'}}>
-                      <CButton  size="sm"  className="btn-brand mr-1 mb-1" color='primary'>
-                        <span> {tempIsloadingMembers==true?<i class="fas fa-circle-notch fa-spin"/>:<i class="fa fa-plus"/>} Tambah</span>
-                      </CButton> 
-                  </div>
-                                    
-                </div>
-            </CCardHeader>
-            <CCardBody>
-                {tempMembers==''?
-                    <div style={{textAlign:'center'}}>
-                        <img 
-                            src="https://arenzha.s3.ap-southeast-1.amazonaws.com/eo/icons/budget.png"
-                            alt="new"
-                            style={{width:'10%',height:'10%'}}
-                        />
-                         <br/>
-                          <span>Belum ada Anggaran Project</span>
-                    </div>
-
-                :
-                <CButton>tes</CButton>
-                }
-            
-            </CCardBody>
-            {/* <CCardFooter> */}
-
-            {/* <div  style={{textAlign: 'right'}}>
-              <CButton disabled={tempIsloadingMembers} size="sm"  className="btn-brand mr-1 mb-1" color='primary'>
-              { tempIsloadingMembers? <i class="spinner-border"></i>: 
-              <span><i class="fa fa-save"/> Simpan</span>}
-              </CButton> 
-            </div> */}
-      {/* </CCardFooter>   */}
         </CCard>
   </div>
    

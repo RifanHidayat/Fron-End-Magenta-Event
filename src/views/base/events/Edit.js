@@ -1,12 +1,14 @@
-import React,{ useState,useEffect, useCallback }  from 'react'
+import React,{ useState,useEffect, useCallback,useRef  }  from 'react'
 import DataTable from 'react-data-table-component';
 import { Formik, useFormik } from 'formik';
 import Swal from 'sweetalert2' 
 import axios from 'axios'
 import { useHistory } from "react-router-dom";
-
 import BeatLoader from "react-spinners/BeatLoader";
 import { css } from "@emotion/react";
+import Geocoder from "react-map-gl-geocoder";
+import "mapbox-gl/dist/mapbox-gl.css";
+import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import {
   CButton,
   CCard,
@@ -64,9 +66,6 @@ const scaleControlStyle = {
 };
 
 
-
-
-
 const columns = [  
               {name: 'No. quotation',sortable: true,    cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>,  }, 
               {name: 'tanggal quotation',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  },      
@@ -83,9 +82,7 @@ var selected_quotation=[];
 
 const SIZE = 100;
 const UNIT = "px";
-
-function Edit(props){
-  
+function Edit(props){ 
   //varoable state
   const [collapsed, setCollapsed] = React.useState(true)
   const [showElements, setShowElements] = React.useState(true)
@@ -112,6 +109,38 @@ function Edit(props){
   const [tempDescription, setTempDescription] = useState()
    const [idProject, setIdProject] = useState()
 
+   //handle change plugin geocoder
+   const mapRef = useRef();
+   const handleViewportChange = useCallback(
+     (newViewport) => setViewport(newViewport),
+     
+     []
+   );
+
+
+   const handleGeocoderViewportChange = useCallback(
+     (newViewport) => {
+       const geocoderDefaultOverrides = { transitionDuration: 1000 };
+       console.log(newViewport.latitude)
+       setMarker({
+         latitude:newViewport.latitude,
+         longitude:newViewport.longitude
+       })
+       setTempLatitude(marker.latitude)
+       setTempLongtitude(marker.longitude)
+ 
+       return handleViewportChange({
+         ...newViewport,
+         ...geocoderDefaultOverrides
+       
+       });
+     },
+   
+     [handleViewportChange]
+   
+   );
+ 
+
   //css loader
   const override = css`
   border-color: red;
@@ -122,10 +151,7 @@ function Edit(props){
   const [viewport, setViewport] = useState({
     longitude: 107.6684889,
     latitude: -6.942100215253297,
-    
     zoom: 13.5,
-    bearing: 0,
-    pitch: 0
   });
   const [marker, setMarker] = useState({
     longitude: 107.6684889,
@@ -153,9 +179,6 @@ function Edit(props){
       latitude: event.lngLat[1]
     });
   }, []);
-
-
-
 
 
 
@@ -208,9 +231,18 @@ function Edit(props){
       setTempLatitude(response.data.data.latitude);
       setTempLongtitude(response.data.data.longtitude);
       setTempDescription(response.data.data.description);  
-      console.log('data latitutde :',parseFloat(tempLatitude)) 
-      console.log('data longtitude :',parseFloat(tempLongtitude)) 
-      console.log('data latitutde  :',tempLatitude) 
+  
+
+      setMarker({
+        latitude:parseFloat(response.data.data.latitude),
+        longitude:parseFloat(response.data.data.longtitude),
+      })
+      setViewport({
+        latitude:parseFloat(response.data.data.latitude),
+        longitude:parseFloat(response.data.data.longtitude),
+        zoom:13.5
+      })
+      
       setTotalProjectost(response.data.data.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."));  
       setIdProject(response.data.data.id);
       setTempQuotationNumber(response.data.data.quotation_number)
@@ -434,7 +466,7 @@ function Edit(props){
              <br/>
            
              <div  style={{textAlign: 'right',width:'100%'}}>
-             <CButton size="sm col-2" onClick={() => setLarge(!large)} color="primary"><span className="mfs-2">Pilih Quotation</span></CButton>
+             <CButton style={{width:'155px'}}  size="sm" onClick={() => setLarge(!large)} color="primary"><span className="mfs-2">Pilih Quotation</span></CButton>
              </div>
               <DataTable      
                  columns={columns}        
@@ -503,11 +535,22 @@ function Edit(props){
               </CModalHeader>
               <CModalBody>
               <MapGL {...viewport} 
-                width="53vw" height="50vh"            
-                onViewportChange={setViewport}
+                width="53vw" height="60vh" 
+                ref={mapRef} 
+                        
+               //  onViewportChange={setViewport}
                 mapStyle={MAP_STYLE}
+                onViewportChange={handleViewportChange}
                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
                >
+                <Geocoder
+                  mapRef={mapRef}
+                  onViewportChange={handleGeocoderViewportChange}
+                  mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+                  marker={false}
+                
+                position="top-right"
+              />
                 <Marker
                   longitude={marker.longitude}
                   latitude={marker.latitude}
@@ -520,6 +563,7 @@ function Edit(props){
                   onDragEnd={onMarkerDragEnd}
                 >
                   <Pin size={20} />
+                  
                 </Marker>
 
                 <GeolocateControl style={geolocateStyle} />

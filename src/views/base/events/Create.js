@@ -1,4 +1,4 @@
-import React,{ useState,useEffect, useCallback }  from 'react'
+import React,{ useState,useEffect, useCallback,useRef }  from 'react'
 import DataTable from 'react-data-table-component';
 import { Formik } from 'formik';
 import Swal from 'sweetalert2'
@@ -15,6 +15,10 @@ import ControlPanel from './components/controll-panel';
 import Pin from './components/pin';
 import MAP_STYLE from './components/mapstyle';
 import {fromJS} from 'immutable';
+import { render } from "react-dom";
+import Geocoder from "react-map-gl-geocoder";
+import "mapbox-gl/dist/mapbox-gl.css";
+import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
 
 
 import {
@@ -168,6 +172,35 @@ function Create(){
   const [tempLatitude,setTempLatitude]=useState();
   const [tempLongtitude,setTempLongtitude]=useState();
 
+  const mapRef = useRef();
+  const handleViewportChange = useCallback(
+    (newViewport) => setViewport(newViewport),
+    
+    []
+  );
+
+  const handleGeocoderViewportChange = useCallback(
+    (newViewport) => {
+      const geocoderDefaultOverrides = { transitionDuration: 1000 };
+      console.log(newViewport.latitude)
+      setMarker({
+        latitude:newViewport.latitude,
+        longitude:newViewport.longitude
+      })
+      setTempLatitude(marker.latitude)
+      setTempLongtitude(marker.longitude)
+
+      return handleViewportChange({
+        ...newViewport,
+        ...geocoderDefaultOverrides
+      
+      });
+    },
+  
+    [handleViewportChange]
+  
+  );
+
  
 
 
@@ -176,8 +209,7 @@ function Create(){
     longitude: 107.6684889,
     latitude: -6.9504246,
     zoom: 13.5,
-    bearing: 0,
-    pitch: 0
+  
   });
   const [marker, setMarker] = useState({
     longitude: 107.6684889,
@@ -368,6 +400,7 @@ const UNIT = "px";
             timer:2000,
             showConfirmButton:false,
           }).then(_=>{
+            setIsloading(false);
             navigator.push('/projects/manage');
           });
           
@@ -457,13 +490,13 @@ const UNIT = "px";
                <CCol xs="5">
                  <CFormGroup>
                    <CLabel htmlFor="latitude">Latitude</CLabel>
-                   <CInput id="latitude" name="latitude" placeholder=""  value={tempLatitude} />
+                   <CInput required id="latitude" name="latitude" placeholder=""  value={tempLatitude} />
                  </CFormGroup>
                </CCol>
                <CCol xs="5">
                  <CFormGroup>
                    <CLabel htmlFor="longtitude">Longitude</CLabel>
-                   <CInput id="longtitude" name="longtitude" placeholder="" onChange={handleChange}  value={tempLongtitude} />
+                   <CInput required id="longtitude" name="longtitude" placeholder="" onChange={handleChange}  value={tempLongtitude} />
                  </CFormGroup>
                </CCol>
                <CCol xs="2">
@@ -479,7 +512,7 @@ const UNIT = "px";
              <br/>
            
              <div  style={{textAlign: 'right',width:'100%'}}>
-             <CButton size="sm col-2" onClick={() => setLarge(!large)} color="primary"><span className="mfs-2">Pilih Quotation</span></CButton>
+             <CButton style={{width:'155px'}} size="sm col" onClick={() => setLarge(!large)} color="primary"><span className="mfs-2">Pilih Quotation</span></CButton>
              </div>
               <DataTable      
                  columns={columns}        
@@ -488,8 +521,8 @@ const UNIT = "px";
               <CCardFooter>
 
               <div  style={{textAlign: 'right'}}>
-                  <CButton to="/projects/manage" disabled={isLoading}  size="sm col-1" className="btn-secondary btn-brand mr-1 mb-1"><span className="mfs-2">Kembali</span></CButton>
-                  <CButton disabled={isLoading} type="submit" size="sm col-1"  className="btn-brand mr-1 mb-1" color='primary'>
+                  <CButton to="/projects/manage" disabled={isLoading}  size="sm col-1" color='secondary' ><span className="mfs-2">Kembali</span></CButton>
+                  &ensp; <CButton disabled={isLoading} type="submit" size="sm col-1"  color='primary'>
                  { isLoading? <i class="spinner-border"></i>: <span className="mfs-2">Simpan</span>}
                   </CButton>
                   {}
@@ -550,15 +583,36 @@ const UNIT = "px";
               <CModalBody>
 
               <MapGL {...viewport} 
-                width="53vw" height="50vh"            
-                onViewportChange={setViewport}
+                width="53vw" height="60vh" 
+                ref={mapRef} 
+                        
+               //  onViewportChange={setViewport}
                 mapStyle={MAP_STYLE}
+                onViewportChange={handleViewportChange}
                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
                >
+                {/* <MapGL
+                   ref={mapRef}
+                    {...viewport}
+                    width="53vw" height="50vh"   
+                
+                    onViewportChange={handleViewportChange}
+                    mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+                
+                > */}
+              <Geocoder
+                mapRef={mapRef}
+                onViewportChange={handleGeocoderViewportChange}
+                mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+                marker={false}
+                
+                position="top-right"
+              />
                 <Marker
                   longitude={marker.longitude}
+                
                   latitude={marker.latitude}
-                  style={{transform: `translate(${SIZE/2 + UNIT}, ${SIZE/2 + UNIT}` }}
+                
                   offsetTop={-20}
                   offsetLeft={-10}
                   draggable
@@ -580,7 +634,7 @@ const UNIT = "px";
               <CModalFooter>
 
                 {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
-                <CButton color="secondary" onClick={() => setLarge(!tempMap)}>Tutup</CButton>
+                <CButton color="secondary" onClick={() => setTempMap(!tempMap)}>Tutup</CButton>
               </CModalFooter>
             </CModal>
       </CCardBody>
