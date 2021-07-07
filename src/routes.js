@@ -3,17 +3,28 @@ import React from 'react';
 // const Toaster = React.lazy(() => import('./views/notifications/toaster/Toaster'));
 // const Tables = React.lazy(() => import('./views/base/tables/Tables'));
 
-
+//Projects
 const CreateProject = React.lazy(() => import('./views/base/events/Create'));
 const ManageProject = React.lazy(() => import('./views/base/events/Manage'));
 const EditProject = React.lazy(() => import('./views/base/events/Edit'));
 const Mapping = React.lazy(() => import('./views/base/mapping-events/Manage'));
 //const Menu = React.lazy(() => import('./views/base/mapping-events/Menu'));
+
+//Mapping Event
 const Members= React.lazy(() => import('./views/base/mapping-events/Members'));
 const Budgets = React.lazy(() => import('./views/base/mapping-events/Budgets'));
 const Approval = React.lazy(() => import('./views/base/mapping-events/Approval'));
 const Tasks = React.lazy(() => import('./views/base/mapping-events/Tasks'));
+
+//account
+const ManageAccount = React.lazy(() => import('./views/base/account/Manage'));
+const AddAccount = React.lazy(() => import('./views/base/account/Create'));
+const EditAccount = React.lazy(() => import('./views/base/account/Edit'));
+const DetailAccount = React.lazy(() => import('./views/base/account/Detail'));
+
+
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
+
 
 
 
@@ -56,16 +67,27 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
 const routes = [
   { path: '/', exact: true, name: 'Dashboard' },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
-  { path: '/projects/create', name: 'Create', component: CreateProject },
-  { path: '/projects/manage', name: 'Manage', component: ManageProject },
-  { path: '/projects/edit/:id', name: 'Edit', component: EditProject },
+
+  //projects
+  { path: '/projects/create', name: 'Projects / Create', component: CreateProject },
+  { path: '/projects/manage', name: 'Projects / Manage', component: ManageProject },
+  { path: '/projects/edit/:id', name: 'Edit', component: EditProject },  
   
-  { path: '/mapping', name: 'Mapping', component: Mapping ,exact: true},
-  //{ path: '/menu', name: 'Menu', component: Menu },
+  //mapping projects
+  { path: '/mapping', name: 'Projects / Mapping', component: Mapping ,exact: true},
   { path: '/mapping/budgets/:id', name: 'Budgets', component: Budgets },
   { path: '/mapping/tasks/:id', name: 'Tasks', component: Tasks },
   { path: '/mapping/approval/:id', name: 'Approval', component: Approval },
   { path: '/mapping/members/:id', name: 'Members', component: Members },
+
+  //account
+  { path: '/account/manage', name: 'Account / Manage', component: ManageAccount },
+  { path: '/account/create', name: 'Account / Create', component: AddAccount },
+  { path: '/account/edit/:id', name: 'Account / Edit', component: EditAccount },
+  { path: '/account/detail/:id', name: 'Account / Detail', component: DetailAccount },
+
+
+  
 
   // { path: '/theme', name: 'Theme', component: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', component: Colors },

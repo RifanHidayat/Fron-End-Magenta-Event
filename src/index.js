@@ -5,6 +5,7 @@ import './polyfill'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
@@ -12,6 +13,8 @@ import { icons } from './assets/icons'
 
 import { Provider } from 'react-redux'
 import store from './store'
+import $ from 'jquery';
+import './loader.js'
 
 React.icons = icons
 

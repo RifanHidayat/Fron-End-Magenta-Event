@@ -72,6 +72,7 @@ const Modals = () => {
               show={large} 
               onClose={() => setLarge(!large)}
               size="lg"
+              
             >
               <CModalHeader closeButton>
                 <CModalTitle>Modal title</CModalTitle>

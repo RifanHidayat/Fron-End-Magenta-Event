@@ -6,43 +6,15 @@ import Swal from 'sweetalert2'
 import CIcon from '@coreui/icons-react'
 import { useHistory } from "react-router-dom";
 import {
-  CButton,
   CCard,
   CCardBody,
-  CCardFooter,
   CCardHeader,
-  CCol,
   CBadge,
-  CCollapse,
   CDropdownItem,
   CDropdownMenu,
   CDropdownToggle,
-  CFade,
-  CForm,
-  CFormGroup,
-  CFormText,
-  CValidFeedback,
-  CInvalidFeedback,
-  CTextarea,
-  CInput,
-  CInputFile,
-  CInputCheckbox,
-  CInputRadio,
-  CInputGroup,
-  CInputGroupAppend,
-  CInputGroupPrepend,
   CDropdown,
-  CInputGroupText,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CLabel,
-  CSelect,
-  CRow,
-  CSwitch,
-  CDataTable,
+ 
 } from '@coreui/react'
 
 
@@ -73,14 +45,13 @@ const columns = [  
                   </div></div>, },
 
 
-               { name: 'Total Biaya Project',  sortable: true, cell:row=>
-                <div>
-                  <div>
-                  </div>
-                  <CBadge style={{width:'100%',height:'20px' }} >
-                      <span >  {row.grand_total}</span>
-                  </CBadge>
-                </div> },
+               {name: 'Total Biaya',sortable: true,right: true,    
+              cell: row => <div data-tag="allowRowEvents">
+              <div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+              }</div>
+              </div>, }, 
+
+
                  { name: 'Persentasi',  sortable: true, cell:row=>
                  <div>
                    <div>

@@ -55,39 +55,53 @@ const getBadge = status => {
 var  projects=[];
 var dateFormat = require("dateformat");
 const columns = [  
-              {name: 'No. Project',sortable: true,    cell: row => <div style={{width:'100%'}}  data-tag="allowRowEvents"><div >{row.project_number}</div></div>,  }, 
+              {name: 'No. Project',sortable: true,    
+              cell: row => <div style={{width:'100%'}}  
+              data-tag="allowRowEvents"><div >
+                {row.project_number}</div></div>,  }, 
 
-              {name: 'No. Quotation',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>,  },          
+              {name: 'No. Quotation',sortable: true,    
+              cell: row => <div data-tag="allowRowEvents">
+                <div >{row.quotation_number}</div></div>,  },          
 
-              {name: 'Customer',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.event_customer}</div></div>,  },
+              {name: 'Customer',sortable: true,   
+               cell: row => <div data-tag="allowRowEvents">
+                <div >{row.event_customer}</div></div>,  },
             
-              {name: 'PIC ',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.event_pic}</div></div>,  }, 
+              {name: 'PIC ',sortable: true,    
+              cell: row => <div data-tag="allowRowEvents">
+                <div >{row.event_pic}</div></div>,  }, 
 
-
-              {name: 'Tanggal',sortable: true,    cell: row => <div style={{width:'150%'}}  data-tag="allowRowEvents"><div >
+              {name: 'Tanggal',sortable: true,    
+              cell: row => <div style={{width:'150%'}}  
+              data-tag="allowRowEvents"><div >
                   tanggal Mulai: {dateFormat(row.project_start_date, "dd/mm/yyyy")} <br/>
                   tanggal Akhir: {dateFormat(row.project_end_date, "dd/mm/yyyy")}<br/>
                   </div></div>, },
 
-
-               { name: 'Status',  sortable: true, cell:row=>
-                <div>
-                  <div>
-                  </div>
-                  <CBadge style={{width:'100%',height:'20px' }} color={getBadge(row.status)}>
-                      <span style={{color:'white',alignContent:'center'}}>  {row.status}</span>
-                  </CBadge>
+              {name: 'Total Biaya',sortable: true,right: true,    
+              cell: row => <div data-tag="allowRowEvents">
+                <div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+              }</div>
+              </div>, }, 
+                  
+               { name: 'Status',  sortable: true, 
+                cell:row=><div><div></div>
+                <CBadge style={{width:'100%',height:'20px' }} color={getBadge(row.status)}>
+                <span style={{color:'white',alignContent:'center'}}>  {row.status}</span>
+                </CBadge>
                 </div> },
-              {name: 'Aksi',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >
-               <CButton color="secondary"  size="sm" to= {`/projects/edit/${row.id}`}>{<i class="fa fa-edit"></i>}</CButton>
-                &ensp;<CButton color="secondary"  size="sm"  onClick={()=>deleteProject(row.id)}>{<i class="fa fa-trash"></i>}</CButton>
-                
+
+              {name: 'Aksi',sortable: true,   
+               cell: row => <div data-tag="allowRowEvents"><div >
+               <CButton color="secondary"  size="sm" to= {`/projects/edit/${row.id}`}>
+                 {<i class="fa fa-edit"></i>}</CButton>
+                &ensp;<CButton color="secondary"  
+                size="sm"  onClick={()=>deleteProject(row.id)}>{<i class="fa fa-trash"></i>}</CButton>              
                 </div></div>,  },
             ];
 
-    const editProject=(id)=>{
 
-    }
     const deleteProject=(id)=>{
       Swal.fire({
         title: 'Apakah anda yakin?',
@@ -98,8 +112,7 @@ const columns = [  
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         cancelButtonText: 'Cancel',
-        confirmButtonText: 'Delete',
-    
+        confirmButtonText: 'Delete',    
         showLoaderOnConfirm: true,
         preConfirm: () => {
             return axios.delete('http://localhost:3000/api/projects/delete-project/'+id)
@@ -122,6 +135,8 @@ const columns = [  
                 icon: 'success',
                 title: 'Success',
                 text: 'Peroject berhasil dihapus',
+                showConfirmButton:false,
+                timer:2000
             }).then((result) => {
                 if (result.isConfirmed) {
                    // window.location.href = '/leave';
@@ -133,9 +148,7 @@ const columns = [  
     }
 
 function Manage(){
-    const [tempProjects, setTempProjects] = useState([]);
-   
-    
+    const [tempProjects, setTempProjects] = useState([]);    
   useEffect(() => {
     fetch('http://localhost:3000/api/projects')
     .then((response)=>response.json())

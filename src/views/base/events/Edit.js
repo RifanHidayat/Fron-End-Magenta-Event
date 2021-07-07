@@ -1,10 +1,10 @@
-import React,{ useState,useEffect,Component}  from 'react'
+import React,{ useState,useEffect, useCallback }  from 'react'
 import DataTable from 'react-data-table-component';
 import { Formik, useFormik } from 'formik';
 import Swal from 'sweetalert2' 
 import axios from 'axios'
 import { useHistory } from "react-router-dom";
-import ReactMapGL from 'react-map-gl';
+
 import BeatLoader from "react-spinners/BeatLoader";
 import { css } from "@emotion/react";
 import {
@@ -14,26 +14,10 @@ import {
   CCardFooter,
   CCardHeader,
   CCol,
-  CBadge,
-  CCollapse,
-  CDropdownItem,
-  CDropdownMenu,
-  CDropdownToggle,
-  CFade,
-  CForm,
   CFormGroup,
-  CFormText,
-  CValidFeedback,
-  CInvalidFeedback,
-  CTextarea,
   CInput,
-  CInputFile,
-  CInputCheckbox,
-  CInputRadio,
   CInputGroup,
-  CInputGroupAppend,
   CInputGroupPrepend,
-  CDropdown,
   CInputGroupText,
   CModal,
   CModalBody,
@@ -41,24 +25,47 @@ import {
   CModalHeader,
   CModalTitle,
   CLabel,
-  CSelect,
-  CRow,
-  CSwitch,
-  CDataTable,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { Card } from 'reactstrap';
+import MapGL, {
+  Marker,  
+  Popup,
+  NavigationControl,
+  FullscreenControl,
+  ScaleControl,
+  GeolocateControl} from 'react-map-gl';
+import ControlPanel from './components/controll-panel';
+import Pin from './components/pin';
+import MAP_STYLE from './components/mapstyle';
+import {fromJS} from 'immutable';;
+
+const geolocateStyle = {
+  top: 0,
+  left: 0,
+  padding: '10px'
+};
+
+const fullscreenControlStyle = {
+  top: 36,
+  left: 0,
+  padding: '10px'
+};
+
+const navStyle = {
+  top: 72,
+  left: 0,
+  padding: '10px'
+};
+
+const scaleControlStyle = {
+  bottom: 36,
+  left: 0,
+  padding: '10px'
+};
 
 
-const getBadge = status => {
-  switch (status) {
-    case 'Active': return 'success'
-    case 'Inactive': return 'secondary'
-    case 'Pending': return 'warning'
-    case 'Banned': return 'danger'
-    default: return 'primary'
-  }
-}
+
+
 
 const columns = [  
               {name: 'No. quotation',sortable: true,    cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>,  }, 
@@ -67,12 +74,15 @@ const columns = [  
               {name: 'Tanggal PO',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,  }, 
               {name: 'Customer',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, },
               {name: 'PIC Event',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,  }, 
-               { name: 'Total Biaya',    selector: 'grand_total',    sortable: true,    right: true,  },
+              {name: 'Total Biaya',sortable: true,right: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+            }</div></div>,  }, 
   ];
 
 var  quotations=[];
 var selected_quotation=[];
 
+const SIZE = 100;
+const UNIT = "px";
 
 function Edit(props){
   
@@ -104,23 +114,50 @@ function Edit(props){
 
   //css loader
   const override = css`
-
-
   border-color: red;
   top: 50%;
-
 `;
 
+  //varible map react gl
+  const [viewport, setViewport] = useState({
+    longitude: 107.6684889,
+    latitude: -6.942100215253297,
+    
+    zoom: 13.5,
+    bearing: 0,
+    pitch: 0
+  });
+  const [marker, setMarker] = useState({
+    longitude: 107.6684889,
+    latitude: -6.942100215253297,
+  });
   
+  const [events, logEvents] = useState({});
 
-  //mapbox
-  const[viewport, setViewport] = useState({
-    width: "100",
-    height: "400",
-    latitude: 38.963745,
-    longitude: 35.243322,
-    zoom: 5
-});
+  const onMarkerDragStart = useCallback(event => {
+    logEvents(_events => ({..._events, onDragStart: event.lngLat}));
+  }, []);
+
+  const onMarkerDrag = useCallback(event => {
+    logEvents(_events => ({..._events, onDrag: event.lngLat}));
+  }, []);
+
+  const onMarkerDragEnd = useCallback(event => {
+    logEvents(_events => ({..._events, onDragEnd: event.lngLat}));
+    console.log('long :',event.lngLat[0])
+    setTempLatitude(event.lngLat[1]);
+    setTempLongtitude(event.lngLat[0]);
+
+    setMarker({
+      longitude: event.lngLat[0],
+      latitude: event.lngLat[1]
+    });
+  }, []);
+
+
+
+
+
 
   //variable push page
   const navigator = useHistory();
@@ -139,7 +176,7 @@ function Edit(props){
     //get data detail
     axios.get("http://localhost:3000/api/projects/detail-project/"+id)
     .then((response)=>{
-      console.log('detail project :',response)
+      console.log('detail projecs :',response)
       setTempProjectNumber(response.data.data.project_number);
 
       //projecct create data
@@ -170,8 +207,11 @@ function Edit(props){
       setTempEventCustomer(response.data.data.event_pic);
       setTempLatitude(response.data.data.latitude);
       setTempLongtitude(response.data.data.longtitude);
-      setTempDescription(response.data.data.description);   
-      setTotalProjectost(response.data.data.total_project_cost);
+      setTempDescription(response.data.data.description);  
+      console.log('data latitutde :',parseFloat(tempLatitude)) 
+      console.log('data longtitude :',parseFloat(tempLongtitude)) 
+      console.log('data latitutde  :',tempLatitude) 
+      setTotalProjectost(response.data.data.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."));  
       setIdProject(response.data.data.id);
       setTempQuotationNumber(response.data.data.quotation_number)
       setTempIds(response.data.data.id_quotation);
@@ -217,7 +257,7 @@ function Edit(props){
     setTempEventPic(state.selectedRows[0]['pic_event']);
     setTempEventCustomer(state.selectedRows[0]['customer_event']);
     setTotalProjectost(state.selectedRows[0]['grand_total'])
-    setTotalProjectost(grand_total)
+    setTotalProjectost(grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
 
 
     }else{
@@ -265,7 +305,7 @@ function Edit(props){
           project_end_date:values.project_end_date,
           event_customer:tempEventCustomer,
           event_pic:tempEventPic,
-          total_project_cost:tempTotalProjectCost,
+          total_project_cost:tempTotalProjectCost.replace(/[^\w\s]/gi, ''),
           description:values.description,
           latitude:tempLatitude,
           longtitude:tempLongtitude,
@@ -358,10 +398,15 @@ function Edit(props){
                  </CFormGroup>
                </CCol>
                <CCol xs="6">
-                 <CFormGroup>
-                   <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
-                   <CInput id="total_project_cost"  name="total_project_cost" initialValues="0" placeholder="" type="number" onChange={handleChange}  value={tempTotalProjectCost} />
-                 </CFormGroup>
+               <CFormGroup>
+                 <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
+                  <CInputGroup>
+                    <CInputGroupPrepend>
+                      <CInputGroupText>IDR</CInputGroupText>
+                    </CInputGroupPrepend>
+                    <CInput style={{textAlign:'right'}} id="total_project_cost"  name="total_project_cost"  onChange={handleChange}  value={tempTotalProjectCost}/>                  
+                  </CInputGroup>
+                </CFormGroup>
                </CCol>
                
                <CCol xs="5">
@@ -457,14 +502,33 @@ function Edit(props){
                 <CModalTitle></CModalTitle>
               </CModalHeader>
               <CModalBody>
-              <ReactMapGL
-                  {...viewport}
-                  mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
-                  width="100%"
-                  height="100%"
-                  mapStyle="mapbox://styles/mapbox/streets-v11"
-                   onViewportChange={(viewport) => setViewport(viewport)}
-            />
+              <MapGL {...viewport} 
+                width="53vw" height="50vh"            
+                onViewportChange={setViewport}
+                mapStyle={MAP_STYLE}
+                mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+               >
+                <Marker
+                  longitude={marker.longitude}
+                  latitude={marker.latitude}
+                  style={{transform: `translate(${SIZE/2 + UNIT}, ${SIZE/2 + UNIT}` }}
+                  offsetTop={-20}
+                  offsetLeft={-10}
+                  draggable
+                  // onDragStart={onMarkerDragStart}
+                  // onDrag={onMarkerDrag}
+                  onDragEnd={onMarkerDragEnd}
+                >
+                  <Pin size={20} />
+                </Marker>
+
+                <GeolocateControl style={geolocateStyle} />
+                <FullscreenControl style={fullscreenControlStyle} />
+                <NavigationControl style={navStyle} />
+                <ScaleControl style={scaleControlStyle} />
+              </MapGL>
+               <ControlPanel events={events} />
+            
              
             
               </CModalBody>

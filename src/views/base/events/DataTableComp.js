@@ -1,647 +1,662 @@
-// // import React, { Component } from "react";
-// // import ReactDOM from "react-dom";
-// // const $ = require("jquery");
-// // $.DataTable = require("datatables.net");
-// // const columns = [
-// // { title: "Name", data:'name' },
-// // { title: "Position", data:'position'  },
-// // { title: "Office", data:'office' },
-// // { title: "Extn.", data: 'ext' },
-// // { title: "Start date", data:"date" },
-// // { title: "Salary", data: 'salary' },
-// // ];
-// // class DataTableComp extends Component {
-// //   constructor(props) {
-// //        super(props);
-// //     }
-// //  componentDidMount() {
-// //       this.$el = $(this.el);
-// //       this.$el.DataTable({
-// //              dom: '<"data-table-wrapper"t>',
-// //              data: this.props.data,
-// //              columns: columns,
-// //              ordering: false,
-// //              columnDefs: [
-// //                       {
-// //                      targets: [5],
-// //                      width: 180,
-// //                      className: "center",
-// //                      createdCell: (td, cellData, rowData) =>
-// //                      ReactDOM.render(
-// //                           <div
-// //                             id={rowData.id}
-// //                             onClick={() => {
-// //                             this.props.deleteRow(rowData.id);
-// //                             }}
-// //                            > Delete </div>, td ), },],
-// //                          });
-// //                       }
-// // componentWillUnmount() {
-// //     $(".data-table-wrapper").find("table").DataTable().destroy(true);
-// //     }
-// // reloadTableData = (data) => {
-// //         const table = $('.data-table-wrapper').find('table').DataTable();
-// //      table.clear();
-// //      table.rows.add(data);
-// //      table.draw();
-// //       }
-// // shouldComponentUpdate(nextProps, nextState){
-// // if (nextProps.data.length !== this.props.data.length) {
-// //        this.reloadTableData(nextProps.data);
-// //           }
-// //    return false;
-// //     }
-// // render() {
-// //      return (
-// //        <div>
-// //          <table className="table table-borderless display"
-// //                    id="dataTable"
-// //                     width="100%"
-// //                     cellSpacing="0"
-// //                     ref={(el) => (this.el = el)}
-// //                      />
-// //                 </div>
-// //              );
-// //        }
-// // }
-// // export default DataTableComp;
+import React,{ useState,useEffect }  from 'react'
+import DataTable from 'react-data-table-component';
+import { Formik, useFormik } from 'formik';
+import Swal from 'sweetalert2'
+import axios from 'axios'
+import { useHistory } from "react-router-dom";
 
-// // 
+import ReactLoading from 'react-loading'
 
-// // import React, { Component } from 'react';
-// // import $ from 'jquery';
-// // import 'datatables.net';
-// // import 'datatables.net-bs4';
-// // import 'pdfmake/build/pdfmake.js';
-// // import 'pdfmake/build/vfs_fonts.js';
-// // import 'datatables.net-buttons-bs4';
-// // import 'jszip';
-// // import 'datatables.net-buttons';
+import ReactMapGL, { Marker, Popup } from "react-map-gl";
  
-// // class App extends Component {
-// //   update = () =>{
- 
-// //     $(document).ready(function() {
-// //        var table = $('#nirmal').DataTable();
-// //        new $.fn.dataTable.Buttons( table, {
-// //         buttons: [
-// //             'copy', 'excel', 'pdf'
-// //         ]
-// //     } );
-       
-// //   });
- 
-// //   }
-// //   componentDidMount(){
-// //     this.update();
-// //   }
-// //   componentDidUpdate(){
-// //     this.update();
-// //   }
-// //   render() {
-   
-// //     return (
-// //       <div className="App">
-// //         <table className="table table-striped table-hover" id="nirmal">
-// //           <thead>
-// //             <tr>
-// //               <td>S.No</td>
-// //               <td>Name</td>
-// //               <td>Roll. No</td>
-// //             </tr>
-// //           </thead>
-// //           <tbody>
-// //             <tr>
-// //               <td>1</td>
-// //               <td>Nirmalmahesh S</td>
-// //               <td>17MCR005</td>
-// //             </tr>
-// //           </tbody>
-// //         </table>
-// //       </div>
-// //     );
-// //   }
-// // }
- 
-// // export default App;
 
-// import React, { Component } from 'react';
-// // import $ from 'jquery';
-// // import 'datatables.net';
-// // import 'datatables.net-bs4';
-// // import 'pdfmake/build/pdfmake.js';
-// // import 'pdfmake/build/vfs_fonts.js';
-// // import 'datatables.net-buttons-bs4';
-// // import 'jszip';
-// // import 'datatables.net-buttons';
  
-// class App extends Component {
-//   // update = () =>{
  
-//   //   $(document).ready(function() {
-//   //      var table = $('#nirmal').DataTable();
-//   //      new $.fn.dataTable.Buttons( table, {
-//   //       buttons: [
-//   //           'copy', 'excel', 'pdf'
-//   //       ]
-//   //   } );
-       
-//   // });
+
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCardFooter,
+  CCardHeader,
+  CCol,
+  CBadge,
+  CCollapse,
+  CDropdownItem,
+  CDropdownMenu,
+  CDropdownToggle,
+  CFade,
+  CForm,
+  CFormGroup,
+  CFormText,
+  CValidFeedback,
+  CInvalidFeedback,
+  CTextarea,
+  CInput,
+  CInputFile,
+  CInputCheckbox,
+  CInputRadio,
+  CInputGroup,
+  CInputGroupAppend,
+  CInputGroupPrepend,
+  CDropdown,
+  CInputGroupText,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CModalTitle,
+  CLabel,
+  CSelect,
+  CRow,
+  CSwitch,
+  CDataTable,
+} from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+
+
+const getBadge = status => {
+  switch (status) {
+    case 'Active': return 'success'
+    case 'Inactive': return 'secondary'
+    case 'Pending': return 'warning'
+    case 'Banned': return 'danger'
+    default: return 'primary'
+  }
+}
+
+
+const columns = [  
+  {name: 'No. quotation',sortable: true,    cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>,  }, 
+  {name: 'tanggal quotation',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  },      
+  {name: 'No. PO',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.po_number}</div></div>,  },
+  {name: 'Tanggal PO',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,  }, 
+  {name: 'Customer',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, },
+  {name: 'PIC Event',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,  }, 
+  {name: 'Total Biaya',sortable: true,right: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+}</div></div>,  }, 
+//                { name: 'Total Biaya',    selector: 'grand_total',    sortable: true,    right: true,  },
+];
+
+var  quotations=[];
+var selected_quotation=[];
+
+
+function Create(){
+
+
+  const myStorage = window.localStorage;
+  const [currentUsername, setCurrentUsername] = useState(myStorage.getItem("user"));
+  const [pins, setPins] = useState([]);
+  const [currentPlaceId, setCurrentPlaceId] = useState(null);
+  const [newPlace, setNewPlace] = useState(null);
+  const [title, setTitle] = useState(null);
+  const [desc, setDesc] = useState(null);
+  const [star, setStar] = useState(0);
+  const [viewport, setViewport] = useState({
+    latitude: 47.040182,
+    longitude: 17.071727,
+    zoom: 4,
+  });
+  const [showRegister, setShowRegister] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+
+  const handleMarkerClick = (id, lat, long) => {
+    setCurrentPlaceId(id);
+    setViewport({ ...viewport, latitude: lat, longitude: long });
+  };
+
+  const handleAddClick = (e) => {
+    const [longitude, latitude] = e.lngLat;
+    setNewPlace({
+      lat: latitude,
+      long: longitude,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newPin = {
+      username: currentUsername,
+      title,
+      desc,
+      rating: star,
+      lat: newPlace.lat,
+      long: newPlace.long,
+    };
+
+    try {
+      const res = await axios.post("/pins", newPin);
+      setPins([...pins, res.data]);
+      setNewPlace(null);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    const getPins = async () => {
+      try {
+        const allPins = await axios.get("/pins");
+        setPins(allPins.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getPins();
+  }, []);
+
+  // const handleLogout = () => {
+  //   setCurrentUsername(null);
+  //  // myStorage.removeItem("user");
+  // };
+
+  //batas
+
+  //varoable state
+//   const [collapsed, setCollapsed] = React.useState(true)
+//   const [showElements, setShowElements] = React.useState(true)
+//   const [modal, setModal] = useState(true)
+//   const [large, setLarge] = useState(false)
+//   const [tempMap, setTempMap] = useState(false)
+//   const [tempQuotation, setTempQuotation] = useState([]);
+//   const [tempProjectNumber, setTempProjectNumber] = useState('');
+//   const [tempEventCustomer, setTempEventCustomer] = useState('');
+//   const [tempEventPic, setTempEventPic] = useState('');
+//   const [tempTotalProjectCost, setTotalProjectost] = useState('0');
+//   const [tempIds, setTempIds] = useState([]);
+//   const [tempQuotationNumber, setTempQuotationNumber] = useState([]);
+//   const [isLoading, setIsloading] = useState(false);
+//   const [tempDateCreatedProject,setTempDateCreatedPeoject]=useState();
+
+
+
+//   //mapbox
+//   const[viewport, setViewport] = useState({
+//     width: "100",
+//     height: "400",
+//     latitude: 38.963745,
+//     longitude: 35.243322,
+//     zoom: 5
+// });
+
+
+//   //variable push page
+//   const navigator = useHistory();
+
+
+//   //variable data
+//   let ids=[];
+//   let quotationNumber=[];
  
+
+
+//   useEffect(() => {
+//     setIsloading(false);
+
+//     //project create date
+//     let newDate = new Date()
+//     let date = newDate.getDate();
+//     let month = newDate.getMonth() + 1;
+//     let year = newDate.getFullYear();
+//     setTempDateCreatedPeoject(year+'-'+'00'.substr( String(month).length ) + month+'-'+'00'.substr( String(date).length ) + date);
+//     //console.log(year+'-'+month+'-'+date)
   
-//   // componentDidMount(){
-//   //   this.update();
-//   // }
-//   // componentDidUpdate(){
-//   //   this.update();
-//   // }
-//   render() {
-   
-//     return (
-//       <div className="App">
-//       <table id="example" class="display" style="width:100%">
-//         <thead>
-//             <tr>
-//                 <th>Name</th>
-//                 <th>Position</th>
-//                 <th>Office</th>
-//                 <th>Age</th>
-//                 <th>Start date</th>
-//                 <th>Salary</th>
-//             </tr>
-//         </thead>
-//         <tbody>
-//             <tr>
-//                 <td>Tiger Nixon</td>
-//                 <td>System Architect</td>
-//                 <td>Edinburgh</td>
-//                 <td>61</td>
-//                 <td>2011/04/25</td>
-//                 <td>$320,800</td>
-//             </tr>
-//             <tr>
-//                 <td>Garrett Winters</td>
-//                 <td>Accountant</td>
-//                 <td>Tokyo</td>
-//                 <td>63</td>
-//                 <td>2011/07/25</td>
-//                 <td>$170,750</td>
-//             </tr>
-//             <tr>
-//                 <td>Ashton Cox</td>
-//                 <td>Junior Technical Author</td>
-//                 <td>San Francisco</td>
-//                 <td>66</td>
-//                 <td>2009/01/12</td>
-//                 <td>$86,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Cedric Kelly</td>
-//                 <td>Senior Javascript Developer</td>
-//                 <td>Edinburgh</td>
-//                 <td>22</td>
-//                 <td>2012/03/29</td>
-//                 <td>$433,060</td>
-//             </tr>
-//             <tr>
-//                 <td>Airi Satou</td>
-//                 <td>Accountant</td>
-//                 <td>Tokyo</td>
-//                 <td>33</td>
-//                 <td>2008/11/28</td>
-//                 <td>$162,700</td>
-//             </tr>
-//             <tr>
-//                 <td>Brielle Williamson</td>
-//                 <td>Integration Specialist</td>
-//                 <td>New York</td>
-//                 <td>61</td>
-//                 <td>2012/12/02</td>
-//                 <td>$372,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Herrod Chandler</td>
-//                 <td>Sales Assistant</td>
-//                 <td>San Francisco</td>
-//                 <td>59</td>
-//                 <td>2012/08/06</td>
-//                 <td>$137,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Rhona Davidson</td>
-//                 <td>Integration Specialist</td>
-//                 <td>Tokyo</td>
-//                 <td>55</td>
-//                 <td>2010/10/14</td>
-//                 <td>$327,900</td>
-//             </tr>
-//             <tr>
-//                 <td>Colleen Hurst</td>
-//                 <td>Javascript Developer</td>
-//                 <td>San Francisco</td>
-//                 <td>39</td>
-//                 <td>2009/09/15</td>
-//                 <td>$205,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Sonya Frost</td>
-//                 <td>Software Engineer</td>
-//                 <td>Edinburgh</td>
-//                 <td>23</td>
-//                 <td>2008/12/13</td>
-//                 <td>$103,600</td>
-//             </tr>
-//             <tr>
-//                 <td>Jena Gaines</td>
-//                 <td>Office Manager</td>
-//                 <td>London</td>
-//                 <td>30</td>
-//                 <td>2008/12/19</td>
-//                 <td>$90,560</td>
-//             </tr>
-//             <tr>
-//                 <td>Quinn Flynn</td>
-//                 <td>Support Lead</td>
-//                 <td>Edinburgh</td>
-//                 <td>22</td>
-//                 <td>2013/03/03</td>
-//                 <td>$342,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Charde Marshall</td>
-//                 <td>Regional Director</td>
-//                 <td>San Francisco</td>
-//                 <td>36</td>
-//                 <td>2008/10/16</td>
-//                 <td>$470,600</td>
-//             </tr>
-//             <tr>
-//                 <td>Haley Kennedy</td>
-//                 <td>Senior Marketing Designer</td>
-//                 <td>London</td>
-//                 <td>43</td>
-//                 <td>2012/12/18</td>
-//                 <td>$313,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Tatyana Fitzpatrick</td>
-//                 <td>Regional Director</td>
-//                 <td>London</td>
-//                 <td>19</td>
-//                 <td>2010/03/17</td>
-//                 <td>$385,750</td>
-//             </tr>
-//             <tr>
-//                 <td>Michael Silva</td>
-//                 <td>Marketing Designer</td>
-//                 <td>London</td>
-//                 <td>66</td>
-//                 <td>2012/11/27</td>
-//                 <td>$198,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Paul Byrd</td>
-//                 <td>Chief Financial Officer (CFO)</td>
-//                 <td>New York</td>
-//                 <td>64</td>
-//                 <td>2010/06/09</td>
-//                 <td>$725,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Gloria Little</td>
-//                 <td>Systems Administrator</td>
-//                 <td>New York</td>
-//                 <td>59</td>
-//                 <td>2009/04/10</td>
-//                 <td>$237,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Bradley Greer</td>
-//                 <td>Software Engineer</td>
-//                 <td>London</td>
-//                 <td>41</td>
-//                 <td>2012/10/13</td>
-//                 <td>$132,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Dai Rios</td>
-//                 <td>Personnel Lead</td>
-//                 <td>Edinburgh</td>
-//                 <td>35</td>
-//                 <td>2012/09/26</td>
-//                 <td>$217,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Jenette Caldwell</td>
-//                 <td>Development Lead</td>
-//                 <td>New York</td>
-//                 <td>30</td>
-//                 <td>2011/09/03</td>
-//                 <td>$345,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Yuri Berry</td>
-//                 <td>Chief Marketing Officer (CMO)</td>
-//                 <td>New York</td>
-//                 <td>40</td>
-//                 <td>2009/06/25</td>
-//                 <td>$675,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Caesar Vance</td>
-//                 <td>Pre-Sales Support</td>
-//                 <td>New York</td>
-//                 <td>21</td>
-//                 <td>2011/12/12</td>
-//                 <td>$106,450</td>
-//             </tr>
-//             <tr>
-//                 <td>Doris Wilder</td>
-//                 <td>Sales Assistant</td>
-//                 <td>Sydney</td>
-//                 <td>23</td>
-//                 <td>2010/09/20</td>
-//                 <td>$85,600</td>
-//             </tr>
-//             <tr>
-//                 <td>Angelica Ramos</td>
-//                 <td>Chief Executive Officer (CEO)</td>
-//                 <td>London</td>
-//                 <td>47</td>
-//                 <td>2009/10/09</td>
-//                 <td>$1,200,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Gavin Joyce</td>
-//                 <td>Developer</td>
-//                 <td>Edinburgh</td>
-//                 <td>42</td>
-//                 <td>2010/12/22</td>
-//                 <td>$92,575</td>
-//             </tr>
-//             <tr>
-//                 <td>Jennifer Chang</td>
-//                 <td>Regional Director</td>
-//                 <td>Singapore</td>
-//                 <td>28</td>
-//                 <td>2010/11/14</td>
-//                 <td>$357,650</td>
-//             </tr>
-//             <tr>
-//                 <td>Brenden Wagner</td>
-//                 <td>Software Engineer</td>
-//                 <td>San Francisco</td>
-//                 <td>28</td>
-//                 <td>2011/06/07</td>
-//                 <td>$206,850</td>
-//             </tr>
-//             <tr>
-//                 <td>Fiona Green</td>
-//                 <td>Chief Operating Officer (COO)</td>
-//                 <td>San Francisco</td>
-//                 <td>48</td>
-//                 <td>2010/03/11</td>
-//                 <td>$850,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Shou Itou</td>
-//                 <td>Regional Marketing</td>
-//                 <td>Tokyo</td>
-//                 <td>20</td>
-//                 <td>2011/08/14</td>
-//                 <td>$163,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Michelle House</td>
-//                 <td>Integration Specialist</td>
-//                 <td>Sydney</td>
-//                 <td>37</td>
-//                 <td>2011/06/02</td>
-//                 <td>$95,400</td>
-//             </tr>
-//             <tr>
-//                 <td>Suki Burks</td>
-//                 <td>Developer</td>
-//                 <td>London</td>
-//                 <td>53</td>
-//                 <td>2009/10/22</td>
-//                 <td>$114,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Prescott Bartlett</td>
-//                 <td>Technical Author</td>
-//                 <td>London</td>
-//                 <td>27</td>
-//                 <td>2011/05/07</td>
-//                 <td>$145,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Gavin Cortez</td>
-//                 <td>Team Leader</td>
-//                 <td>San Francisco</td>
-//                 <td>22</td>
-//                 <td>2008/10/26</td>
-//                 <td>$235,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Martena Mccray</td>
-//                 <td>Post-Sales support</td>
-//                 <td>Edinburgh</td>
-//                 <td>46</td>
-//                 <td>2011/03/09</td>
-//                 <td>$324,050</td>
-//             </tr>
-//             <tr>
-//                 <td>Unity Butler</td>
-//                 <td>Marketing Designer</td>
-//                 <td>San Francisco</td>
-//                 <td>47</td>
-//                 <td>2009/12/09</td>
-//                 <td>$85,675</td>
-//             </tr>
-//             <tr>
-//                 <td>Howard Hatfield</td>
-//                 <td>Office Manager</td>
-//                 <td>San Francisco</td>
-//                 <td>51</td>
-//                 <td>2008/12/16</td>
-//                 <td>$164,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Hope Fuentes</td>
-//                 <td>Secretary</td>
-//                 <td>San Francisco</td>
-//                 <td>41</td>
-//                 <td>2010/02/12</td>
-//                 <td>$109,850</td>
-//             </tr>
-//             <tr>
-//                 <td>Vivian Harrell</td>
-//                 <td>Financial Controller</td>
-//                 <td>San Francisco</td>
-//                 <td>62</td>
-//                 <td>2009/02/14</td>
-//                 <td>$452,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Timothy Mooney</td>
-//                 <td>Office Manager</td>
-//                 <td>London</td>
-//                 <td>37</td>
-//                 <td>2008/12/11</td>
-//                 <td>$136,200</td>
-//             </tr>
-//             <tr>
-//                 <td>Jackson Bradshaw</td>
-//                 <td>Director</td>
-//                 <td>New York</td>
-//                 <td>65</td>
-//                 <td>2008/09/26</td>
-//                 <td>$645,750</td>
-//             </tr>
-//             <tr>
-//                 <td>Olivia Liang</td>
-//                 <td>Support Engineer</td>
-//                 <td>Singapore</td>
-//                 <td>64</td>
-//                 <td>2011/02/03</td>
-//                 <td>$234,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Bruno Nash</td>
-//                 <td>Software Engineer</td>
-//                 <td>London</td>
-//                 <td>38</td>
-//                 <td>2011/05/03</td>
-//                 <td>$163,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Sakura Yamamoto</td>
-//                 <td>Support Engineer</td>
-//                 <td>Tokyo</td>
-//                 <td>37</td>
-//                 <td>2009/08/19</td>
-//                 <td>$139,575</td>
-//             </tr>
-//             <tr>
-//                 <td>Thor Walton</td>
-//                 <td>Developer</td>
-//                 <td>New York</td>
-//                 <td>61</td>
-//                 <td>2013/08/11</td>
-//                 <td>$98,540</td>
-//             </tr>
-//             <tr>
-//                 <td>Finn Camacho</td>
-//                 <td>Support Engineer</td>
-//                 <td>San Francisco</td>
-//                 <td>47</td>
-//                 <td>2009/07/07</td>
-//                 <td>$87,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Serge Baldwin</td>
-//                 <td>Data Coordinator</td>
-//                 <td>Singapore</td>
-//                 <td>64</td>
-//                 <td>2012/04/09</td>
-//                 <td>$138,575</td>
-//             </tr>
-//             <tr>
-//                 <td>Zenaida Frank</td>
-//                 <td>Software Engineer</td>
-//                 <td>New York</td>
-//                 <td>63</td>
-//                 <td>2010/01/04</td>
-//                 <td>$125,250</td>
-//             </tr>
-//             <tr>
-//                 <td>Zorita Serrano</td>
-//                 <td>Software Engineer</td>
-//                 <td>San Francisco</td>
-//                 <td>56</td>
-//                 <td>2012/06/01</td>
-//                 <td>$115,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Jennifer Acosta</td>
-//                 <td>Junior Javascript Developer</td>
-//                 <td>Edinburgh</td>
-//                 <td>43</td>
-//                 <td>2013/02/01</td>
-//                 <td>$75,650</td>
-//             </tr>
-//             <tr>
-//                 <td>Cara Stevens</td>
-//                 <td>Sales Assistant</td>
-//                 <td>New York</td>
-//                 <td>46</td>
-//                 <td>2011/12/06</td>
-//                 <td>$145,600</td>
-//             </tr>
-//             <tr>
-//                 <td>Hermione Butler</td>
-//                 <td>Regional Director</td>
-//                 <td>London</td>
-//                 <td>47</td>
-//                 <td>2011/03/21</td>
-//                 <td>$356,250</td>
-//             </tr>
-//             <tr>
-//                 <td>Lael Greer</td>
-//                 <td>Systems Administrator</td>
-//                 <td>London</td>
-//                 <td>21</td>
-//                 <td>2009/02/27</td>
-//                 <td>$103,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Jonas Alexander</td>
-//                 <td>Developer</td>
-//                 <td>San Francisco</td>
-//                 <td>30</td>
-//                 <td>2010/07/14</td>
-//                 <td>$86,500</td>
-//             </tr>
-//             <tr>
-//                 <td>Shad Decker</td>
-//                 <td>Regional Director</td>
-//                 <td>Edinburgh</td>
-//                 <td>51</td>
-//                 <td>2008/11/13</td>
-//                 <td>$183,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Michael Bruce</td>
-//                 <td>Javascript Developer</td>
-//                 <td>Singapore</td>
-//                 <td>29</td>
-//                 <td>2011/06/27</td>
-//                 <td>$183,000</td>
-//             </tr>
-//             <tr>
-//                 <td>Donna Snider</td>
-//                 <td>Customer Support</td>
-//                 <td>New York</td>
-//                 <td>27</td>
-//                 <td>2011/01/25</td>
-//                 <td>$112,000</td>
-//             </tr>
-//         </tbody>
-//         <tfoot>
-//             <tr>
-//                 <th>Name</th>
-//                 <th>Position</th>
-//                 <th>Office</th>
-//                 <th>Age</th>
-//                 <th>Start date</th>
-//                 <th>Salary</th>
-//             </tr>
-//         </tfoot>
-//     </table>
-//       </div>
-//     );
+
+//     //get data qutoation
+//     fetch('http://localhost:3000/api/quotations')
+//     .then((response)=>response.json())
+//     .then((json)=>{
+//       quotations=json['data'];
+//       console.log(quotations);
+//     });
+
+//     //get project number
+//     axios.get('http://localhost:3000/api/projects/project-number')
+//     .then(response => {
+//       console.log('data project number ',response.data.data)
+//       setTempProjectNumber(response.data.data);
+//     })
+//     .catch(error => {
+//         // this.setState({ errorMessage: error.message });
+//         console.error('There was an error!', error);
+//     });
+//   }, []);
+
+
   
-// }}
+//   const onCheck = (state) => {
+//     selected_quotation=[];
+//     let grand_total=0;
+//     console.log(state.selectedRows);
+
+//     setTempQuotation([...state.selectedRows]);
+//     if (state.selectedRows.length>0){
+//     state.selectedRows.map((value) => grand_total+=value.grand_total );
+//     state.selectedRows.map((value) => ids.push(value.id));
+//     state.selectedRows.map((value) => quotationNumber.push(value.quotation_number));
+    
+//     //set data value quotation
+//     setTempEventPic(state.selectedRows[0]['pic_event']);
+//     setTempEventCustomer(state.selectedRows[0]['customer_event']);
+//     setTotalProjectost(state.selectedRows[0]['grand_total'])
+//     setTotalProjectost(grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+
+
+//     }else{
+
+//     setTempEventPic('');
+//     setTempEventCustomer('');
+//     setTotalProjectost('0')
+
+//     }
+//     //set data list quotation
+//     setTempIds([...ids]);
+//     setTempQuotationNumber([...quotationNumber])
+  
+//   };
+
+  return (
+    <div style={{ height: "100vh", width: "100%" }}>
+      <ReactMapGL
+        {...viewport}
+        mapboxApiAccessToken=""
+        width="100%"
+        height="100%"
+        transitionDuration="200"
+        mapStyle="mapbox://styles/safak/cknndpyfq268f17p53nmpwira"
+        onViewportChange={(viewport) => setViewport(viewport)}
+        onDblClick={currentUsername && handleAddClick}
+      >
+        {pins.map((p) => (
+          <>
+            <Marker
+              latitude={p.lat}
+              longitude={p.long}
+              offsetLeft={-3.5 * viewport.zoom}
+              offsetTop={-7 * viewport.zoom}
+            >
+              <Room
+                style={{
+                  fontSize: 7 * viewport.zoom,
+                  color:
+                    currentUsername === p.username ? "tomato" : "slateblue",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleMarkerClick(p._id, p.lat, p.long)}
+              />
+            </Marker>
+            {p._id === currentPlaceId && (
+              <Popup
+                key={p._id}
+                latitude={p.lat}
+                longitude={p.long}
+                closeButton={true}
+                closeOnClick={false}
+                onClose={() => setCurrentPlaceId(null)}
+                anchor="left"
+              >
+                <div className="card">
+                  <label>Place</label>
+                  <h4 className="place">{p.title}</h4>
+                  <label>Review</label>
+                  <p className="desc">{p.desc}</p>
+                  <label>Rating</label>
+                  <div className="stars">
+                    {Array(p.rating).fill(<Star className="star" />)}
+                  </div>
+                  <label>Information</label>
+                  <span className="username">
+                    Created by <b>{p.username}</b>
+                  </span>
+                  <span className="date">{format(p.createdAt)}</span>
+                </div>
+              </Popup>
+            )}
+          </>
+        ))}
+        {newPlace && (
+          <>
+            <Marker
+              latitude={newPlace.lat}
+              longitude={newPlace.long}
+              offsetLeft={-3.5 * viewport.zoom}
+              offsetTop={-7 * viewport.zoom}
+            >
+              <Room
+                style={{
+                  fontSize: 7 * viewport.zoom,
+                  color: "tomato",
+                  cursor: "pointer",
+                }}
+              />
+            </Marker>
+            <Popup
+              latitude={newPlace.lat}
+              longitude={newPlace.long}
+              closeButton={true}
+              closeOnClick={false}
+              onClose={() => setNewPlace(null)}
+              anchor="left"
+            >
+              <div>
+                <form onSubmit={handleSubmit}>
+                  <label>Title</label>
+                  <input
+                    placeholder="Enter a title"
+                    autoFocus
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  <label>Description</label>
+                  <textarea
+                    placeholder="Say us something about this place."
+                    onChange={(e) => setDesc(e.target.value)}
+                  />
+                  <label>Rating</label>
+                  <select onChange={(e) => setStar(e.target.value)}>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                  </select>
+                  <button type="submit" className="submitButton">
+                    Add Pin
+                  </button>
+                </form>
+              </div>
+            </Popup>
+          </>
+        )}
+        {currentUsername ? (
+          <button className="button logout" onClick={handleLogout}>
+            Log out
+          </button>
+        ) : (
+          <div className="buttons">
+            <button className="button login" onClick={() => setShowLogin(true)}>
+              Log in
+            </button>
+            <button
+              className="button register"
+              onClick={() => setShowRegister(true)}
+            >
+              Register
+            </button>
+          </div>
+        )}
+        {showRegister && <Register setShowRegister={setShowRegister} />}
+        {showLogin && (
+          <Login
+            setShowLogin={setShowLogin}
+            setCurrentUsername={setCurrentUsername}
+            myStorage={myStorage}
+          />
+        )}
+      </ReactMapGL>
+    </div>
+  //   <div>
+  //   <CCard>
+  //     <CCardHeader>
+  //       <span><strong>Buat Project</strong></span>
+  //     </CCardHeader>
+  //     <CCardBody>
+  //     <Formik
+  //     initialValues={{ 
+       
+  //       project_start_date:'',
+  //       project_end_date:'',
+  //       latitude:'',
+  //       longtitude:'',
+  //       description:''
+  //     }}
+  //     validate={values => {
+  //       const errors = {};
+  //       if (!values.project_start_date){
+  //        errors.project_start_date = 'Required';
+
+  //       }else if (!values.project_end_date){
+
+  //        errors.project_end_date = 'Required';
+  //       }
+  //       return errors;
+  //     }}
+  //     onSubmit={(values, { setSubmitting }) => {
+  //       setIsloading(true);
+  //       const data = { 
+  //         project_number: tempProjectNumber,
+  //         project_created_date:tempDateCreatedProject,
+  //         project_start_date:values.project_start_date,
+  //         project_end_date:values.project_end_date,
+  //         event_customer:tempEventCustomer,
+  //         event_pic:tempEventPic,
+  //         total_project_cost:tempTotalProjectCost.replace(/[^\w\s]/gi, ''),
+  //         description:values.description,
+  //         latitude:values.latitude,
+  //         longtitude:values.longtitude,
+  //         id_quotation:tempIds.toString(),
+  //         status:"pending",
+  //         quotation_number:tempQuotationNumber.toString()
+
+  //       };
+    
+      
+    
+  //      axios.post('http://localhost:3000/api/projects/create-project',data)
+  //       .then(response => {
+  //         console.log(response);
+  //         Swal.fire({
+  //           title: 'success',
+  //           text: 'Project berhasil dibuat',
+  //           icon: 'success',
+  //           timer:2000,
+  //           showConfirmButton:false,
+  //         }).then(_=>{
+  //           navigator.push('/projects/manage');
+  //         });
+          
+  //       })
+  //       .catch(error => {
+  //           // this.setState({ errorMessage: error.message });
+  //           console.error('There was an error!', error);
+  //           setIsloading(false);
+  //       });
+
+    
+  //     }}
+  //   >
+      
+  //     {({
+  //       values,
+  //       errors,
+  //       touched,
+  //       handleChange,
+  //       handleBlur,
+  //       handleSubmit,
+  //       isSubmitting,
+  //       /* and other goodies */
+  //     })=> (
+  //       <form onSubmit={handleSubmit} autoComplete="off">
+         
+    
+  //          <CFormGroup row className="my-0">
+
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="Project_number">No. Project</CLabel>
+  //                  <CInput  required id="project_number" placeholder="" name="project_number" onChange={handleChange} value={tempProjectNumber} />
+  //                </CFormGroup>
+  //              </CCol>
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="Project_created_date">Tanggal Buat Project</CLabel>
+  //                  <CInput required id="project_created_date" name="project_created_date" placeholder="" type="date" onChange={handleChange}  value={tempDateCreatedProject}/>
+  //                </CFormGroup>
+  //              </CCol>
+
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="project_start_date">Tanggal Mulai Project</CLabel>
+  //                  <CInput required id="project_start_date" name="project_start_date" placeholder="" type="date" onChange={handleChange}  value={values.project_start_date}/>
+  //                </CFormGroup>
+  //              </CCol>
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="project_end_date">Tanggal Akhir Project</CLabel>
+  //                  <CInput required  id="project_end_date" name="project_end_date"  placeholder=""  type="date" onChange={handleChange}  value={values.project_end_date}/>
+  //                </CFormGroup>
+  //              </CCol>
+
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel required htmlFor="event_customer">Customer Event</CLabel>
+  //                  <CInput required readonly id="event_customer" name="event_customer"   placeholder="" onChange={handleChange}   value={tempEventCustomer} />
+  //                </CFormGroup>
+  //              </CCol>
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="event_pic">PIC Event</CLabel>
+  //                  <CInput id="event_pic" name="event_pic" placeholder="" onChange={handleChange}  value={tempEventPic}/>
+  //                </CFormGroup>
+  //              </CCol>
+
+  //              <CCol xs="6">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="description">Deskripsi</CLabel>
+  //                  <CInput id="description" name="description" placeholder="" onChange={handleChange}  value={values.description} />
+  //                </CFormGroup>
+  //              </CCol>
+  //              <CCol xs="6">
+  //                {/* <CFormGroup>
+  //                  <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
+  //                  <CInput id="total_project_cost"  name="total_project_cost" initialValues="0" placeholder="" type="number" onChange={handleChange}  value={tempTotalProjectCost} />
+  //                </CFormGroup> */}
+
+  //                <CFormGroup>
+  //                <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
+  //                 <CInputGroup>
+  //                   <CInputGroupPrepend>
+  //                     <CInputGroupText>IDR</CInputGroupText>
+  //                   </CInputGroupPrepend>
+  //                   <CInput style={{textAlign:'right'}} id="total_project_cost"  name="total_project_cost"  onChange={handleChange}  value={tempTotalProjectCost}/>                  
+  //                 </CInputGroup>
+  //               </CFormGroup>
+  //              </CCol>
+               
+  //              <CCol xs="5">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="latitude">Latitude</CLabel>
+  //                  <CInput id="latitude" name="latitude" placeholder="" onChange={handleChange}  value={values.latitude} />
+  //                </CFormGroup>
+  //              </CCol>
+  //              <CCol xs="5">
+  //                <CFormGroup>
+  //                  <CLabel htmlFor="longtitude">Longitude</CLabel>
+  //                  <CInput id="longtitude" name="longtitude" placeholder="" onChange={handleChange}  value={values.longtitude} />
+  //                </CFormGroup>
+  //              </CCol>
+  //              <CCol xs="2">
+  //                <CFormGroup>
+
+  //                <div   style={{textAlign: 'right',marginTop:'35px',width:'100%'}}>                                     
+  //                <CButton color="primary" onClick={() => setTempMap(!tempMap)} size="sm" block> <i class="fa fa-map-marker" aria-hidden="true"></i></CButton>
+  //                 </div>
+  //                </CFormGroup>
+  //              </CCol>
+              
+  //            </CFormGroup>
+  //            <br/>
+           
+  //            <div  style={{textAlign: 'right',width:'100%'}}>
+  //            <CButton size="sm col-2" onClick={() => setLarge(!large)} color="primary"><span className="mfs-2">Pilih Quotation</span></CButton>
+  //            </div>
+  //             <DataTable      
+  //                columns={columns}        
+  //                data={tempQuotation}                    
+  //             /> 
+  //             <CCardFooter>
+
+  //             <div  style={{textAlign: 'right'}}>
+  //                 <CButton to="/projects/manage" disabled={isLoading}  size="sm col-1" className="btn-secondary btn-brand mr-1 mb-1"><span className="mfs-2">Kembali</span></CButton>
+  //                 <CButton disabled={isLoading} type="submit" size="sm col-1"  className="btn-brand mr-1 mb-1" color='primary'>
+  //                { isLoading? <i class="spinner-border"></i>: <span className="mfs-2">Simpan</span>}
+  //                 </CButton>
+  //                 {}
+               
+  //             </div>
+  //            </CCardFooter>   
+  //       </form>
+  //     )}
+  //   </Formik>
+
+  //         {/* //modal quotation */}
+  //         <CModal 
+  //             show={large} 
+  //             onClose={() => setLarge(!large)}
+  //             size="lg">
+  //             <CModalHeader closeButton>
+  //               <CModalTitle>List Semua Quotation</CModalTitle>
+  //             </CModalHeader>
+  //             <CModalBody>
+  //              <DataTable 
+
+  //                 title="Quotation dengan status  Final"        
+  //                 columns={columns}        
+  //                 data={quotations}       
+  //                 selectableRows  
+  //                 pagination
+  //                 defaultSortFieldId
+  //                 sortable                
+  //                 Clicked
+  //                 onSelectedRowsChange={onCheck}
+  //                 selectableRowsComponentProps={{ inkDisabled: true }}                   
+  //              /> 
+  //             <hr/>
+  //             <div><span>Data quotation terpilih</span></div>
+  //              <DataTable      
+  //                 columns={columns}        
+  //                 data={tempQuotation}                    
+  //              /> 
+  //             </CModalBody>
+  //             <CModalFooter>
+
+  //               {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
+  //               <CButton color="secondary" onClick={() => setLarge(!large)}>Tutup</CButton>
+  //             </CModalFooter>
+  //           </CModal>
+
+  //              {/* //modal amp */}
+  //         <CModal 
+  //             show={tempMap} 
+  //             onClose={() => setLarge(!tempMap)}
+  //             size="lg col-50">
+  //             <CModalHeader closeButton>
+  //               <CModalTitle></CModalTitle>
+  //             </CModalHeader>
+  //             <CModalBody>
+  //             <ReactMapGL
+  //                 {...viewport}
+  //                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+  //                 width="100%"
+  //                 height="100%"
+  //                 mapStyle="mapbox://styles/mapbox/streets-v11"
+  //                  onViewportChange={(viewport) => setViewport(viewport)}
+  //   />
+             
+            
+  //             </CModalBody>
+  //             <CModalFooter>
+
+  //               {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
+  //               <CButton color="secondary" onClick={() => setLarge(!tempMap)}>Tutup</CButton>
+  //             </CModalFooter>
+  //           </CModal>
+  //     </CCardBody>
+  //   </CCard>
  
-// export default App;
+  // </div>
+   
+  )
+}
+
+export default Create;

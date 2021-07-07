@@ -1,21 +1,11 @@
-import React,{ useState,useEffect, useCallback }  from 'react'
+import React,{ useState,useEffect }  from 'react'
 import DataTable from 'react-data-table-component';
-import { Formik } from 'formik';
+import { Formik, useFormik } from 'formik';
 import Swal from 'sweetalert2'
 import axios from 'axios'
 import { useHistory } from "react-router-dom";
-import MapGL, {
-  Marker,  
-  Popup,
-  NavigationControl,
-  FullscreenControl,
-  ScaleControl,
-  GeolocateControl} from 'react-map-gl';
-import ControlPanel from './components/controll-panel';
-import Pin from './components/pin';
-import MAP_STYLE from './components/mapstyle';
-import {fromJS} from 'immutable';
-
+import ReactMapGL from 'react-map-gl';
+import ReactLoading from 'react-loading'
 
 import {
   CButton,
@@ -24,10 +14,26 @@ import {
   CCardFooter,
   CCardHeader,
   CCol,
+  CBadge,
+  CCollapse,
+  CDropdownItem,
+  CDropdownMenu,
+  CDropdownToggle,
+  CFade,
+  CForm,
   CFormGroup,
+  CFormText,
+  CValidFeedback,
+  CInvalidFeedback,
+  CTextarea,
   CInput,
+  CInputFile,
+  CInputCheckbox,
+  CInputRadio,
   CInputGroup,
+  CInputGroupAppend,
   CInputGroupPrepend,
+  CDropdown,
   CInputGroupText,
   CModal,
   CModalBody,
@@ -35,33 +41,23 @@ import {
   CModalHeader,
   CModalTitle,
   CLabel,
+  CSelect,
+  CRow,
+  CSwitch,
+  CDataTable,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
 
 
-const geolocateStyle = {
-  top: 0,
-  left: 0,
-  padding: '10px'
-};
-
-const fullscreenControlStyle = {
-  top: 36,
-  left: 0,
-  padding: '10px'
-};
-
-const navStyle = {
-  top: 72,
-  left: 0,
-  padding: '10px'
-};
-
-const scaleControlStyle = {
-  bottom: 36,
-  left: 0,
-  padding: '10px'
-};
-
+const getBadge = status => {
+  switch (status) {
+    case 'Active': return 'success'
+    case 'Inactive': return 'secondary'
+    case 'Pending': return 'warning'
+    case 'Banned': return 'danger'
+    default: return 'primary'
+  }
+}
 
 
 const columns = [  
@@ -76,80 +72,11 @@ const columns = [  
 //                { name: 'Total Biaya',    selector: 'grand_total',    sortable: true,    right: true,  },
 ];
 
-const customStyles = {
-  rows: {
-    style: {
-     
-      width:'1000px',
-      border:'10px',
-     // override the row height
-    }
-  },
-  headCells: {
-    style: {
-      paddingLeft: '8px', // override the cell padding for head cells
-      paddingRight: '8px',
-    },
-  },
-  cells: {
-    style: {
-      paddingLeft: '8px', // override the cell padding for data cells
-      paddingRight: '8px',
-    },
-  },
-};
-
 var  quotations=[];
 var selected_quotation=[];
 
 
-const TOKEN = 'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'; // Set your mapbox token here
-
-const defaultMapStyle = fromJS(MAP_STYLE);
-const defaultLayers = defaultMapStyle.get('layers');
-
-const categories = ['labels', 'roads', 'buildings', 'parks', 'water', 'background'];
-
-// Layer id patterns by category
-const layerSelector = {
-  background: /background/,
-  water: /water/,
-  parks: /park/,
-  buildings: /building/,
-  roads: /bridge|road|tunnel/,
-  labels: /label|place|poi/
-};
-
-// Layer color class by type
-const colorClass = {
-  line: 'line-color',
-  fill: 'fill-color',
-  background: 'background-color',
-  symbol: 'text-color'
-};
-
-
-function getMapStyle({visibility, color}) {
-  const layers = defaultLayers
-    .filter(layer => {
-      const id = layer.get('id');
-      return categories.every(name => visibility[name] || !layerSelector[name].test(id));
-    })
-    .map(layer => {
-      const id = layer.get('id');
-      const type = layer.get('type');
-      const category = categories.find(name => layerSelector[name].test(id));
-      if (category && colorClass[type]) {
-        return layer.setIn(['paint', colorClass[type]], color[category]);
-      }
-      return layer;
-    });
-
-  return defaultMapStyle.set('layers', layers);
-}
-
 function Create(){
-
   //varoable state
   const [collapsed, setCollapsed] = React.useState(true)
   const [showElements, setShowElements] = React.useState(true)
@@ -165,67 +92,17 @@ function Create(){
   const [tempQuotationNumber, setTempQuotationNumber] = useState([]);
   const [isLoading, setIsloading] = useState(false);
   const [tempDateCreatedProject,setTempDateCreatedPeoject]=useState();
-  const [tempLatitude,setTempLatitude]=useState();
-  const [tempLongtitude,setTempLongtitude]=useState();
-
- 
 
 
-  //varible map react gl
-  const [viewport, setViewport] = useState({
-    longitude: 107.6684889,
-    latitude: -6.9504246,
-    zoom: 13.5,
-    bearing: 0,
-    pitch: 0
-  });
-  const [marker, setMarker] = useState({
-    longitude: 107.6684889,
-    latitude: -6.9504246
-  });
-  
-  const [events, logEvents] = useState({});
 
-
-  const onMarkerDragStart = useCallback(event => {
-    logEvents(_events => ({..._events, onDragStart: event.lngLat}));
-  }, []);
-
-  const onMarkerDrag = useCallback(event => {
-    logEvents(_events => ({..._events, onDrag: event.lngLat}));
-  }, []);
-
-  const onMarkerDragEnd = useCallback(event => {
-    logEvents(_events => ({..._events, onDragEnd: event.lngLat}));
-    console.log('long :',event.lngLat[0])
-    setTempLatitude(event.lngLat[1]);
-    setTempLongtitude(event.lngLat[0]);
-
-    setMarker({
-      longitude: event.lngLat[0],
-      latitude: event.lngLat[1]
-    });
-  }, []);
-
-  //map style
-  const [visibility, setVisibility] = useState({
-    water: true,
-    parks: true,
-    buildings: true,
-    roads: true,
-    labels: true,
-    background: true
-  });
-
-  const [color, setColor] = useState({
-    water: '#DBE2E6',
-    parks: '#E6EAE9',
-    buildings: '#c0c0c8',
-    roads: '#ffffff',
-    labels: '#78888a',
-    background: '#EBF0F0'
-  });
-
+  //mapbox
+  const[viewport, setViewport] = useState({
+    width: "100",
+    height: "400",
+    latitude: 38.963745,
+    longitude: 35.243322,
+    zoom: 5
+});
 
 
   //variable push page
@@ -240,9 +117,6 @@ function Create(){
 
   useEffect(() => {
     setIsloading(false);
-
-    // var data="-101.84452, 39.71375";
-    // console.log('data parsing :',data.split(",")[0])
 
     //project create date
     let newDate = new Date()
@@ -306,9 +180,6 @@ function Create(){
   
   };
 
-const SIZE = 100;
-const UNIT = "px";
-
   return (
     <div>
     <CCard>
@@ -338,7 +209,6 @@ const UNIT = "px";
       }}
       onSubmit={(values, { setSubmitting }) => {
         setIsloading(true);
-        console.log('marker drag end',onMarkerDragEnd);
         const data = { 
           project_number: tempProjectNumber,
           project_created_date:tempDateCreatedProject,
@@ -348,8 +218,8 @@ const UNIT = "px";
           event_pic:tempEventPic,
           total_project_cost:tempTotalProjectCost.replace(/[^\w\s]/gi, ''),
           description:values.description,
-          latitude:tempLatitude,
-          longtitude:tempLongtitude,
+          latitude:values.latitude,
+          longtitude:values.longtitude,
           id_quotation:tempIds.toString(),
           status:"pending",
           quotation_number:tempQuotationNumber.toString()
@@ -380,7 +250,8 @@ const UNIT = "px";
 
     
       }}
-    >     
+    >
+      
       {({
         values,
         errors,
@@ -393,7 +264,7 @@ const UNIT = "px";
       })=> (
         <form onSubmit={handleSubmit} autoComplete="off">
          
-   
+    
            <CFormGroup row className="my-0">
 
                <CCol xs="6">
@@ -442,6 +313,10 @@ const UNIT = "px";
                  </CFormGroup>
                </CCol>
                <CCol xs="6">
+                 {/* <CFormGroup>
+                   <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
+                   <CInput id="total_project_cost"  name="total_project_cost" initialValues="0" placeholder="" type="number" onChange={handleChange}  value={tempTotalProjectCost} />
+                 </CFormGroup> */}
 
                  <CFormGroup>
                  <CLabel htmlFor="total_project_cost">Total Biaya Project</CLabel>
@@ -457,13 +332,13 @@ const UNIT = "px";
                <CCol xs="5">
                  <CFormGroup>
                    <CLabel htmlFor="latitude">Latitude</CLabel>
-                   <CInput id="latitude" name="latitude" placeholder=""  value={tempLatitude} />
+                   <CInput id="latitude" name="latitude" placeholder="" onChange={handleChange}  value={values.latitude} />
                  </CFormGroup>
                </CCol>
                <CCol xs="5">
                  <CFormGroup>
                    <CLabel htmlFor="longtitude">Longitude</CLabel>
-                   <CInput id="longtitude" name="longtitude" placeholder="" onChange={handleChange}  value={tempLongtitude} />
+                   <CInput id="longtitude" name="longtitude" placeholder="" onChange={handleChange}  value={values.longtitude} />
                  </CFormGroup>
                </CCol>
                <CCol xs="2">
@@ -510,18 +385,15 @@ const UNIT = "px";
               </CModalHeader>
               <CModalBody>
                <DataTable 
+
                   title="Quotation dengan status  Final"        
                   columns={columns}        
                   data={quotations}       
                   selectableRows  
                   pagination
-                  customStyles={customStyles}               
-                  paginationDefaultPage
-                  paginationPerPage={5}                
                   defaultSortFieldId
                   sortable                
                   Clicked
-                  style                
                   onSelectedRowsChange={onCheck}
                   selectableRowsComponentProps={{ inkDisabled: true }}                   
                /> 
@@ -548,35 +420,17 @@ const UNIT = "px";
                 <CModalTitle></CModalTitle>
               </CModalHeader>
               <CModalBody>
-
-              <MapGL {...viewport} 
-                width="53vw" height="50vh"            
-                onViewportChange={setViewport}
-                mapStyle={MAP_STYLE}
-                mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
-               >
-                <Marker
-                  longitude={marker.longitude}
-                  latitude={marker.latitude}
-                  style={{transform: `translate(${SIZE/2 + UNIT}, ${SIZE/2 + UNIT}` }}
-                  offsetTop={-20}
-                  offsetLeft={-10}
-                  draggable
-                  // onDragStart={onMarkerDragStart}
-                  // onDrag={onMarkerDrag}
-                  onDragEnd={onMarkerDragEnd}
-                >
-                  <Pin size={20} />
-                </Marker>
-
-                <GeolocateControl style={geolocateStyle} />
-                <FullscreenControl style={fullscreenControlStyle} />
-                <NavigationControl style={navStyle} />
-                <ScaleControl style={scaleControlStyle} />
-              </MapGL>
-               <ControlPanel events={events} />
-                         
-            </CModalBody>
+              <ReactMapGL
+                  {...viewport}
+                  mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+                  width="100%"
+                  height="100%"
+                  mapStyle="mapbox://styles/mapbox/streets-v11"
+                   onViewportChange={(viewport) => setViewport(viewport)}
+    />
+             
+            
+              </CModalBody>
               <CModalFooter>
 
                 {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
@@ -591,8 +445,4 @@ const UNIT = "px";
   )
 }
 
-
-
- export default Create;
-
-
+export default Create;
