@@ -71,7 +71,10 @@ const geolocateStyle = {
 
 
 
-export const Projects=(props)=>{
+export function Projects(props){
+
+
+
     const [tempProjectNumber, setTempProjectNumber] = useState(''); 
     const [tempProjectCreatedDate, setTempProjectCreatedDate] = useState('');
     const [tempProjectStartedDate, setTempProjectStartDate] = useState('');
@@ -128,7 +131,7 @@ export const Projects=(props)=>{
 
   const onMarkerDragEnd = useCallback(event => {
     logEvents(_events => ({..._events, onDragEnd: event.lngLat}));
-    console.log('long :',event.lngLat[0])
+    
     setTempLatitude(event.lngLat[1]);
     setTempLongtitude(event.lngLat[0]);
 
@@ -156,11 +159,10 @@ export const Projects=(props)=>{
 
 
     useEffect(()=>{
-       let idd=props.match.params.id;   
-       console.log('id',idd)
-        // get detail project
-        console.log("tes");
-        axios.get('http://localhost:3000/api/projects/detail-project/27')
+
+       let id=props.id;
+     
+        axios.get('http://localhost:3000/api/projects/detail-project/'+id)
         .then((response)=>{
             setTempProjectNumber(response.data.data.project_number)
              //projecct create data
@@ -210,7 +212,7 @@ export const Projects=(props)=>{
             //setTempIsLoadingMembers(false);
         })
     
-    })
+    },[])
 
     const SIZE = 100;
 const UNIT = "px";

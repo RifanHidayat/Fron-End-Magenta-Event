@@ -227,27 +227,7 @@ function Approval(props){
   return (
       
     <div>
-    {/* //menu */}
-        <div class="pills-regular">
-            <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
-
-                <li class="nav-item" id="members">
-                    <button class="nav-link" onClick={()=>membersPage()}  > Anggota</button>
-                 </li>&ensp;
-
-                <li class="nav-item" id="budgets" to="/projects/manage">
-                    <button class="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
-                 </li>&ensp;
-
-                 <li class="nav-item" id="tasks">
-                     <button class="nav-link" onClick={()=>tasksPage()} > Tugas</button>
-                </li>&ensp;
-
-                <li class="nav-item" id="approval" >
-                        <button class="nav-link active" onClick={()=>approvalPage()}  > Persetujuan</button>
-                 </li>&ensp;
-            </ul>
-        </div>
+  
 
         {/* data project */}
         <CCard>
@@ -354,6 +334,28 @@ function Approval(props){
 
              
         </CCard>
+
+          {/* //menu */}
+          <div class="pills-regular">
+            <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+
+                <li class="nav-item" id="members">
+                    <button class="nav-link" onClick={()=>membersPage()}  > Anggota</button>
+                 </li>&ensp;
+
+                <li class="nav-item" id="budgets" to="/projects/manage">
+                    <button class="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
+                 </li>&ensp;
+
+                 <li class="nav-item" id="tasks">
+                     <button class="nav-link" onClick={()=>tasksPage()} > Tugas</button>
+                </li>&ensp;
+
+                <li class="nav-item" id="approval" >
+                        <button class="nav-link active" onClick={()=>approvalPage()}  > Persetujuan</button>
+                 </li>&ensp;
+            </ul>
+        </div>
 
         {/* Members */}
         <CCard>

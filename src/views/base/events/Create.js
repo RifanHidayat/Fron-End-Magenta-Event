@@ -6,7 +6,6 @@ import axios from 'axios'
 import { useHistory } from "react-router-dom";
 import MapGL, {
   Marker,  
-  Popup,
   NavigationControl,
   FullscreenControl,
   ScaleControl,
@@ -15,7 +14,7 @@ import ControlPanel from './components/controll-panel';
 import Pin from './components/pin';
 import MAP_STYLE from './components/mapstyle';
 import {fromJS} from 'immutable';
-import { render } from "react-dom";
+
 import Geocoder from "react-map-gl-geocoder";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";

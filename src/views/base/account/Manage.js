@@ -8,15 +8,12 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CBadge,
+
 } from '@coreui/react'
 
 
 
-var dateFormat = require("dateformat");
 
-
-var projects=[];
 
 const columns = [  
               {name: 'Nama Akun',sortable: true,    
@@ -91,7 +88,7 @@ const columns = [  
     }
 
 function Manage(){
-    const [tempProjects, setTempProjects] = useState([]);   
+     
     const [accounts,setAccounts]=useState([]); 
   useEffect(() => {
     fetch('http://localhost:3000/api/accounts')
@@ -102,7 +99,7 @@ function Manage(){
       console.log('data',json['data']);
       console.log(accounts)      
     });
-  }, []);
+  },[]);
 
 
 
@@ -133,10 +130,7 @@ function Manage(){
       data={accounts}        
       pagination  
       defaultSortFieldId
-      sortable  
-      pagination
-      defaultSortFieldId
-      sortable                      
+      sortable                   
       />    
       </CCardBody>
     </CCard>

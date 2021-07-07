@@ -150,61 +150,18 @@ function Budgets(props){
 
   
     useEffect(()=>{
-        let id=props.match.params.id;
-        console.log(id);
-
-        //get detail project
-        axios.get('http://localhost:3000/api/projects/detail-project/'+id)
-        .then((response)=>{
-            setTempProjectNumber(response.data.data.project_number)
-             //projecct create data
-            let project_created_date = new Date(response.data.data.project_created_date)
-            let date_crated = project_created_date.getDate();
-            let month_created = project_created_date.getMonth() + 1;
-            let year_created = project_created_date.getFullYear();
-            setTempProjectCreatedDate(year_created+'-'+'00'.substr( String(month_created).length ) + month_created+'-'+'00'.substr( String(date_crated).length ) + date_crated);
-
-            //project start date
-            let project_start_date = new Date(response.data.data.project_start_date)
-            let date_start = project_start_date.getDate();
-            let month_start = project_start_date.getMonth() + 1;
-            let year_start = project_start_date.getFullYear();
-            setTempProjectStartDate(year_start+'-'+'00'.substr( String(month_start).length ) + month_start+'-'+'00'.substr( String(date_start).length ) + date_start);
-            // console.log('tanggal mulai',tempProjectStartDate)
-            
-            //project end date
-            let project_end_date = new Date(response.data.data.project_end_date)
-            let date_end = project_end_date.getDate();
-            let month_end = project_end_date.getMonth() + 1;
-            let year_end = project_end_date.getFullYear();
-            setTempProjectEndDate(year_end+'-'+'00'.substr( String(month_end).length ) + month_end+'-'+'00'.substr( String(date_end).length ) + date_end);
-
-            setTempEventCustomer(response.data.data.event_customer)
-            setTempEventPic(response.data.data.event_pic);
-            setTempDescription(response.data.data.description);
-            setTempLatitude(response.data.data.latitude);
-            setTempLongtitude(response.data.data.longtitude);
-            setTempTotalProjectCos(response.data.data.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
-
-            setTempMembers([...response.data.data.members])
-            setTempIsLoadingMembers(false);
-    
-        })
-        .catch((error)=>{
-            setTempIsLoadingMembers(false);
-    
-        })
+   
 
         //get members
-        axios.get("http://hrd.magentamediatama.net/api/employees").then((response)=>{
-          members=response.data.data;
-          setTempIloadingAddMembers(false);
-          console.log(members);
-        })
-        .then((error)=>{
-          setTempIloadingAddMembers(false);
-         // console.log(error.
-        })    
+        // axios.get("http://hrd.magentamediatama.net/api/employees").then((response)=>{
+        //   members=response.data.data;
+        //   setTempIloadingAddMembers(false);
+        //   console.log(members);
+        // })
+        // .then((error)=>{
+        //   setTempIloadingAddMembers(false);
+        //  // console.log(error.
+        // })    
     },[])
 
      //mapbox
@@ -225,11 +182,11 @@ function Budgets(props){
   };
 
   
- 
+
   return (
       
     <div>
-         <Projects></Projects>
+           <Projects id={props.match.params.id} ></Projects>
     {/* //menu */}
         <div class="pills-regular">
             <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">

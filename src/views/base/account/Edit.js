@@ -50,12 +50,12 @@ function Edit(props){
       setTempBankAccountBalance(response.data.data.account_balance)
       setTempSelected(response.data.data.type)
       //eo =1.metaprint=2,all =3
-     if (response.data.data.type=='eo'){
+     if (response.data.data.type==='eo'){
          setTempIndexSelected(0)
-     }else if(response.data.data.type=='metaprint'){
+     }else if(response.data.data.type==='metaprint'){
          setTempIndexSelected(1)
 
-     }else if (response.data.data.type=='all'){
+     }else if (response.data.data.type==='all'){
          setTempIndexSelected(2)
      }
 
@@ -69,9 +69,6 @@ function Edit(props){
       setMainloading(false)
 
     })
-  
-    
-
   }, []);
 
 
@@ -92,7 +89,7 @@ function Edit(props){
   ]  
   return (
     <div>
-    {mainLoading==false?<CCard>
+    {mainLoading===false?<CCard>
       <CCardHeader>
         <span><strong>Buat Akun</strong></span>
       </CCardHeader>

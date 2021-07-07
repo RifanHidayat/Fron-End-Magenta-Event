@@ -1,6 +1,5 @@
 import React,{ useState,useEffect }  from 'react'
 import axios from 'axios'
-import ReactMapGL from 'react-map-gl';
 import DataTable from 'react-data-table-component'
 import './css/style.css'
 import { useHistory } from "react-router-dom";
@@ -16,19 +15,13 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CLabel,
-  CInput,
   CCol,CButton,
   CModal,
   CModalBody,
   CModalFooter,
   CModalTitle,
   CModalHeader,
-  CFormGroup,
-  CCardFooter,
-  CInputGroup,
-  CInputGroupPrepend,
-  CInputGroupText,
+
 
 } from '@coreui/react'
 
@@ -160,44 +153,37 @@ function Members(props){
       navigator.push('/mapping/approval/'+id);
     }
       
+    // var table = $('#use-datatable').DataTable();
+ 
+    // $('#use-datatable tbody').on( 'click', 'tr', function () {
+    //     //console.log( table.row( this ).data() );
+    //     console.log("tes")
 
+    // } );
+    // } );
     const saveMembers=(data)=>{
-     var d=$('.use-datatable').data();
-     // console.log(checkbox1)
-    // console.log()
-                setDatatable({
-            columns: [
-              {
-                label: 'Nama',
-                field: 'first_name',
-                width: 150,
-                attributes: {
-                  'aria-controls': 'DataTable',
-                  'aria-label': 'Name',
-                },
-              },
-              {
-                label: 'Id Pegawai',
-                field: 'employee_id',
-                width: 270,
-              },
-              {
-                label: 'KTP',
-                field: 'identity_number',
-                width: 200,
-              },
-              {
-                label: 'Uang Harian',
-                field: 'daily_money_regular',
-                sort: 'asc',
-                right:true,
-                width: 100,
-              },
-             
-            ],
-            rows:JSON.stringify(employess)
-          })
-   
+     // var data=[];
+     var m=[];
+      $('#use-datatable tbody tr').each(function() {
+        var employee_id = $(this).find('td:nth-child(1)').text().toString().trim();
+        var name = $(this).find('td:nth-child(2)').text().toString().trim();
+        var idendity_number = $(this).find('td:nth-child(3)').text().toString().trim();
+        var daily_money_regular = $(this).find('td:nth-child(4) input').val().toString().trim();
+        var status = $(this).find('td:nth-child(5) select').val().toString().trim();
+        var data={employee_id:employee_id,name:name,idendity_number:idendity_number,daily_money_regular:parseInt(daily_money_regular),status:status}
+        m.push(data);
+        //console.log(status)
+
+        // console.log('quantity ',employee_id);
+        
+        
+      });
+      console.log(m)
+
+
+  
+     
+  
     }
 
 
@@ -236,11 +222,36 @@ const onSelected = (state) => {
 
 // selection table
   const onCheck = (state) => {
-  //console.log(state.selectedRows);
   setTempSelectedMembers([...state.selectedRows]);
-  //console.log(state.selectedR)
 
- // console.log('data',tempSelectedMembers)
+    var row='';
+  if (state.selectedRows.length===0){
+
+  } else{
+    for(var i=0;i<state.selectedRows.length;i++){
+      row +=`<tr>
+              <td>${state.selectedRows[i].employee_id}</td>
+              <td>${state.selectedRows[i].first_name}</td>
+               <td>${state.selectedRows[i].identity_number}</td>
+               <td> 
+                  <input style={{textAlign:'right'}}  type="text" value='${state.selectedRows[i].daily_money_regular}'>
+               </td>
+                <td>
+                  <select name="cars" id="cars">
+                  <option value="members">Anggota</option>
+                  <option value="pic">PIC</option>
+                </select> 
+                 </td>
+               </tr>
+      `
+    }
+    $("#data-members").html(row);
+
+    }
+    console.log("\n")
+  //} 
+
+
     
   };
 
@@ -328,7 +339,7 @@ const onSelected = (state) => {
   return (
       
     <div>
-    <Projects></Projects>
+    <Projects id={props.match.params.id} ></Projects>
     {/* //menu */}
         <div class="pills-regular">
             <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
@@ -411,10 +422,10 @@ const onSelected = (state) => {
                   paginationPerPage={5}                
                   defaultSortFieldId                
                   sortable                
-                  Clicked
+               
                   style                
                   onSelectedRowsChange={onCheck}
-                  selectableRowsComponentProps={{ inkDisabled: true }}                   
+                           
                /> 
 {/*               
               <MDBDataTableV5
@@ -456,19 +467,47 @@ const onSelected = (state) => {
                     </div>
 
                 :
-                 <DataTable
-                className="use-datatable"      
-                columns={columns_selected_members}        
-                data={tempSelectedMembers} 
-                highlightOnHover
-                pagination
-                paginationServer
+                //  <DataTable
+                // className="use-datatable"      
+                // columns={columns_selected_members}        
+                // data={tempSelectedMembers} 
+                // highlightOnHover
+                // pagination
+                // paginationServer
                            
-                paginationComponentOptions={{
-                  noRowsPerPage: true
-                }}
+                // paginationComponentOptions={{
+                //   noRowsPerPage: true
+                // }}
+
+                <table tyle={{width:'100%'}} class="table table-striped"  id="use-datatable">
+                  <thead s>
+                    <tr>
+                    <th>
+                        Id Pegawai
+                      </th>
+                      <th>
+                        Nama
+                      </th>
+                      <th>
+                        KTP
+                      </th>
+                      <th>
+                        Uang Harian
+                      </th>
+                      <th>
+                        Status
+                      </th>
+                      
+                    </tr>
+                  </thead>
+                  <tbody id="data-members">
+
+                
+                  </tbody>
+
+                </table>
                                 
-             /> 
+             
         
                 }
               </CModalBody>
@@ -478,8 +517,7 @@ const onSelected = (state) => {
                 {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
                 <div  style={{textAlign: 'right'}}>
                     <CButton onClick={()=>saveMembers()} size="sm"   className="btn-brand mr-1 mb-1" color='primary'>
-                    { tempIsloadingMembers? <i class="spinner-border"></i>: 
-                    <span><i class="fa fa-save"/> Simpan</span>}
+                    <span><i class="fa fa-save"/> Simpan</span>
                       </CButton> 
               </div>
 
