@@ -7,46 +7,16 @@ import {
   CButton,
   CCard,
   CCardBody,
-  CCardFooter,
   CCardHeader,
-  CCol,
   CBadge,
-  CCollapse,
-  CDropdownItem,
-  CDropdownMenu,
-  CDropdownToggle,
-  CFade,
-  CForm,
-  CFormGroup,
-  CFormText,
-  CValidFeedback,
-  CInvalidFeedback,
-  CTextarea,
-  CInput,
-  CInputFile,
-  CInputCheckbox,
-  CInputRadio,
-  CInputGroup,
-  CInputGroupAppend,
-  CInputGroupPrepend,
-  CDropdown,
-  CInputGroupText,
-  CModal,
-  CModalBody,
-  CModalFooter,
-  CModalHeader,
-  CModalTitle,
-  CLabel,
-  CSelect,
-  CRow,
-  CSwitch,
-  CDataTable,
+  CTooltip,
+
 } from '@coreui/react'
 
 
 const getBadge = status => {
   switch (status) {
-    case 'closed': return 'success'
+    case 'approved': return 'success'
     case 'pending': return 'warning'
     case 'rejected': return 'danger'
 
@@ -55,50 +25,83 @@ const getBadge = status => {
 var  projects=[];
 var dateFormat = require("dateformat");
 const columns = [  
-              {name: 'No. Project',sortable: true,    
-              cell: row => <div style={{width:'100%'}}  
-              data-tag="allowRowEvents"><div >
+              {
+                name: 'No. Project',
+                sortable: true,    
+                cell: row => <div style={{width:'100%'}}  data-tag="allowRowEvents"><div >
                 {row.project_number}</div></div>,  }, 
 
-              {name: 'No. Quotation',sortable: true,    
-              cell: row => <div data-tag="allowRowEvents">
-                <div >{row.quotation_number}</div></div>,  },          
+              {
+                name: 'No. Quotation',
+                sortable: true,    
+                cell: row => <div data-tag="allowRowEvents">
+                <div >{row.quotation_number}</div></div>, 
+               },          
 
-              {name: 'Customer',sortable: true,   
+              {
+                name: 'Customer',sortable: true,   
                cell: row => <div data-tag="allowRowEvents">
-                <div >{row.event_customer}</div></div>,  },
+              <div >{row.event_customer}</div></div>, 
+               },
             
-              {name: 'PIC ',sortable: true,    
-              cell: row => <div data-tag="allowRowEvents">
-                <div >{row.event_pic}</div></div>,  }, 
+              {
+                name: 'PIC ',
+                sortable: true,    
+                cell: row => <div data-tag="allowRowEvents">
+                <div >{row.event_pic}</div></div>, 
+                 }, 
 
-              {name: 'Tanggal',sortable: true,    
-              cell: row => <div style={{width:'150%'}}  
-              data-tag="allowRowEvents"><div >
+              {
+                name: 'Tanggal',
+                sortable: true,    
+                cell: row => <div style={{width:'150%'}}  
+                data-tag="allowRowEvents"><div >
                   tanggal Mulai: {dateFormat(row.project_start_date, "dd/mm/yyyy")} <br/>
                   tanggal Akhir: {dateFormat(row.project_end_date, "dd/mm/yyyy")}<br/>
                   </div></div>, },
 
-              {name: 'Total Biaya',sortable: true,right: true,    
-              cell: row => <div data-tag="allowRowEvents">
+              {
+                name: 'Total Biaya',
+                sortable: true,right: true,    
+                cell: row => <div data-tag="allowRowEvents">
                 <div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
               }</div>
-              </div>, }, 
+              </div>,
+               }, 
                   
-               { name: 'Status',  sortable: true, 
+               { 
+                name: 'Status',  sortable: true, 
                 cell:row=><div><div></div>
-                <CBadge style={{width:'100%',height:'20px' }} color={getBadge(row.status)}>
+                <CBadge style={{width:'100%' }} color={getBadge(row.status)}>
                 <span style={{color:'white',alignContent:'center'}}>  {row.status}</span>
                 </CBadge>
-                </div> },
+                </div>
+                 },
 
-              {name: 'Aksi',sortable: true,   
+              {
+                name: 'Aksi',
+                sortable: true,   
                cell: row => <div data-tag="allowRowEvents"><div >
-               <CButton color="secondary"  size="sm" to= {`/projects/edit/${row.id}`}>
-                 {<i class="fa fa-edit"></i>}</CButton>
-                &ensp;<CButton color="secondary"  
-                size="sm"  onClick={()=>deleteProject(row.id)}>{<i class="fa fa-trash"></i>}</CButton>              
-                </div></div>,  },
+                {row.status==="pending"?
+                <CTooltip content="Edit Project"placement="top"><CButton color="secondary"  size="sm" to= {`/projects/edit/${row.id}`}>
+                {<i class="fa fa-edit"></i>}</CButton>
+                </CTooltip>
+                :<span></span>
+                
+              }
+                
+               &ensp;
+                {row.status==="pending"?
+                <CTooltip content="Delete Project"placement="top">
+                <CButton color="secondary"  
+                size="sm"  onClick={()=>deleteProject(row.id)}>{<i class="fa fa-trash"></i>}</CButton>    
+                </CTooltip> 
+                :<span></span>
+                
+                }         
+                </div></div>,
+                
+                },
             ];
 
 
@@ -204,15 +207,10 @@ function Manage(){
       <DataTable       
       columns={columns}        
       data={projects}       
- 
       pagination  
       defaultSortFieldId
-      sortable  
-      pagination
-      defaultSortFieldId
-      sortable       
-                     
- />    
+      sortable                   
+  />    
       </CCardBody>
     </CCard>
   </div>

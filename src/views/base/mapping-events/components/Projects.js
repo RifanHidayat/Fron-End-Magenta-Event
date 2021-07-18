@@ -13,7 +13,6 @@ import {
   CButton,
   CCard,
   CCardBody,
-  CCardFooter,
   CCardHeader,
   CCol,
   CFormGroup,
@@ -66,15 +65,7 @@ const geolocateStyle = {
   };
   
 
-
-
-
-
-
 export function Projects(props){
-
-
-
     const [tempProjectNumber, setTempProjectNumber] = useState(''); 
     const [tempProjectCreatedDate, setTempProjectCreatedDate] = useState('');
     const [tempProjectStartedDate, setTempProjectStartDate] = useState('');
@@ -86,6 +77,7 @@ export function Projects(props){
     const [tempLatitude, setTempLatitude] = useState('');
     const [tempLongtitude, setTempLongtitude] = useState('');
     const [tempMap, setTempMap] = useState(false)
+    const [tempStatus,setTempStatus]=useState();
 
     const mapRef = useRef();
     const handleViewportChange = useCallback(
@@ -98,7 +90,7 @@ export function Projects(props){
    const handleGeocoderViewportChange = useCallback(
     (newViewport) => {
       const geocoderDefaultOverrides = { transitionDuration: 1000 };
-      console.log(newViewport.latitude)
+     
       setMarker({
         latitude:newViewport.latitude,
         longitude:newViewport.longitude
@@ -178,7 +170,7 @@ export function Projects(props){
             let month_start = project_start_date.getMonth() + 1;
             let year_start = project_start_date.getFullYear();
             setTempProjectStartDate(year_start+'-'+'00'.substr( String(month_start).length ) + month_start+'-'+'00'.substr( String(date_start).length ) + date_start);
-            // console.log('tanggal mulai',tempProjectStartDate)
+           
             
             //project end date
             let project_end_date = new Date(response.data.data.project_end_date)
@@ -203,7 +195,8 @@ export function Projects(props){
             setTempLatitude(response.data.data.latitude);
             setTempLongtitude(response.data.data.longtitude);
             setTempTotalProjectCos(response.data.data.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
-
+            setTempStatus(response.data.data.status)
+         
             //setTempMembers([...response.data.data.members])
             //setTempIsLoadingMembers(false);
     
@@ -228,6 +221,12 @@ const UNIT = "px";
             <CCardBody>
             
             <CFormGroup row className="my-0">
+            <CCol xs="12" >
+                 <CFormGroup hidden>
+                   <CLabel htmlFor="Project_number">Status</CLabel>
+                   <CInput readOnly  required id="status" placeholder="" name="status"  value={tempStatus} />
+                 </CFormGroup>
+               </CCol>
                <CCol xs="6">
                  <CFormGroup>
                    <CLabel htmlFor="Project_number">No. Project</CLabel>

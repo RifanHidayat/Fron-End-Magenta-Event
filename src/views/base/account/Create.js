@@ -4,6 +4,8 @@ import Swal from 'sweetalert2'
 import axios from 'axios'
 import { useHistory } from "react-router-dom";
 import Select from 'react-select';
+import $ from 'jquery'
+
 
 import {
   CButton,
@@ -28,14 +30,36 @@ function Add(){
   const [tempSelected,setTempSelected]=useState('eo');
   const [tempIsloading,setTempIsloading]=useState(false);
 
+   //masking 
+   $(document).on('input', '#bank_account_balance', function(e) {
+    e.preventDefault();
+    var objek=$('#bank_account_balance').val();
+    var separator = ".";
+    var a = objek;
+    var b = a.replace(/[^\d]/g,"")
+    var c = "";
+    var panjang = b.length; 
+    var j = 0; 
+    for (var i = panjang; i > 0; i--) {
+      j = j + 1;
+      if (((j % 3) == 1) && (j != 1)) {
+        c = b.substr(i-1,1) + separator + c;
+      } else {
+        c = b.substr(i-1,1) + c;
+      }
+    }
+    $('#bank_account_balance').val(c)
+   });
+
 
   //variable push page
-  const navigator = useHistory();
-
- 
+  const navigator = useHistory(); 
   const onSelected = (selectedOptions) => {
     setTempSelected(selectedOptions['value'])
   }
+
+
+
 
   const options = [
     { value: 'eo', label: 'Event Organizer' },
@@ -64,17 +88,13 @@ function Add(){
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        setTempIsloading(true);
-     
-
-       
+        setTempIsloading(true);     
         const data = { 
             bank_account_name:values.bank_account_name,
             bank_account_number:values.bank_account_number,
             //bank_account_owner:values.bank_account_owner,
-            bank_account_balance:values.bank_account_balance,
-            type:tempSelected
-      
+            bank_account_balance:values.bank_account_balance.replace(/[^\w\s]/gi, ''),
+            type:tempSelected   
         };
     
         
@@ -129,8 +149,8 @@ function Add(){
                  </CCol>  
                  <CCol xs="6">
                     <CFormGroup>
-                        <CLabel htmlFor="bank_account_balance">Saldo bank</CLabel>
-                        <CInput required  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />
+                        <CLabel htmlFor="bank_account_balance">Saldo Awal</CLabel>
+                        <CInput required  oninput="convertToRupiah(this);"  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />
                     </CFormGroup>
                  </CCol>  
 

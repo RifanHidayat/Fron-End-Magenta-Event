@@ -1,12 +1,18 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-
+import {GoProject} from 'react-icons/go'
+import {RiDashboardFill} from 'react-icons/ri'
+import {ImUserTie} from 'react-icons/im'
+import {GrMoney} from 'react-icons/gr'
+import account from './icons/account.svg'
+let circleClasses = "inline-block p-7 rounded-full w-20 mx-auto";
+let iconStyles = { color: "white", fontSize: "1.5em",marginRight:'20px',right:'15px' };
 const _nav =  [
   {
     _tag: 'CSidebarNavItem',
     name: 'Dashboard',
     to: '/dashboard',
-    icon: <CIcon name="cil-speedometer" customClasses="c-sidebar-nav-icon"/>,
+    icon: <RiDashboardFill style={iconStyles} />
     // badge: {
     //   color: 'info',
     //   text: 'NEW',
@@ -15,9 +21,9 @@ const _nav =  [
 
   {
     _tag: 'CSidebarNavDropdown',
-    name: 'Projects',
+    name: '  Projects',
     route: '/base',
-    icon: 'cil-puzzle',
+    icon: <GoProject style={iconStyles}/> ,
     _children: [
       {
         _tag: 'CSidebarNavItem',
@@ -37,7 +43,17 @@ const _nav =  [
     _tag: 'CSidebarNavItem',
     name: 'Akun',
     to: '/account/manage',
-    icon: <CIcon name="cil-money" customClasses="c-sidebar-nav-icon"/>,
+    icon:  <img src={account}   style={iconStyles}></img> ,
+    // badge: {
+    //   color: 'info',
+    //   text: 'NEW',
+    // }
+  },
+  {
+    _tag: 'CSidebarNavItem',
+    name: 'PIC TB',
+    to: '/pictb/manage',
+    icon: <ImUserTie  style={iconStyles}/> ,
     // badge: {
     //   color: 'info',
     //   text: 'NEW',

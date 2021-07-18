@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useHistory } from "react-router-dom";
 import Select from 'react-select';
 import BeatLoader from "react-spinners/BeatLoader";
+import $ from 'jquery'
 
 import {
   CButton,
@@ -35,11 +36,33 @@ function Edit(props){
   const [mainLoading,setMainloading]=useState(true);
   const [tempIndexSelected,setTempIndexSelected]=useState(0);
 
+   //masking 
+   $(document).on('input', '#bank_account_balance', function(e) {
+    e.preventDefault();
+    var objek=$('#bank_account_balance').val();
+    var separator = ".";
+    var a = objek;
+    var b = a.replace(/[^\d]/g,"")
+    var c = "";
+    var panjang = b.length; 
+    var j = 0; 
+    for (var i = panjang; i > 0; i--) {
+      j = j + 1;
+      if (((j % 3) == 1) && (j != 1)) {
+        c = b.substr(i-1,1) + separator + c;
+      } else {
+        c = b.substr(i-1,1) + c;
+      }
+    }
+    $('#bank_account_balance').val(c)
+   });
+
+
 
   useEffect(() => {
     let id=props.match.params.id;
    
- 
+
     //get data detail
     axios.get("http://localhost:3000/api/accounts/detail-account/"+id)
     .then((response)=>{
@@ -47,7 +70,7 @@ function Edit(props){
 
       setTempBankAccountName(response.data.data.bank_name)
       setTempBankAccountNumber(response.data.data.account_number)
-      setTempBankAccountBalance(response.data.data.account_balance)
+      setTempBankAccountBalance(response.data.data.account_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
       setTempSelected(response.data.data.type)
       //eo =1.metaprint=2,all =3
      if (response.data.data.type==='eo'){
@@ -119,7 +142,7 @@ function Edit(props){
             bank_account_name:values.bank_account_name,
             bank_account_number:values.bank_account_number,
             //bank_account_owner:values.bank_account_owner,
-            bank_account_balance:values.bank_account_balance,
+            bank_account_balance:values.bank_account_balance.replace(/[^\w\s]/gi, ''),
             type:tempSelected 
         };
     
@@ -129,7 +152,7 @@ function Edit(props){
           console.log(response);
           Swal.fire({
             title: 'success',
-            text: 'Akun berhasil dibuat',
+            text: 'Akun berhasil diubah',
             icon: 'success',
             timer:2000,
             showConfirmButton:false,
@@ -175,7 +198,7 @@ function Edit(props){
                  </CCol>  
                  <CCol xs="6">
                     <CFormGroup>
-                        <CLabel htmlFor="bank_account_balance">Saldo bank</CLabel>
+                        <CLabel htmlFor="bank_account_balance">Saldo Awal</CLabel>
                         <CInput required  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />
                     </CFormGroup>
                  </CCol>  

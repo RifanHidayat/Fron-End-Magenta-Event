@@ -8,6 +8,7 @@ const CreateProject = React.lazy(() => import('./views/base/events/Create'));
 const ManageProject = React.lazy(() => import('./views/base/events/Manage'));
 const EditProject = React.lazy(() => import('./views/base/events/Edit'));
 const Mapping = React.lazy(() => import('./views/base/mapping-events/Manage'));
+const LRProject = React.lazy(() => import('./views/base/mapping-events/LRProject'));
 //const Menu = React.lazy(() => import('./views/base/mapping-events/Menu'));
 
 //Mapping Event
@@ -15,12 +16,22 @@ const Members= React.lazy(() => import('./views/base/mapping-events/Members'));
 const Budgets = React.lazy(() => import('./views/base/mapping-events/Budgets'));
 const Approval = React.lazy(() => import('./views/base/mapping-events/Approval'));
 const Tasks = React.lazy(() => import('./views/base/mapping-events/Tasks'));
+const Transactions = React.lazy(() => import('./views/base/mapping-events/Transaction'));
 
 //account
 const ManageAccount = React.lazy(() => import('./views/base/account/Manage'));
 const AddAccount = React.lazy(() => import('./views/base/account/Create'));
 const EditAccount = React.lazy(() => import('./views/base/account/Edit'));
 const DetailAccount = React.lazy(() => import('./views/base/account/Detail'));
+
+//pic tb
+const CreatePIC=React.lazy(()=>import('./views/base/tbpic/Create'))
+const ManagePIC=React.lazy(()=>import('./views/base/tbpic/Manage'))
+const EditPIC=React.lazy(()=>import('./views/base/tbpic/Edit'))
+const INTransaction = React.lazy(() => import('./views/base/tbpic/IN'));
+const OUTTransaction = React.lazy(() => import('./views/base/tbpic/OUT'));
+const TransactionPICTB = React.lazy(() => import('./views/base/tbpic/Transactions'));
+
 
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
@@ -79,12 +90,23 @@ const routes = [
   { path: '/mapping/tasks/:id', name: 'Tasks', component: Tasks },
   { path: '/mapping/approval/:id', name: 'Approval', component: Approval },
   { path: '/mapping/members/:id', name: 'Members', component: Members },
+  { path: '/mapping/transactions/:id/:project_number', name: 'Transactions', component:Transactions },
+  { path: '/mapping/l/r/:id', name: 'L/R', component:LRProject },
 
   //account
   { path: '/account/manage', name: 'Account / Manage', component: ManageAccount },
   { path: '/account/create', name: 'Account / Create', component: AddAccount },
   { path: '/account/edit/:id', name: 'Account / Edit', component: EditAccount },
   { path: '/account/detail/:id', name: 'Account / Detail', component: DetailAccount },
+
+  //pic tb
+  { path: '/pictb/create', name: 'PICTB / Create', component: CreatePIC },
+  { path: '/pictb/manage', name: 'PICTB / Manage', component: ManagePIC },
+  { path: '/pictb/edit/:id', name: 'PICTB / Edit', component: EditPIC },
+  { path: '/pictb/in-transaction/:id', name: 'PICTB / In Transaction', component: INTransaction },
+  { path: '/pictb/out-transaction/:id', name: 'PICTB / Out Transaction', component: OUTTransaction },
+  { path: '/pictb/transaction-pictb/:id', name: 'PICTB / Transactions PICTB', component: TransactionPICTB },
+
 
 
   

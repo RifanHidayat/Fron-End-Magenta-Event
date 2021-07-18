@@ -5,6 +5,7 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import CIcon from '@coreui/icons-react'
 import { useHistory } from "react-router-dom";
+import {BsGear} from 'react-icons/bs'
 import {
   CCard,
   CCardBody,
@@ -19,8 +20,9 @@ import {
 
 
 const getBadge = status => {
+  // eslint-disable-next-line default-case
   switch (status) {
-    case 'closed': return 'success'
+    case 'approved': return 'success'
     case 'pending': return 'warning'
     case 'rejected': return 'danger'
 
@@ -30,50 +32,92 @@ const getBadge = status => {
 var  projects=[];
 var dateFormat = require("dateformat");
 const columns = [  
-              {name: 'No. Project',sortable: true,    cell: row => <div style={{width:'100%'}}  data-tag="allowRowEvents"><div >{row.project_number}</div></div>,  }, 
-
-              {name: 'No. Quotation',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>,  },          
-
-              {name: 'Customer',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.event_customer}</div></div>,  },
+              {
+                name: 'No. Project',
+                sortable: true,    
+                cell: row => <div style={{width:'100%'}}  data-tag="allowRowEvents"><div >{row.project_number}</div></div>,
+          
+              }, 
+              {
+                name: 'No. Quotation',
+                sortable: true, 
+                cell: row => <div data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>, 
+              width:'15%'
             
-              {name: 'PIC ',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.event_pic}</div></div>,  }, 
-
-
-              {name: 'Tanggal',sortable: true,    cell: row => <div style={{width:'150%'}}  data-tag="allowRowEvents"><div >
-                  tanggal Mulai: {dateFormat(row.project_start_date, "dd/mm/yyyy")} <br/>
-                  tanggal Akhir: {dateFormat(row.project_end_date, "dd/mm/yyyy")}<br/>
-                  </div></div>, },
-
-
-               {name: 'Total Biaya',sortable: true,right: true,    
-              cell: row => <div data-tag="allowRowEvents">
+             },          
+              {
+                name: 'Customer',
+                sortable: true,   
+                 cell: row => <div data-tag="allowRowEvents"><div >{row.event_customer}</div></div>, 
+                width:'15%'
+                
+               },
+              {
+                name: 'PIC ',
+                sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.event_pic
+                }</div></div>,
+                
+              },
+              {
+                name: 'Tanggal',
+                sortable: true,  
+                  cell: row => <div style={{width:'150%'}}  data-tag="allowRowEvents"><div >
+              tanggal Mulai: {dateFormat(row.project_start_date, "dd/mm/yyyy")} <br/>
+              tanggal Akhir: {dateFormat(row.project_end_date, "dd/mm/yyyy")}<br/>
+              </div></div>,
+                width:'16%'
+               },
+               {
+                name: 'Total Biaya',
+                sortable: true,right: true,    
+                cell: row => <div data-tag="allowRowEvents">
               <div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
               }</div>
-              </div>, }, 
-
-
-                 { name: 'Persentasi',  sortable: true, cell:row=>
-                 <div>
-                   <div>
-                   </div>
-                   <CBadge style={{width:'100%',height:'20px' }} >
-                       <span >  {row.grand_toal}</span>
+              </div>,
+               width:'10%'
+               }, 
+                   { name: 'Status',  sortable: true, 
+                   cell:row=><div><div></div>
+                   <CBadge style={{width:'100%' }} color={getBadge(row.status)}>
+                   <span style={{color:'white',alignContent:'center'}}>  {row.status}</span>
                    </CBadge>
-                 </div> },
+                   </div> },
 
-              {name: 'Aksi',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >
+              { 
+                name: 'Persentase',  
+                sortable: true, cell:row=>
+              <div>
+              <div>
+              </div>
+             <CBadge style={{width:'100%',height:'20px' }} >
+             <span >  {row.grand_toal}</span>
+            </CBadge>
+            </div> 
+            },
+
+          {name: 'Aksi',
+          sortable: true,  
+            cell: row => <div data-tag="allowRowEvents"><div >
 
             <CDropdown>
-            <CDropdownToggle color="red">
-              <CIcon name="cil-settings" color={'black'}/>
+            <CDropdownToggle caret={false} color="secondary">
+              <BsGear size='18px'/>
+              
             </CDropdownToggle>
-            <CDropdownMenu className="pt-0" placement="bottom-end">
-              <CDropdownItem to={`/mapping/members/${row.id}`}>Pemetaan</CDropdownItem>
-              <CDropdownItem>Rekap Transaksi</CDropdownItem>
+            <CDropdownMenu   placement="left-end"  >
+              <CDropdownItem  to={`/mapping/members/${row.id}`}>Pemetaan</CDropdownItem>
+              <CDropdownItem  to={`/mapping/Transactions/${row.id}/${row.project_number}`}>Rekap Transaksi</CDropdownItem>
+              {row.status==="approved"?
+              <CDropdownItem  to={`/mapping/l/r/${row.id}`}>L/R Project</CDropdownItem>
+              :<span></span>             
+              }
+              
               <CDropdownItem>Tutup Project</CDropdownItem>
               </CDropdownMenu>
           </CDropdown>
-                </div></div>,  },
+                </div></div>, 
+                width:'10%'
+                 },
             ];
 
 
@@ -106,16 +150,15 @@ function Manage(){
       </CCardHeader> 
       <CCardBody>
 
+
       <DataTable       
       columns={columns}        
       data={projects}       
       pagination  
       defaultSortFieldId
-      sortable  
-      pagination
-      defaultSortFieldId
-      sortable                       
- />    
+      sortable                      
+      />    
+
       </CCardBody>
     </CCard>
   </div>

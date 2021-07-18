@@ -307,7 +307,8 @@ function Edit(props){
 
   return (
     <div>
-    {mainLoading==false?<CCard>
+    {mainLoading===false?
+    <CCard>
       <CCardHeader>
         <span><strong>Ubah Project</strong></span>
       </CCardHeader>
@@ -315,7 +316,7 @@ function Edit(props){
       <Formik
       initialValues={{ 
         
-        project_start_date:'2021-07-02',
+        project_start_date:tempProjectStartDate,
         project_end_date:tempProjectEndDate,
         description:tempDescription
       }}

@@ -1,9 +1,12 @@
-import React,{ useState,useEffect }  from 'react'
+import React,{ useState,useEffect,useRef,useCallback }  from 'react'
 import axios from 'axios'
-import ReactMapGL from 'react-map-gl';
-import DataTable from 'react-data-table-component'
 import './css/style.css'
 import { useHistory } from "react-router-dom";
+import $ from 'jquery'
+import Swal from 'sweetalert2'
+import "mapbox-gl/dist/mapbox-gl.css";
+import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import { Alert } from 'reactstrap';
 
 import {
   CCard,
@@ -17,82 +20,55 @@ import {
   CModalFooter,
   CModalTitle,
   CModalHeader,
-  CFormGroup,
-  CCardFooter,
+  CFormGroup, 
   CInputGroup,
   CInputGroupPrepend,
   CInputGroupText,
 
 } from '@coreui/react'
 
+import MapGL, {
+  Marker,  
+  NavigationControl,
+  FullscreenControl,
+  ScaleControl,
+  GeolocateControl} from 'react-map-gl';
+import ControlPanel from './components/controll-panel';
+import Pin from './components/pin';
+import MAP_STYLE from './components/mapstyle';
 
-const columns = [  
-  {name: 'Pegawai',sortable: true,    cell: row => <div  data-tag="allowRowEvents">
-    <div >
-      <div>{
-        row.first_name
-        }  
-    </div>
-    
-    <div>{
-        row.employee_id
-        }  
-    </div>
-    </div>
-    
-    </div>,  }, 
-  {name: 'KTP/NPWP',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.identity_number}</div></div>,  },      
-  {name: 'Uang Harian',sortable: true,right:true,    cell: row => <div data-tag="allowRowEvents"><div >{row.daily_money_regular}</div></div>,  },
+//Bootstrap and jQuery libraries
+// import 'bootstrap/dist/css/bootstrap.min.css';
+import 'jquery/dist/jquery.min.js';
 
+//Datatable Modules
+import "datatables.net-dt/js/dataTables.dataTables"
+import "datatables.net-dt/css/jquery.dataTables.min.css"
 
 
-];
+const geolocateStyle = {
+  top: 0,
+  left: 0,
+  padding: '10px'
+};
 
-const columns_selected_members = [  
-  {name: 'Pegawai',sortable: true, 
-     cell: row => <div  data-tag="allowRowEvents">
-      <div >
-        <div>{
-          row.first_name
-          }  
-      </div>
-      
-      <div>{
-          row.employee_id
-          }  
-      </div>
-      </div>
-    
-  </div>,  }, 
+const fullscreenControlStyle = {
+  top: 36,
+  left: 0,
+  padding: '10px'
+};
 
-  {name: 'KTP/NPWP',sortable: true, 
-     cell: row => <div data-tag="allowRowEvents">
-    <div >{row.identity_number}</div></div>,  },
-          
-  {name: 'Uang Harian',sortable: true,right:true,   
-   cell: row => <div data-tag="allowRowEvents">
-    <div >{row.daily_money_regular}</div></div>, 
- },
+const navStyle = {
+  top: 72,
+  left: 0,
+  padding: '10px'
+};
 
-{name: 'Status',sortable: true,   
-   cell: row => <div data-tag="allowRowEvents">
-    <div >
-    <div className="select">
-  <select id="standard-select">
-    <option value="Option 1">Anggota</option>
-    <option value="Option 2">PIC 2</option>
-
- 
-  </select>
-</div>
-      
-    </div></div>, 
- },
-];
-
-var  members=[];
-
-
+const scaleControlStyle = {
+  bottom: 36,
+  left: 0,
+  padding: '10px'
+};
 
 
 function Approval(props){
@@ -107,17 +83,29 @@ function Approval(props){
     const [tempLatitude, setTempLatitude] = useState('');
     const [tempLongtitude, setTempLongtitude] = useState('');
     const [tempMap, setTempMap] = useState(false)
-    const  [tempMembers,setTempMembers]=useState([]);
-    const [modalMembers,setModalMembers]=useState(false);
-    const [tempSelectedMembers,setTempSelectedMembers]=useState([])
+    const [status,setStatus]=useState();
+    const [tempProfits,setTempProfits]=useState();
+
+    const [TotalProject,setTotalProject]=useState();
+    const [disabledButton,setDisabledButton]=useState(true)
+
+    const [quotations,setQuotations]=useState()
 
     //loading spinner
-    const [tempIsloadingMembers,setTempIsLoadingMembers]=useState(true);
-    const[tempsIsLoadinAddMembers,setTempIloadingAddMembers]=useState(true);
+    const [tempIsloading,setTempIsloading]=useState(true);
 
-    const fields = ['name','registered', 'role', 'status']
-    //const fieldsa=[{name:'nama'},{registered:'regis'},{role:'aturan'},{status:}]
+    const [budgetStartDate,setBudgetStartDate]=useState();
+    const [budgetEndDate,setBudgetEndtDate]=useState();
+    var profits=[];
 
+    const mapRef = useRef();
+    const handleViewportChange = useCallback(
+      (newViewport) => setViewport(newViewport),
+      
+      []
+    );
+
+  const [events, logEvents] = useState({});
       //variable push page
     const navigator = useHistory();
 
@@ -140,42 +128,234 @@ function Approval(props){
     }
       
 
-    const saveMembers=(data)=>{
-   
+  
+
+    const setDataMembers=(data)=>{
+      var row='';
+      if (data.length===0){
+    
+      } else{
+        for(var i=0;i<data.length;i++){
+          row +=`<tr>
+                  <td>${data[i].name}<br> ${data[i].employee_id}</td>
+                 
+                   <td>${data[i].identity_number}</td>
+                   <td> 
+                   IDR ${data[i].daily_money_regular.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
+                   </td>
+                    <td>
+                    ${data[i].status=="pic"?"PIC":"Anggota"}
+                     </td>
+                   </tr>
+          `
+        }
+        $("#data-members").html(row);
+    
+        }
     }
 
-   
+    const setDataBudgets=(data)=>{
+      var row='';
+      if (data.length===0){
+    
+      } else{
+        for(var i=0;i<data.length;i++){
+          let date = new Date(data[i].date)
+          let date_crated = date.getDate();
+          let month_created = date.getMonth() + 1;
+          let year_created = date.getFullYear();
+          let date_transfer='00'.substr( String(date_crated).length ) +date_crated+'/'+'00'.substr( String(month_created).length ) + month_created+'/'+year_created;
 
+          row +=`<tr>
+                  <td>IDR ${data[i].amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</td>            
+                   <td>${date_transfer}</td>
+                   <td> 
+                   </td>
+
+                   </tr>
+          `
+        }
+        $("#data-budgets").html(row);
+    
+        }
+    }
+
+    
+    const setDataTasks=(data)=>{
+      var row='';
+      if (data.length===0){
+    
+      } else{
+        for(var i=0;i<data.length;i++){
+       
+          row +=`<tr>
+                 <td>${data[i].name}</td>            
+                 <td>${data[i].status} </td>
+                 </tr>
+          `
+        }
+        $("#data-tasks").html(row);
+    
+        }
+    }
+
+    const approvalProject=(id)=>{
+      var id=props.match.params.id
+      var project_number=$('#project_number').val();
+      var description=`Penambahan anggaran untuk project dengan No. Project <a href='http://localhost:3001/mapping/manage#/mapping/approval/${id}'>${project_number}</a>` 
+      var data={
+        description:description,
+        profits:tempProfits        
+      }
+      console.log("prods",profits)
+      //values save L/R project
+      Swal.fire({
+        title: 'Apakah anda yakin?',
+        text: "project akan disetujui",
+        icon: 'warning',
+        reverseButtons: true,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Approve',    
+        showLoaderOnConfirm: true,
+       
+        preConfirm: () => {
+            return axios.patch('http://localhost:3000/api/projects/approval/'+id,data)
+                .then(function(response) {
+                    console.log(response.data);
+                })
+                .catch(function(error) {
+                    console.log(error.data);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops',
+                        text: 'Terjadi Kesalahan',
+                    })
+                });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed) {
+          setStatus("approved")
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Peroject berhasil diapprove',
+                showConfirmButton:false,
+                timer:2000
+            }).then((result) => {
+                if (result.isConfirmed) {
+                
+                   navigator.push('/mapping');
+                }
+            })
+        }
+
+    })
+    }
+
+    const rejectionProject=(id)=>{
+      var id=props.match.params.id
+      Swal.fire({
+        title: 'Apakah anda yakin?',
+        text: "project akan ditolak",
+        icon: 'warning',
+        reverseButtons: true,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Reject',    
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+            return axios.patch('http://localhost:3000/api/projects/rejection/'+id)
+                .then(function(response) {
+                    console.log(response.data);
+                })
+                .catch(function(error) {
+                    console.log(error.data);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops',
+                        text: 'Terjadi Kesalahan',
+                    })
+                });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+     
+        if (result.isConfirmed) {
+          setStatus("rejected")
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Project  berhasil  direject',
+                showConfirmButton:false,
+                timer:2000
+            }).then((result) => {
+                if (result.isConfirmed) {
+                   // window.location.href = '/leave';
+                   navigator.push('/mapping');
+                }
+            })
+        }
+
+    })
+    }
+
+
+   
+  
   
     useEffect(()=>{
         let id=props.match.params.id;
-        console.log(id);
-
+        var dateFormat = require('dateformat');   
+     
+           
         //get detail project
         axios.get('http://localhost:3000/api/projects/detail-project/'+id)
         .then((response)=>{
-            setTempProjectNumber(response.data.data.project_number)
-             //projecct create data
-            let project_created_date = new Date(response.data.data.project_created_date)
-            let date_crated = project_created_date.getDate();
-            let month_created = project_created_date.getMonth() + 1;
-            let year_created = project_created_date.getFullYear();
-            setTempProjectCreatedDate(year_created+'-'+'00'.substr( String(month_created).length ) + month_created+'-'+'00'.substr( String(date_crated).length ) + date_crated);
-
-            //project start date
-            let project_start_date = new Date(response.data.data.project_start_date)
-            let date_start = project_start_date.getDate();
-            let month_start = project_start_date.getMonth() + 1;
-            let year_start = project_start_date.getFullYear();
-            setTempProjectStartDate(year_start+'-'+'00'.substr( String(month_start).length ) + month_start+'-'+'00'.substr( String(date_start).length ) + date_start);
-            // console.log('tanggal mulai',tempProjectStartDate)
+          console.log("quotation",response.data.data)
+          setQuotations(response.data.data.quotations)
+          response.data.data.quotations.map((value)=>{
+            //set data quotation to save profit / loss project
+            var description=`${value.quotation_number}/${response.data.data.project_number}`
+            var data=[dateFormat(response.data.data.project_start_date,'yyyy-mm-dd'),description,value.grand_total,'in',id]
+            profits.push(data)
+        })
+         
+          if (response.data.data.budget!==''){           
+            //budget
+            setDataBudgets(response.data.data.budget.transactions)       
+            setBudgetEndtDate(dateFormat(response.data.data.budget.budget_end_date,'yyyy-mm-dd'))
+            setBudgetStartDate(dateFormat(response.data.data.budget.budget_start_date,'yyyy-mm-dd'))                 
+            setTotalProject(response.data.data.budget.opening_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."));  
             
-            //project end date
-            let project_end_date = new Date(response.data.data.project_end_date)
-            let date_end = project_end_date.getDate();
-            let month_end = project_end_date.getMonth() + 1;
-            let year_end = project_end_date.getFullYear();
-            setTempProjectEndDate(year_end+'-'+'00'.substr( String(month_end).length ) + month_end+'-'+'00'.substr( String(date_end).length ) + date_end);
+             //set data transactions budget to save profit / loss project
+            response.data.data.budget.transactions.map((value)=>{
+              var data=[dateFormat(value.date,'yyyy-mm-dd'),value.description,value.amount,'out',id]
+              profits.push(data)
+            })
+                     
+          }
+         
+  
+
+          if (response.data.data.tasks.length>0){
+            setDataTasks(response.data.data.tasks)
+          }
+
+          if ((response.data.data.members!=null)){
+            setDataMembers(JSON.parse(response.data.data.members))
+          }
+        
+            setTempProjectNumber(response.data.data.project_number)
+             //projecct create data       
+            setTempProjectCreatedDate(dateFormat(response.data.data.project_created_date,'yyyy-mm-dd'));
+            setTempProjectStartDate(dateFormat(response.data.data.project_start_date,'yyyy-mm-dd'));
+            setTempProjectEndDate(dateFormat(response.data.data.project_end_date,'yyyy-mm-dd'));
 
             setTempEventCustomer(response.data.data.event_customer)
             setTempEventPic(response.data.data.event_pic);
@@ -184,52 +364,87 @@ function Approval(props){
             setTempLongtitude(response.data.data.longtitude);
             setTempTotalProjectCos(response.data.data.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
 
-            setTempMembers([...response.data.data.members])
-            setTempIsLoadingMembers(false);
+            
+            setStatus(response.data.data.status)
+            setMarker({
+              latitude:parseFloat(response.data.data.latitude),
+              longitude:parseFloat(response.data.data.longtitude),
+            })
+            setViewport({
+              latitude:parseFloat(response.data.data.latitude),
+              longitude:parseFloat(response.data.data.longtitude),
+              zoom:13.5
+            })
+            
+          
+           //disable button approve and reject
+           
+           
+
+          //iniaslisasi datatable
+            $('#members-datatable').DataTable();
+            $('#budgets-datatable').DataTable();
+            $('#tasks-datatable').DataTable();
+            setTempProfits(profits)
+
+            setTempIsloading(false)
+
+            if ((response.data.data.budget.length<=0) || (response.data.data.tasks.length<=0) ||(response.data.data.members===null) || (response.data.data.members==="[]")){
+          
+              setDisabledButton(true)
+            }else{
+              setDisabledButton(false)
+            
+            }
+           
+
     
         })
         .catch((error)=>{
-            setTempIsLoadingMembers(false);
+            ;
     
         })
-
-        //get members
-        axios.get("http://hrd.magentamediatama.net/api/employees").then((response)=>{
-          members=response.data.data;
-          setTempIloadingAddMembers(false);
-          console.log(members);
-        })
-        .then((error)=>{
-          setTempIloadingAddMembers(false);
-         // console.log(error.
-        })    
-    },[])
-
-     //mapbox
-  const[viewport, setViewport] = useState({
-    width: "100",
-    height: "400",
-    latitude: 38.963745,
-    longitude: 35.243322,
-    zoom: 5
-});
-
-
-// selection table
-  const onCheck = (state) => {
-  //console.log(state.selectedRows);
-  setTempSelectedMembers([...state.selectedRows]);
-    
-  };
 
   
- 
+    },[])
+
+
+    const[viewport, setViewport] = useState({
+      width: "100",
+      height: "400",
+      latitude: 38.963745,
+      longitude: 35.243322,
+      zoom: 5
+  });
+  const [marker, setMarker] = useState({
+      longitude: 107.6684889,
+      latitude: -6.942100215253297,
+    });
+
+
+
+  
+  const SIZE = 100;
+    const UNIT = "px";
   return (
       
     <div>
-  
-
-        {/* data project */}
+     
+      {status==='approved'?
+      <Alert color="success">
+      <i className="fa fa-check-circle"></i> project telah disetujui
+      </Alert>
+      :status==='rejected'?
+      <Alert color="danger">
+        <i className="fa fa-ban"></i> Project ditolak
+      </Alert>
+      :
+      <Alert color="info">
+      <i className="fa fa-info-circle"></i> Lengkapi data project sebelum disetujui
+      </Alert>   
+      }
+      
+      {/* data project */}
         <CCard>
             <CCardHeader>
             <div style={{float:'right',width:'100%'}}>
@@ -241,10 +456,19 @@ function Approval(props){
                         </span>
                     </div>
                     <div style={{float:'right',}}>
-                        <CButton size="sm" bloc to="/projects/create"  color='primary'>
-                         <span>Approve  </span>
-                         </CButton>
-                     
+                    {status==="pending"?
+                    <CButton disabled={disabledButton}  size="sm" bloc   color='danger' onClick={()=>rejectionProject()}>
+                    <span>{tempIsloading==true?<i class="spinner-border"/>:""} Reject  </span>
+                    </CButton>
+                    :""                   
+                    }  
+                    &nbsp;
+                    {status==="pending"?
+                    <CButton disabled={disabledButton} size="sm" bloc   color='primary'  onClick={()=>approvalProject()} >
+                    <span>{tempIsloading===true?<i class="spinner-border"/> :""} Approve </span>
+                    </CButton>
+                    :""                 
+                    }                       
                     </div>
                                     
                 </div>
@@ -368,9 +592,32 @@ function Approval(props){
               </span>                                 
                 </div>
             </CCardHeader>
-            <CCardBody>
-               
+
             
+            <CCardBody>
+            <table tyle={{width:'100%'}} class="table table-striped"  id="members-datatable">
+                  <thead >
+                    <tr>
+                    <th>
+                        Nama
+                      </th>
+                    
+                      <th>
+                        KTP
+                      </th>
+                      <th>
+                        Uang Harian
+                      </th>
+                      <th>
+                        Status
+                      </th>
+                      
+                    </tr>
+                  </thead>
+                  <tbody id="data-members">
+                  </tbody>
+                </table>
+                               
             </CCardBody>  
         </CCard>
 
@@ -386,6 +633,49 @@ function Approval(props){
                 </div>
             </CCardHeader>
             <CCardBody>
+            <CFormGroup row className="my-0">
+           <CCol xs="6">
+                 <CFormGroup>
+                   <CLabel htmlFor="budget_start_date">Tanggal Mulai anggaran </CLabel>
+                   <CInput readOnly required   name="budget_start_date" id="budget_start_date"  placeholder="" type="date"  value={budgetStartDate}  />
+                 </CFormGroup>
+               </CCol>
+               <CCol xs="6">
+                 <CFormGroup>
+                   <CLabel htmlFor="budget_end_date">Tanggal Akhir Anggaran</CLabel>
+                   <CInput readOnly required  name="budget_end_date" id="budget_end_date"  placeholder="" type="date"  value={budgetEndDate} />
+                 </CFormGroup>
+               </CCol>
+             </CFormGroup>
+             <CCol xs="12">
+                    <CFormGroup>
+                    <CLabel htmlFor="budgets">Total Anggaran</CLabel>
+                    <CInputGroup>
+                      <CInputGroupPrepend>
+                        <CInputGroupText>IDR</CInputGroupText>
+                      </CInputGroupPrepend>
+                      <CInput style={{textAlign:'right'}}   value={TotalProject}/>                  
+                   </CInputGroup>
+                    </CFormGroup>
+              </CCol>
+              <br></br>
+            <table tyle={{width:'100%'}} class="table table-striped"  id="budgets-datatable">
+                  <thead s>
+                    <tr>
+                    <th>
+                        Nominal
+                      </th>
+                      <th>
+                        Tanggal Transfer
+                      </th>
+                      <th style={{width:'30%'}} >
+                        Akun Transfer
+                      </th>                  
+                    </tr>
+                  </thead>
+                  <tbody id="data-budgets">
+                  </tbody>
+                </table> 
                
             
             </CCardBody>  
@@ -403,9 +693,72 @@ function Approval(props){
                 </div>
             </CCardHeader>
             <CCardBody>
-               
-            
+            <table  class="table table-striped"  id="tasks-datatable">
+                  <thead >
+                    <tr style={{width:'90%'}}>
+                    <th>
+                        Nama
+                    </th>
+                    
+                      <th width='20%'>
+                        Status
+                      </th>
+                      
+                      
+                    </tr>
+                  </thead>
+                  <tbody id="data-tasks">
+                  </tbody>
+                </table>
             </CCardBody>  
+
+
+                {/* Modal map */}
+              <CModal 
+              show={tempMap} 
+              onClose={() => setTempMap(!tempMap)}
+              size="lg col-50">
+              <CModalHeader closeButton>
+                <CModalTitle></CModalTitle>
+              </CModalHeader>
+              <CModalBody>
+              <MapGL {...viewport} 
+                width="53vw" height="60vh" 
+                ref={mapRef} 
+                        
+               //  onViewportChange={setViewport}
+                mapStyle={MAP_STYLE}
+                onViewportChange={handleViewportChange}
+                mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
+               >
+   
+                <Marker
+                  longitude={marker.longitude}
+                  latitude={marker.latitude}
+                  style={{transform: `translate(${SIZE/2 + UNIT}, ${SIZE/2 + UNIT}` }}
+                  offsetTop={-20}
+                  offsetLeft={-10}
+                >
+                  <Pin size={20} />
+                  
+                </Marker>
+
+                <GeolocateControl style={geolocateStyle} />
+                <FullscreenControl style={fullscreenControlStyle} />
+                <NavigationControl style={navStyle} />
+                <ScaleControl style={scaleControlStyle} />
+              </MapGL>
+               <ControlPanel events={events} />
+              </CModalBody>
+              <CModalFooter>
+
+                {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
+                <CButton color="secondary" onClick={() => setTempMap(!tempMap)}>Tutup</CButton>
+              </CModalFooter>
+            </CModal>
+
+
+
         </CCard>
   </div>
    

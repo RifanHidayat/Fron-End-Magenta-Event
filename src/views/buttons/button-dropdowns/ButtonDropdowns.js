@@ -70,6 +70,8 @@ const ButtonDropdowns = () => {
                 <CDropdownItem>Another Action</CDropdownItem>
               </CDropdownMenu>
             </CDropdown>
+
+
             <CDropdown className="m-1 btn-group">
               <CDropdownToggle color="success">
                 Success
@@ -125,7 +127,7 @@ const ButtonDropdowns = () => {
                 Primary
               </CDropdownToggle>
               <CDropdownMenu>
-                <CDropdownItem header>Header</CDropdownItem>
+                <CDropdownItem header>Headeqr</CDropdownItem>
                 <CDropdownItem disabled>Action Disabled</CDropdownItem>
                 <CDropdownItem>Action</CDropdownItem>
                 <CDropdownDivider />

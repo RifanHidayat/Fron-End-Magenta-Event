@@ -1,4 +1,4 @@
-import React,{ useState,useEffect, useCallback,useRef }  from 'react'
+import React,{ useState,useEffect, useCallback,useRef,useMemo }  from 'react'
 import DataTable from 'react-data-table-component';
 import { Formik } from 'formik';
 import Swal from 'sweetalert2'
@@ -10,11 +10,12 @@ import MapGL, {
   FullscreenControl,
   ScaleControl,
   GeolocateControl} from 'react-map-gl';
+  
 import ControlPanel from './components/controll-panel';
 import Pin from './components/pin';
 import MAP_STYLE from './components/mapstyle';
 import {fromJS} from 'immutable';
-
+import FilterComponent from "src/views/base/components/FilterComponent";
 import Geocoder from "react-map-gl-geocoder";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -68,39 +69,51 @@ const scaleControlStyle = {
 
 
 const columns = [  
-  {name: 'No. quotation',sortable: true,    cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>,  }, 
-  {name: 'tanggal quotation',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  },      
-  {name: 'No. PO',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.po_number}</div></div>,  },
-  {name: 'Tanggal PO',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,  }, 
-  {name: 'Customer',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, },
-  {name: 'PIC Event',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,  }, 
-  {name: 'Total Biaya',sortable: true,right: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
-}</div></div>,  }, 
-//                { name: 'Total Biaya',    selector: 'grand_total',    sortable: true,    right: true,  },
-];
+  {
+    name: 'No. quotation',
+    sortable: true,    
+    cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>, 
+  }, 
 
-const customStyles = {
-  rows: {
-    style: {
-     
-      width:'1000px',
-      border:'10px',
-     // override the row height
-    }
+  {
+    name: 'tanggal quotation',
+    sortable: true,   
+    cell: row => 
+    <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  
+  }, 
+
+  {
+    name: 'No. PO',sortable: true,
+    cell: row => <div data-tag="allowRowEvents"><div >{row.po_number}</div></div>,
   },
-  headCells: {
-    style: {
-      paddingLeft: '8px', // override the cell padding for head cells
-      paddingRight: '8px',
-    },
+
+  {
+    name: 'Tanggal PO',
+    sortable: true,    
+    cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,
+  }, 
+
+  {
+    name: 'Customer',
+    sortable: true,    
+    cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, 
   },
-  cells: {
-    style: {
-      paddingLeft: '8px', // override the cell padding for data cells
-      paddingRight: '8px',
-    },
-  },
-};
+
+  {
+    name: 'PIC Event',
+    sortable: true,    
+    cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,
+  }, 
+
+  {
+    name: 'Total Biaya',
+    sortable: true,
+    right: true,   
+    cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+    }</div></div>,  
+  }, 
+  
+];
 
 var  quotations=[];
 var selected_quotation=[];
@@ -154,9 +167,7 @@ function getMapStyle({visibility, color}) {
 function Create(){
 
   //varoable state
-  const [collapsed, setCollapsed] = React.useState(true)
-  const [showElements, setShowElements] = React.useState(true)
-  const [modal, setModal] = useState(true)
+
   const [large, setLarge] = useState(false)
   const [tempMap, setTempMap] = useState(false)
   const [tempQuotation, setTempQuotation] = useState([]);
@@ -218,13 +229,13 @@ function Create(){
   const [events, logEvents] = useState({});
 
 
-  const onMarkerDragStart = useCallback(event => {
-    logEvents(_events => ({..._events, onDragStart: event.lngLat}));
-  }, []);
+  // const onMarkerDragStart = useCallback(event => {
+  //   logEvents(_events => ({..._events, onDragStart: event.lngLat}));
+  // }, []);
 
-  const onMarkerDrag = useCallback(event => {
-    logEvents(_events => ({..._events, onDrag: event.lngLat}));
-  }, []);
+  // const onMarkerDrag = useCallback(event => {
+  //   logEvents(_events => ({..._events, onDrag: event.lngLat}));
+  // }, []);
 
   const onMarkerDragEnd = useCallback(event => {
     logEvents(_events => ({..._events, onDragEnd: event.lngLat}));
@@ -340,6 +351,39 @@ function Create(){
 const SIZE = 100;
 const UNIT = "px";
 
+const [filterText, setFilterText] = React.useState("");
+const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
+  false
+);
+
+
+
+const filteredItems = quotations.filter(
+  item =>
+    JSON.stringify(item)
+      .toLowerCase()
+      .indexOf(filterText.toLowerCase()) !== -1
+);
+
+
+const subHeaderComponent = useMemo(() => {
+  const handleClear = () => {
+    if (filterText) {
+      setResetPaginationToggle(!resetPaginationToggle);
+      setFilterText("");
+    }
+  };
+
+
+  return (
+    <FilterComponent
+      onFilter={e => setFilterText(e.target.value)}
+      onClear={handleClear}
+      filterText={filterText}
+    />
+  );
+}, [filterText, resetPaginationToggle]);
+
   return (
     <div>
     <CCard>
@@ -383,7 +427,8 @@ const UNIT = "px";
           longtitude:tempLongtitude,
           id_quotation:tempIds.toString(),
           status:"pending",
-          quotation_number:tempQuotationNumber.toString()
+          quotation_number:tempQuotationNumber.toString(),
+          quotations:tempQuotation
 
         };
     
@@ -541,22 +586,20 @@ const UNIT = "px";
                 <CModalTitle>List Semua Quotation</CModalTitle>
               </CModalHeader>
               <CModalBody>
-               <DataTable 
-                  title="Quotation dengan status  Final"        
-                  columns={columns}        
-                  data={quotations}       
-                  selectableRows  
+                  <DataTable  
+                  title="Quotation dengan status  Final" 
+                  columns={columns}
+                  data={filteredItems}
+                  defaultSortField="name"
+                  selectableRows  
                   pagination
-                  customStyles={customStyles}               
+                   onSelectedRowsChange={onCheck}               
+                  subHeader
+                  subHeaderComponent={subHeaderComponent}
+                  selectableRowsComponentProps={{ inkDisabled: true }}  
                   paginationDefaultPage
-                  paginationPerPage={5}                
-                  defaultSortFieldId
-                  sortable                
-                  Clicked
-                  style                
-                  onSelectedRowsChange={onCheck}
-                  selectableRowsComponentProps={{ inkDisabled: true }}                   
-               /> 
+                  paginationPerPage={5}   
+               />
               <hr/>
               <div><span>Data quotation terpilih</span></div>
                <DataTable      
@@ -566,7 +609,6 @@ const UNIT = "px";
               </CModalBody>
               <CModalFooter>
 
-                {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
                 <CButton color="secondary" onClick={() => setLarge(!large)}>Tutup</CButton>
               </CModalFooter>
             </CModal>
@@ -590,15 +632,6 @@ const UNIT = "px";
                 onViewportChange={handleViewportChange}
                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
                >
-                {/* <MapGL
-                   ref={mapRef}
-                    {...viewport}
-                    width="53vw" height="50vh"   
-                
-                    onViewportChange={handleViewportChange}
-                    mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
-                
-                > */}
               <Geocoder
                 mapRef={mapRef}
                 onViewportChange={handleGeocoderViewportChange}

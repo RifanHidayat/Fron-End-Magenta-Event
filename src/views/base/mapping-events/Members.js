@@ -1,52 +1,52 @@
-import React,{ useState,useEffect }  from 'react'
+import React,{ useState,useEffect,useMemo }  from 'react'
 import axios from 'axios'
 import DataTable from 'react-data-table-component'
 import './css/style.css'
 import { useHistory } from "react-router-dom";
 import Select from 'react-select'
-import $, { data } from 'jquery';
+import $ from 'jquery';
 import { MDBDataTableV5 } from 'mdbreact';
 import {getDataEmployess} from './data/employees'
 import {Projects} from './components/Projects'
-
-//import './loader.js'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import FilterComponent from "src/views/base/components/FilterComponent";
 
 import {
   CCard,
   CCardBody,
   CCardHeader,
-  CCol,CButton,
+  CButton,
   CModal,
   CModalBody,
   CModalFooter,
   CModalTitle,
   CModalHeader,
-
-
 } from '@coreui/react'
 
 
 const columns = [  
-  {name: 'Pegawai',sortable: true,    cell: row => <div  data-tag="allowRowEvents">
-    <div >
-      <div>{
-        row.first_name
-        }  
-    </div>
-    
-    <div>{
-        row.employee_id
-        }  
-    </div>
-    </div>
-    
-    </div>,  }, 
-  {name: 'KTP/NPWP',sortable: true,    cell: row => <div data-tag="allowRowEvents"><div >{row.identity_number}</div></div>,  },      
-  {name: 'Uang Harian',sortable: true,right:true,    cell: row => <div data-tag="allowRowEvents"><div >{row.daily_money_regular}</div></div>,  },
-
-
-
+  {
+    name: 'Pegawai',
+    sortable: true,    
+    cell: row => <div  data-tag="allowRowEvents"><div ><div>{row.first_name}</div><div>{row.employee_id}</div></div></div>,
+    defaultSortField: true,
+    defaultSortAsc: false,
+  }, 
+  {
+    name: 'KTP/NPWP',
+    sortable: true,
+    cell: row => <div data-tag="allowRowEvents"><div >{row.identity_number}</div></div>, 
+  },      
+  {
+    name: 'Uang Harian',
+    sortable: true,
+    right:true,   
+    cell: row => <div data-tag="allowRowEvents"><div >IDR {row.daily_money_regular.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</div></div>, 
+   },
+  
 ];
+
 
 const options = [
   { value: 'member', label: 'Anggota' },
@@ -55,82 +55,100 @@ const options = [
 ]  
 
 
+
 const columns_selected_members = [  
-  {name: 'Pegawai',sortable: true, 
-     cell: row => <div  data-tag="allowRowEvents">
-      <div >
-        <div>{
-          row.first_name
-          }  
+  {
+     name: 'Pegawai',
+     sortable: true, 
+     cell: row => <div  data-tag="allowRowEvents"><div><div>{row.first_name} </div><div>{row.employee_id}  
       </div>
-      
-      <div>{
-          row.employee_id
-          }  
-      </div>
-      </div>
+      </div></div>, 
+     
+   }, 
+
+  {
+    name: 'KTP/NPWP',
+    sortable: true, 
+    cell: row => <div data-tag="allowRowEvents">
+    <div >{row.identity_number}</div></div>,  
     
-  </div>,  }, 
-
-
-
-  {name: 'KTP/NPWP',sortable: true, 
-     cell: row => <div data-tag="allowRowEvents">
-    <div >{row.identity_number}</div></div>,  },
+  },
           
-  {name: 'Uang Harian',sortable: true,right:true,   
-   cell: row => <div data-tag="allowRowEvents">
-    <div >{row.daily_money_regular}</div></div>, 
- },
+  {
+    name: 'Uang Harian',
+    sortable: true,right:true,   
+    cell: row => <div data-tag="allowRowEvents"><div >{row.daily_money_regular}</div></div>, 
+},
 
-{name: 'Status',sortable: true,   
-   cell: row => <div data-tag="allowRowEvents">
-    <div >
-    <br/>
-      <br/>
-      <br/>
-    <div className="select">
-      
+{
+  name: 'Status',
+  sortable: true,   
+   cell: row => <div data-tag="allowRowEvents"><div ><br/><br/><br/><div className="select">
     <Select
-   
-    
     defaultValue={options[1]}                         
     className="basic-single"
     classNamePrefix="select"                     
     options={options}
     name="color"/>  
-</div>
-
-
-     
+    </div> 
     </div>
     <br/>
-      <br/>
-      <br/>
-      <br/>
-      
-    
+    <br/>
+    <br/>
+    <br/>   
     </div>, 
  },
 ];
 
 
 
-var  members=[];
+
 function Members(props){
 
     const  [tempMembers,setTempMembers]=useState([]);
     const [modalMembers,setModalMembers]=useState(false);
     const [tempSelectedMembers,setTempSelectedMembers]=useState([])
     const [employess,setEmployess]=useState([]);
+    const [datatable, setDatatable] = React.useState({});
+
 
 
     //loading spinner
-    const [tempIsloadingMembers,setTempIsLoadingMembers]=useState(true);
+    const [tempIsloadingMembers,setTempIsLoadingMembers]=useState(false);
     const[tempsIsLoadinAddMembers,setTempIloadingAddMembers]=useState(true);
+    const [status,setStatus]=useState();
 
-    const fields = ['name','registered', 'role', 'status']
-    //const fieldsa=[{name:'nama'},{registered:'regis'},{role:'aturan'},{status:}]
+    const [filterText, setFilterText] = React.useState("");
+    const [resetPaginationToggle, setResetPaginationToggle] = React.useState(false);
+
+
+
+const filteredItems =  employess.filter(
+  item =>
+    JSON.stringify(item)
+      .toLowerCase()
+      .indexOf(filterText.toLowerCase()) !== -1
+);
+
+
+const subHeaderComponent = useMemo(() => {
+  const handleClear = () => {
+    if (filterText) {
+      setResetPaginationToggle(!resetPaginationToggle);
+      setFilterText("");
+    }
+  };
+  return (
+    <FilterComponent
+      onFilter={e => setFilterText(e.target.value)}
+      onClear={handleClear}
+      filterText={filterText}
+    />
+  );
+}, [filterText, resetPaginationToggle]);
+
+    
+
 
       //variable push page
     const navigator = useHistory();
@@ -153,216 +171,201 @@ function Members(props){
       navigator.push('/mapping/approval/'+id);
     }
       
-    // var table = $('#use-datatable').DataTable();
- 
-    // $('#use-datatable tbody').on( 'click', 'tr', function () {
-    //     //console.log( table.row( this ).data() );
-    //     console.log("tes")
+    //toast success
 
-    // } );
-    // } );
+    const setDataMembers=(data)=>{
+      setDatatable({
+        columns: [
+          {
+            label: 'Id Pegawai',
+            field: 'employee_id',
+            width: 150,
+            attributes: {
+              'aria-controls': 'DataTable',
+              'aria-label': 'Name',
+              
+            },
+          },
+          {
+            label: 'Nama',
+            field: 'name',
+            width: 270,
+            textAlign:'right',
+         
+          },
+          {
+            label: 'KTP',
+            field: 'identity_number',
+            width: 200,
+          },
+          {
+            label: 'Uang Harian',
+            field: 'daily_money_regular',
+            
+          },
+          {
+            label: 'Status',
+            field: 'status',
+            sort: 'disabled',
+            width: 150,
+          },
+          
+        ],
+        rows: JSON.parse(data) 
+        
+      })
+    }
+    const setDataSelectedMembers=(data)=>{
+      var row='';
+      if (data.length===0){
+    
+      } else{
+        for(var i=0;i<data.length;i++){
+          row +=`<tr>
+                  <td>${data[i].employee_id}</td>
+                  <td>${data[i].first_name}</td>
+                   <td>${data[i].identity_number}</td>
+                   <td> 
+                      <input style={{textAlign:'right'}}  type="text" value='${data[i].daily_money_regular}'>
+                   </td>
+                    <td>
+                      <select name="cars" id="cars">
+                      <option value="members">Anggota</option>
+                      <option value="pic">PIC</option>
+                    </select> 
+                     </td>
+                   </tr>
+          `
+        }
+        $("#data-members").html(row);
+    
+        }
+    }
+    
+    
+
     const saveMembers=(data)=>{
-     // var data=[];
-     var m=[];
+      setTempIsLoadingMembers(true);
+      var id=props.match.params.id;
+     var data_members=[];
       $('#use-datatable tbody tr').each(function() {
         var employee_id = $(this).find('td:nth-child(1)').text().toString().trim();
         var name = $(this).find('td:nth-child(2)').text().toString().trim();
-        var idendity_number = $(this).find('td:nth-child(3)').text().toString().trim();
+        var identity_number = $(this).find('td:nth-child(3)').text().toString().trim();
         var daily_money_regular = $(this).find('td:nth-child(4) input').val().toString().trim();
         var status = $(this).find('td:nth-child(5) select').val().toString().trim();
-        var data={employee_id:employee_id,name:name,idendity_number:idendity_number,daily_money_regular:parseInt(daily_money_regular),status:status}
-        m.push(data);
-        //console.log(status)
-
-        // console.log('quantity ',employee_id);
-        
-        
+        var data={employee_id:employee_id,name:name,identity_number:identity_number,daily_money_regular:parseInt(daily_money_regular),status:status}
+        data_members.push(data);        
       });
-      console.log(m)
+      const req_data={
+        members:JSON.stringify(data_members)
+      };
+   
 
-
-  
-     
-  
+     axios.patch('http://localhost:3000/api/projects/'+id+'/save-members/',req_data)
+     .then((response)=>{  
+    
+      setDataMembers(JSON.stringify(data_members))
+      setTempMembers([...data_members]);
+       
+      setTempIsLoadingMembers(false)
+      setModalMembers(false)
+      toast.success('Berhasil menambahkan anggota project', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        color:'success'
+        });
+     })
+     .then((error)=>{
+      setTempIsLoadingMembers(false)
+       
+     })
     }
-
-
-
   
     useEffect(()=>{
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   
+ 
+  
+      var id=props.match.params.id;
         //all employess eo
         getDataEmployess().then(response=>{
-          members=response;
-         
+        //  members=response;      
           setEmployess([...response])
-     
           setTempIloadingAddMembers(false);
+          setTempIsLoadingMembers(false)
+        
         })
-
-
-    
+        //get data members
+        axios.get('http://localhost:3000/api/projects/detail-project/'+id)
+        .then((response)=>{
+          if (response.data.data.members!==null){
+          setDataMembers(response.data.data.members)   
+          setTempMembers([...JSON.parse(response.data.data.members)])
+          setTempSelectedMembers([...JSON.parse(response.data.data.members)])
       
+          setDataSelectedMembers(JSON.parse(response.data.data.members))   
+          //onCheck([...tempSelectedMembers])
 
+         
+         
+          setStatus(response.data.data.status)
+
+          }else{
+            setStatus(response.data.data.status)
+
+          }
+       
+             
+
+        })
+        .catch((error)=>{
+          console.log("tes")
+
+        })
     },[])
 
-     //mapbox
-  const[viewport, setViewport] = useState({
-    width: "100",
-    height: "400",
-    latitude: 38.963745,
-    longitude: 35.243322,
-    zoom: 5
-});
 
-const onSelected = (state) => {
-  //setTempSelected(selectedOptions['value'])
-  //console.log(state.)
-  $('$data').val();
-}
 
 // selection table
   const onCheck = (state) => {
+   
   setTempSelectedMembers([...state.selectedRows]);
+  setDataSelectedMembers(state.selectedRows)
 
-    var row='';
-  if (state.selectedRows.length===0){
-
-  } else{
-    for(var i=0;i<state.selectedRows.length;i++){
-      row +=`<tr>
-              <td>${state.selectedRows[i].employee_id}</td>
-              <td>${state.selectedRows[i].first_name}</td>
-               <td>${state.selectedRows[i].identity_number}</td>
-               <td> 
-                  <input style={{textAlign:'right'}}  type="text" value='${state.selectedRows[i].daily_money_regular}'>
-               </td>
-                <td>
-                  <select name="cars" id="cars">
-                  <option value="members">Anggota</option>
-                  <option value="pic">PIC</option>
-                </select> 
-                 </td>
-               </tr>
-      `
-    }
-    $("#data-members").html(row);
-
-    }
-    console.log("\n")
-  //} 
-
-
-    
   };
 
-  const [datatable, setDatatable] = useState({
-    columns: [
-      {
-        label: 'Nama',
-        field: 'first_name',
-        width: 150,
-        attributes: {
-          'aria-controls': 'DataTable',
-          'aria-label': 'Name',
-        },
-      },
-      {
-        label: 'Id Pegawai',
-        field: 'employee_id',
-        width: 270,
-      },
-      {
-        label: 'KTP',
-        field: 'identity_number',
-        width: 200,
-      },
-      {
-        label: 'Uang Harian',
-        field: 'daily_money_regular',
-        sort: 'asc',
-        right:true,
-        width: 100,
-      },
-     
-    ],
-    rows: tempsIsLoadinAddMembers==false?[
-      {
-        firs_name: 'Tiger Nixon',
-        position: 'System Architect',
-        office: 'Edinburgh',
-        age: '61',
-        date: '2011/04/25',
-        salary: '$320',
-      },
-      {
-        firs_name: 'Garrett Winters',
-        position: 'Accountant',
-        office: 'Tokyo',
-        age: '63',
-        date: '2011/07/25',
-        salary: '$170',
-      },
-      {
-        firs_name: 'Ashton Cox',
-        position: 'Junior Technical Author',
-        office: 'San Francisco',
-        age: '66',
-        date: '2009/01/12',
-        salary: '$86',
-      },
-      {
-        first_name: 'Cedric Kelly',
-        position: 'Senior Javascript Developer',
-        office: 'Edinburgh',
-        age: '22',
-        date: '2012/03/29',
-        salary: '$433',
-      },
-      {
-        first_name: 'Airi Satou',
-        position: 'Accountant',
-        office: 'Tokyo',
-        age: '33',
-        date: '2008/11/28',
-        salary: '$162',
-      },
-     
-  
-    ]:employess
 
-  })
-
-
-
-  
- 
-  return (
-      
+  return (    
     <div>
+    <ToastContainer />
     <Projects id={props.match.params.id} ></Projects>
     {/* //menu */}
-        <div class="pills-regular">
-            <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+        <div className="pills-regular">
+            <ul className="nav nav-pills mb-2" id="pills-tab" role="tablist">
 
-                <li class="nav-item" id="members">
-                    <button class="nav-link active" onClick={()=>membersPage()}  > Anggota</button>
+                <li className="nav-item" id="members">
+                    <button className="nav-link active" onClick={()=>membersPage()}  > Anggota</button>
                  </li>&ensp;
 
-                <li class="nav-item" id="budgets" to="/projects/manage">
-                    <button class="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
+                <li className="nav-item" id="budgets" to="/projects/manage">
+                    <button className="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
                  </li>&ensp;
 
-                 <li class="nav-item" id="tasks">
-                     <button class="nav-link" onClick={()=>tasksPage()} > Tugas</button>
+                 <li className="nav-item" id="tasks">
+                     <button className="nav-link" onClick={()=>tasksPage()} > Tugas</button>
                 </li>&ensp;
 
-                <li class="nav-item" id="approval" >
-                        <button class="nav-link" onClick={()=>approvalPage()}  > Persetujuan</button>
+                <li className="nav-item" id="approval" >
+                        <button className="nav-link" onClick={()=>approvalPage()}  > Persetujuan</button>
                  </li>&ensp;
             </ul>
         </div>
-
-     
 
         {/* Members */}
         <CCard>
@@ -376,13 +379,19 @@ const onSelected = (state) => {
                         </span>
                     </div>
                     <div  style={{textAlign: 'right'}}>
-                      <CButton disabled={tempsIsLoadinAddMembers} onClick={()=>setModalMembers(!modalMembers)} size="sm"  className="btn-brand mr-1 mb-1" color='primary'>
-                        <span> 
-                          {tempsIsLoadinAddMembers?<i class="fas fa-circle-notch fa-spin"/>:<i class="fa fa-plus"/>} Tambah
-                          </span>
+                      {status==="pending"?
+                        <CButton disabled={tempsIsLoadinAddMembers}  onClick={()=>setModalMembers(!modalMembers)} size="sm"   className="btn-brand mr-1 mb-1" color='primary'>
+                          {tempMembers.length<=0?  
+                          <span> 
+                            {tempsIsLoadinAddMembers?<i class="fas fa-circle-notch fa-spin"/>:<i class="fa fa-plus"/>} Tambah
+                            </span>:  <span> 
+                            {tempsIsLoadinAddMembers?<i class="fas fa-circle-notch fa-spin"/>:<i class="fa fa-edit"/>} Ubah
+                          </span>}
                       </CButton> 
-                  </div>
-                                    
+                      :<p></p>
+                    }
+                    
+                  </div>                                  
                 </div>
             </CCardHeader>
             <CCardBody>
@@ -398,7 +407,17 @@ const onSelected = (state) => {
                     </div>
 
                 :
-                <CButton>tes</CButton>
+                <MDBDataTableV5
+                    hover
+                    entriesOptions={[5, 20, 25]}
+                    entries={5}
+                    pagesAmount={10}
+                    data={datatable}    
+                    paging={false}                 
+                    searchTop
+                    searchBottom={false}
+                    barReverse                                       
+               />
                 }
             
             </CCardBody>
@@ -412,50 +431,26 @@ const onSelected = (state) => {
                 <CModalTitle>Pegawai EO</CModalTitle>
               </CModalHeader>
               <CModalBody>
-               <DataTable 
-                  
+               <DataTable                
                   columns={columns}        
-                  data={members}       
-                  selectableRows  
+                  data={filteredItems}      
+                  selectableRows               
                   pagination                            
                   paginationDefaultPage
                   paginationPerPage={5}                
                   defaultSortFieldId                
-                  sortable                
-               
+                  sortable  
                   style                
                   onSelectedRowsChange={onCheck}
-                           
+                  onCheck={tempSelectedMembers}
+                  defaultSortField="name"                
+                  subHeader
+                  subHeaderComponent={subHeaderComponent}                                          
                /> 
-{/*               
-              <MDBDataTableV5
-                    hover
-                    entriesOptions={[5, 20, 25]}
-                    entries={5}
-                    pagesAmount={4}
-                    data={datatable}
-                    checkbox
-                    headCheckboxID='id41'
-                    bodyCheckboxID='checkboxes41'
-                    getValueCheckboxes={(e) => {
-                      onCheck(e);
-                    }}
-                    getValueAllCheckBoxes={(e) => {
-                      onCheck(e);
-                    }}
-                    multipleCheckboxes
-                
-                    filledCheckboxes
-                    proSelect
-                  
-                 
-              />
-               */}
-                          
-
+              
               <div><span>Pegawai terpilih</span></div>
             
-           {tempSelectedMembers==''?
+              {tempSelectedMembers===''?
                     <div style={{textAlign:'center'}}>
                         <img 
                             src="https://arenzha.s3.ap-southeast-1.amazonaws.com/photos/default-photo.png"
@@ -467,20 +462,9 @@ const onSelected = (state) => {
                     </div>
 
                 :
-                //  <DataTable
-                // className="use-datatable"      
-                // columns={columns_selected_members}        
-                // data={tempSelectedMembers} 
-                // highlightOnHover
-                // pagination
-                // paginationServer
-                           
-                // paginationComponentOptions={{
-                //   noRowsPerPage: true
-                // }}
 
                 <table tyle={{width:'100%'}} class="table table-striped"  id="use-datatable">
-                  <thead s>
+                  <thead >
                     <tr>
                     <th>
                         Id Pegawai
@@ -496,35 +480,27 @@ const onSelected = (state) => {
                       </th>
                       <th>
                         Status
-                      </th>
-                      
+                      </th>                     
                     </tr>
                   </thead>
                   <tbody id="data-members">
-
-                
                   </tbody>
-
                 </table>
                                 
-             
         
                 }
               </CModalBody>
               <CModalFooter>
-
-
                 {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}
-                <div  style={{textAlign: 'right'}}>
-                    <CButton onClick={()=>saveMembers()} size="sm"   className="btn-brand mr-1 mb-1" color='primary'>
-                    <span><i class="fa fa-save"/> Simpan</span>
+                <div style={{textAlign: 'right'}}>
+                    <CButton disabled={tempIsloadingMembers} onClick={()=>saveMembers()} size="sm"   className="btn-brand mr-1 mb-1" color='primary'>
+                    <span>{tempIsloadingMembers==false?<i class="fa fa-save"/>:<i class="fas fa-circle-notch fa-spin"/>  }      Simpan</span>
                       </CButton> 
-              </div>
-
+                    
+                </div>
 
               </CModalFooter>
             </CModal>
-
         </CCard>
   </div>
    
