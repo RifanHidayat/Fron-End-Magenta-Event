@@ -1,11 +1,14 @@
 import React,{ useState,useEffect }  from 'react'
 import Table from 'react-bootstrap/Table'
-
+import ReactExport from "react-export-excel";
+import 'jspdf-autotable'
 import ReactDOM from "react-dom";
 import DataTable from "react-data-table-component";
 import DataTableExtensions from "react-data-table-component-extensions";
 import "react-data-table-component-extensions/dist/index.css";
-import { columns, data } from "./data/transactions";
+import { columns, data,dataPDF } from "./data/transactions";
+import Button from '@material-ui/core/Button';
+import jsPDF from 'jspdf'
 import {
   CButton,
   CCard,
@@ -22,6 +25,11 @@ import {
     const [totalOut,setTotalOut]=useState();
     const [balance,setBalance]=useState();
     const [projectNumber,setProjectNumber]=useState();
+    const [dataExcel,setDataExcel]=useState()
+    const ExcelFile = ReactExport.ExcelFile;
+    const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+    const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+    var dateFormat=require('dateformat')
     
  
   useEffect(() => {
@@ -44,6 +52,91 @@ import {
       })
   },[]);
 
+  function showExcel(){
+    dataPDF(props.match.params.id).then((response)=>{
+        var data_transactions_excel=[]
+         response.data.transactions.map((values)=>{
+             console.log('tee',values)
+             var data={
+                 date:values.date,
+                 description:values.description,
+                 in:values.type==='in'?values.amount:"",
+                 out:values.type==="out"?values.amount:"",
+                 balance:values.balance
+             }
+              data_transactions_excel.push(data)          
+         })
+         setDataExcel([...data_transactions_excel])
+    
+       })
+     
+  }
+
+  function showPDF(){
+
+    dataPDF(props.match.params.id).then(response=>{
+        var data_transactions_pdf=[]
+        var doc = new jsPDF('p', 'px', 'a4');
+        doc.text(`${projectNumber}`, 10, 20)
+        doc.autoTable({ html: '#my-table' })
+
+        response.data.transactions.map((values)=>{
+            var data=[
+                dateFormat(values.date,'dd/mm/yyyy'),
+                values.description,
+                values.type==="in"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
+                values.type==="out"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
+                "IDR "+values.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+            ]
+            data_transactions_pdf.push(data)
+            
+        })
+        doc.autoTable({
+            margin:{top:20},
+            columnStyles: { 
+                0: { 
+                    halign: 'right', 
+                },
+                1: { 
+                    halign: 'right', 
+                },
+                2: { 
+                    halign: 'right', 
+                } 
+            },
+
+            margin:{left:10,right:'70%',top:'10%'},
+
+
+        head: [['Total Cash In', 'Total Cash Out', 'Saldo']],
+        body: [
+            [
+                "IDR "+response.data.total_in.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+                "IDR "+response.data.total_out.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+                "IDR "+response.data.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+            ],
+
+        ],
+    })
+    doc.autoTable({
+        margin:{top:20},
+        columnStyles: {
+            0: {cellWidth: 50},
+        
+            2: {cellWidth: 70, halign: 'right', },
+            3: {cellWidth: 70, halign: 'right', },
+            4: {cellWidth: 70, halign: 'right'},
+          },
+       thema:'grid',
+        margin:{left:10,right:10},
+        head: [['tanggal', 'Deskripsi', 'Cash In','Cash Out','Saldo']],
+        body: data_transactions_pdf
+    })
+        window.open(doc.output('bloburl'), '_blank');    
+    })  
+  };
+
+
 
 
   return (
@@ -59,9 +152,18 @@ import {
     </div>
   <div style={{float:'right',}}>
      
-     <CButton size="sm" to="/account/create"  color='primary'>
-         <span>Download </span>
-     </CButton>
+  <Button variant="contained" color="secondary" onClick={()=>showPDF()}>
+    PDF
+</Button>
+&nbsp;
+&nbsp;
+
+ <ExcelFile element={
+    <Button variant="contained" style={{backgroundColor:'green', color:'white'}}  onClick={()=>showExcel()}>Excel</Button>
+ }>
+   <ExcelSheet name="Organization"/>
+  </ExcelFile>
+
 
    </div>                                  
  </div>

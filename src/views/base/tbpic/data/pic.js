@@ -17,6 +17,11 @@ export const getAllPIC= async (props) => fetch("http://localhost:3000/api/pic")
   export const getAllProjets= async (props) => fetch("http://localhost:3000/api/projects")
   .then(response => response.json())
   .then((json)=>json)
+
+  export const dataPDF= async (props) => fetch("http://localhost:3000/api/pic/detail-pictb/"+props)
+  .then(response => response.json())
+  .then((json)=>json)
+
   
   
   

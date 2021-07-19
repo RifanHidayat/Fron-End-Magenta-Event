@@ -10,6 +10,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import {Formik} from 'formik'
 import { ToastContainer, toast } from 'react-toastify';
 import $ from 'jquery'
+import Button from '@material-ui/core/Button';
+import jsPDF from 'jspdf'
+import ReactExport from "react-export-excel";
+import 'jspdf-autotable'
+import {dataPDFLR} from './data/transactions'
+
 
 import {
   CCard,
@@ -92,6 +98,15 @@ function Approval(props){
     const [tempTransactions,setTempTransactions]=useState();
 
     const [tempIsLoadingGetTransactions,setTempIsLoadingGetTransaction]=useState(true)
+    const [dataExcel,setDataExcel]=useState()
+
+    var dateFormat=require('dateformat')
+
+
+    const ExcelFile = ReactExport.ExcelFile;
+    const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+    const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+
 
     const mapRef = useRef();
     const handleViewportChange = useCallback(
@@ -160,10 +175,6 @@ function Approval(props){
             setTempTotalProjectCos(response.data.data.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
 
             getAllTransactions()
-
-
-                    
-
             setMarker({
               latitude:parseFloat(response.data.data.latitude),
               longitude:parseFloat(response.data.data.longtitude),
@@ -200,7 +211,89 @@ function Approval(props){
 
   
   const SIZE = 100;
-    const UNIT = "px";
+  const UNIT = "px";
+  function showExcel(){
+    dataPDFLR(props.match.params.id).then((response)=>{
+        var data_transactions_excel=[]
+         response.data.transactions.map((values)=>{
+             console.log('tee',values)
+             var data={
+                 date:values.date,
+                 description:values.description,
+                 in:values.type==='in'?values.amount:"",
+                 out:values.type==="out"?values.amount:"",
+                 balance:values.balance
+             }
+              data_transactions_excel.push(data)          
+         })
+         setDataExcel([...data_transactions_excel])
+       })
+  }
+
+
+  function showPDF(){
+    dataPDFLR(props.match.params.id).then(response=>{
+        var data_transactions_pdf=[]
+        var doc = new jsPDF('p', 'px', 'a4');
+        doc.text(`Laba Rugi Project ${$('#project_number').val()} `, 10, 20)
+        doc.autoTable({ html: '#my-table' })
+
+        response.data.transactions.map((values)=>{
+            var data=[
+                dateFormat(values.date,'dd/mm/yyyy'),
+                values.description,
+                values.type==="in"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
+                values.type==="out"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
+                "IDR "+values.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+            ]
+            data_transactions_pdf.push(data)
+            
+        })
+        doc.autoTable({
+            margin:{top:20},
+            columnStyles: { 
+                0: { 
+                    halign: 'right', 
+                },
+                1: { 
+                    halign: 'right', 
+                },
+                2: { 
+                    halign: 'right', 
+                } 
+            },
+
+            margin:{left:10,right:'70%',top:'10%'},
+
+
+        head: [['Total Cash In', 'Total Cash Out', 'Saldo']],
+        body: [
+            [
+                "IDR "+response.data.total_in.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+                "IDR "+response.data.total_out.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+                "IDR "+response.data.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+            ],
+
+        ],
+    })
+    doc.autoTable({
+        margin:{top:20},
+        columnStyles: {
+            0: {cellWidth: 50},
+        
+            2: {cellWidth: 70, halign: 'right', },
+            3: {cellWidth: 70, halign: 'right', },
+            4: {cellWidth: 70, halign: 'right'},
+          },
+       thema:'grid',
+        margin:{left:10,right:10},
+        head: [['tanggal', 'Deskripsi', 'Cash In','Cash Out','Saldo']],
+        body: data_transactions_pdf
+    })
+        window.open(doc.output('bloburl'), '_blank');    
+    })  
+  };
+
   return (
       
     <div>
@@ -483,6 +576,18 @@ function Approval(props){
             <span><strong>Rekap Transaksi Project</strong></span>
         </CCardHeader>
         <CardBody>
+               
+  <Button variant="contained" color="secondary" onClick={()=>showPDF()}>
+    PDF
+</Button>
+&nbsp;
+&nbsp;
+
+ <ExcelFile element={
+    <Button variant="contained" style={{backgroundColor:'green', color:'white'}}  onClick={()=>showExcel()}>Excel</Button>
+ }>
+   <ExcelSheet name="Organization"/>
+  </ExcelFile>
         {tempIsLoadingGetTransactions===true?
         <span></span>:
         <Transactions data={tempTransactions}/>

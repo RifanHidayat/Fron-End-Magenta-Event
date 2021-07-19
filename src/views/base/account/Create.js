@@ -20,10 +20,6 @@ import {
 } from '@coreui/react'
 
 
-// const handleChange=(e)=> {
-//   console.log("Fruit Selected!!");
-//   this.setState({ fruit: e.target.value });
-// }
 
 function Add(){
 

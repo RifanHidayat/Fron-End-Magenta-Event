@@ -4,6 +4,14 @@ var dateFormat = require('dateformat');
 export const data= async (props) => fetch("http://localhost:3000/api/projects/detail-transactions/"+props)
   .then(response => response.json())
   .then((json)=>json['data'])
+
+  export const dataPDF= async (props) => fetch("http://localhost:3000/api/projects/detail-transactions/"+props)
+  .then(response => response.json())
+  .then((json)=>json)
+
+  export const dataPDFLR= async (props) => fetch(`http://localhost:3000/api/projects/${props}/transactions`)
+  .then(response => response.json())
+  .then((json)=>json)
  
   export const columns = [
 

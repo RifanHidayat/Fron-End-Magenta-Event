@@ -1,6 +1,8 @@
+import ReactExport from "react-export-excel";
+import 'jspdf-autotable'
+
 import React,{ useState,useEffect }  from 'react'
 import Table from 'react-bootstrap/Table'
-
 import ReactDOM from "react-dom";
 import DataTable from "react-data-table-component";
 import DataTableExtensions from "react-data-table-component-extensions";
@@ -8,7 +10,7 @@ import "react-data-table-component-extensions/dist/index.css";
 import { columns, data,dataPDF } from "./data/transaction";
 import Button from '@material-ui/core/Button';
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+
 import {
   CButton,
   CCard,
@@ -16,6 +18,7 @@ import {
   CCardHeader,
 
 } from '@coreui/react'
+
  function Transaction(props){
      
     //const [accounts,setAccounts]=useState([]); 
@@ -26,10 +29,17 @@ import {
     const [balance,setBalance]=useState();
     const [projectNumber,setProjectNumber]=useState();
     const [accountNmame,setAccountName]=useState();
+    const [dataExcel,setDataExcel]=useState()
 
+    const ExcelFile = ReactExport.ExcelFile;
+    const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
+    const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+
+  
+
+  
     var dateFormat = require('dateformat');
-    
- 
+
   useEffect(() => {
     let id=props.match.params.id;
     let project_number=props.match.params.project_number;
@@ -48,11 +58,31 @@ import {
     //  setProjectNumber(response.project_number)
 
    }
+   
+
       })
   },[]);
 
 
   function showExcel(){
+    dataPDF(props.match.params.id).then((response)=>{
+        var data_transactions_excel=[]
+         response.data.transactions.map((values)=>{
+             console.log('tee',values)
+             var data={
+                 date:values.date,
+                 description:values.description,
+                 in:values.type==='in'?values.amount:"",
+                 out:values.type==="out"?values.amount:"",
+                 balance:values.balance
+             }
+              data_transactions_excel.push(data)          
+         })
+         setDataExcel([...data_transactions_excel])
+    
+       })
+     
+
 
   }
 
@@ -75,9 +105,6 @@ import {
             data_transactions_pdf.push(data)
             
         })
-      
-
-
         doc.autoTable({
             margin:{top:20},
             columnStyles: { 
@@ -144,9 +171,13 @@ import {
 </Button>
 &nbsp;
 &nbsp;
-<Button variant="contained" style={{backgroundColor:'green', color:'white'}}  onClick={()=>showExcel()}>
-    Excel
-</Button>
+
+ <ExcelFile element={
+    <Button variant="contained" style={{backgroundColor:'green', color:'white'}}  onClick={()=>showExcel()}>Excel</Button>
+ }>
+   <ExcelSheet name="Organization"/>
+  </ExcelFile>
+
 
    </div>                                  
  </div>

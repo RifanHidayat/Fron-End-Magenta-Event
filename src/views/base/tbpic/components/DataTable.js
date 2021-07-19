@@ -63,10 +63,10 @@ const Table = props => {
             selector: "",
             sortable: true,
             width:'15%',
-            center:true,
+           
             cell:row=>
-            <div style={{float:'left'}}>
-            {/* <CTooltip content="Edit PIC TB"placement="top">
+            <div style={{float:'left',width:'250%'}}>
+                  <CTooltip content="Edit PIC TB"placement="top">
             <CButton color="secondary"  size="sm" to= {`/pictb/edit/${row.id}`}>{<i class="fa fa-edit"></i>}</CButton>
             </CTooltip>
           
@@ -74,7 +74,12 @@ const Table = props => {
             <CTooltip content="Hapus PIC TB"placement="top">
             <CButton color="secondary" size="sm"  onClick={()=>deletePIC(row.id)}>{<i class="fa fa-trash"></i>}</CButton>  
             </CTooltip>  
-              */}
+           
+             
+            
+          <div style={{textAlign:'right', marginLeft:'70px',width:'30px' ,marginTop:'-35px'}}>
+      
+            
             <CDropdown  color="secondary" >
             <CDropdownToggle  caret={false} color="transparant" >
               {/* <CIcon name="cil-settings" color={'black'}/> */}
@@ -86,10 +91,8 @@ const Table = props => {
               <CDropdownItem>Tutup Project</CDropdownItem>
               </CDropdownMenu>
           </CDropdown>
-          
-        
-            
-            
+            </div>
+                 
       
             </div>
           },
