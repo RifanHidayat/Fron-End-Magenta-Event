@@ -6,6 +6,9 @@ export const data= async (props) => fetch("http://localhost:3000/api/accounts/de
   export const dataPDF= async (props) => fetch("http://localhost:3000/api/accounts/detail-account/"+props)
   .then(response => response.json())
   .then((json)=>json)
+  export const dataAccounts= async (props) => fetch("http://localhost:3000/api/accounts")
+  .then(response => response.json())
+  .then((json)=>json)
   
 
 

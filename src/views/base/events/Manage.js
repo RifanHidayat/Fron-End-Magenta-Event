@@ -1,8 +1,8 @@
-import React,{ useState,useEffect }  from 'react'
-import { MDBDataTableV5 } from 'mdbreact';
+import React,{ useState,useEffect,useMemo }  from 'react'
 import DataTable from 'react-data-table-component';
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import FilterComponent from "src/views/base/components/FilterComponent";
 import {
   CButton,
   CCard,
@@ -22,7 +22,18 @@ const getBadge = status => {
 
   }
 }
-var  projects=[];
+
+
+  
+
+function Manage(){
+  const [tempProjects, setTempProjects] = useState([]);    
+  const [filterText, setFilterText] = React.useState("");
+  const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
+    false
+  );
+  const [tempIsloading,setTempIsloading]=useState(true);
+  var  projects=[];
 var dateFormat = require("dateformat");
 const columns = [  
               {
@@ -104,65 +115,98 @@ const columns = [  
                 },
             ];
 
-
-    const deleteProject=(id)=>{
-      Swal.fire({
-        title: 'Apakah anda yakin?',
-        text: "project akan dihapus",
-        icon: 'warning',
-        reverseButtons: true,
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        cancelButtonText: 'Cancel',
-        confirmButtonText: 'Delete',    
-        showLoaderOnConfirm: true,
-        preConfirm: () => {
-            return axios.delete('http://localhost:3000/api/projects/delete-project/'+id)
-                .then(function(response) {
-                    console.log(response.data);
-                })
-                .catch(function(error) {
-                    console.log(error.data);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops',
-                        text: 'Terjadi Kesalahan',
-                    })
-                });
-        },
-        allowOutsideClick: () => !Swal.isLoading()
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Peroject berhasil dihapus',
-                showConfirmButton:false,
-                timer:2000
-            }).then((result) => {
-                if (result.isConfirmed) {
-                   // window.location.href = '/leave';
-                }
-            })
-        }
-
-    })
-    }
-
-function Manage(){
-    const [tempProjects, setTempProjects] = useState([]);    
   useEffect(() => {
+    getDataProjects();
+    
+  }, []);
+
+  const getDataProjects=()=>{
     fetch('http://localhost:3000/api/projects')
     .then((response)=>response.json())
     .then((json)=>{
+      setTempIsloading(true)
       projects=json['data'];
-      setTempProjects(...json['data'])
-      console.log('data',projects);
-      setTempProjects(...json['data']);
+      setTempProjects([...json['data']])
+    
+
+      setTempIsloading(false)
       
     });
-  }, []);
+  }
+
+
+  const deleteProject=(id)=>{
+    Swal.fire({
+      title: 'Apakah anda yakin?',
+      text: "project akan dihapus",
+      icon: 'warning',
+      reverseButtons: true,
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      cancelButtonText: 'Cancel',
+      confirmButtonText: 'Delete',    
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+          return axios.delete('http://localhost:3000/api/projects/delete-project/'+id)
+              .then(function(response) {
+                  console.log(response.data);
+              })
+              .catch(function(error) {
+                  console.log(error.data);
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Oops',
+                      text: 'Terjadi Kesalahan',
+                  })
+              });
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+  }).then((result) => {
+      if (result.isConfirmed) {
+          Swal.fire({
+              icon: 'success',
+              title: 'Success',
+              text: 'Peroject berhasil dihapus',
+              showConfirmButton:false,
+              timer:2000
+          }).then((result) => {
+              if (result.isConfirmed) {
+                getDataProjects();
+                 // window.location.href = '/leave';
+              }
+          })
+      }
+
+  })
+  }
+
+
+  const filteredItems = tempProjects.filter(
+    item =>
+      JSON.stringify(item)
+        .toLowerCase()
+        .indexOf(filterText.toLowerCase()) !== -1
+  );
+
+
+  const subHeaderComponent = useMemo(() => {
+    const handleClear = () => {
+      if (filterText) {
+        setResetPaginationToggle(!resetPaginationToggle);
+        setFilterText("");
+      }
+    };
+
+
+    return (
+      <FilterComponent
+        onFilter={e => setFilterText(e.target.value)}
+        onClear={handleClear}
+        filterText={filterText}
+      />
+    );
+  }, [filterText, resetPaginationToggle]);
 
 
   return (
@@ -204,13 +248,21 @@ function Manage(){
       barReverse
     /> */}
 
-      <DataTable       
-      columns={columns}        
-      data={projects}       
-      pagination  
-      defaultSortFieldId
-      sortable                   
-  />    
+     {tempIsloading===false?
+ <DataTable       
+ columns={columns}        
+ data={filteredItems}      
+ pagination  
+ defaultSortFieldId
+ subHeader
+ subHeaderComponent={subHeaderComponent}
+ sortable
+                    
+  />  
+:<p></p>
+
+}  
+     
       </CCardBody>
     </CCard>
   </div>

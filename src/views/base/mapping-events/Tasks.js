@@ -7,6 +7,7 @@ import $ from 'jquery'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MDBDataTableV5 } from 'mdbreact';
+import Button from '@material-ui/core/Button';
 
 
 import {
@@ -215,22 +216,44 @@ const saveTasks=()=>{
        <Projects id={props.match.params.id} ></Projects>
     {/* //menu */}
         <div class="pills-regular">
-            <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+                  <ul className="nav nav-pills mb-2" id="pills-tab" role="tablist">
 
-                <li class="nav-item" id="members">
-                    <button class="nav-link" onClick={()=>membersPage()}  > Anggota</button>
+                <li className="nav-item" id="members">
+                <Button
+                  variant="contained"
+              
+                  onClick={()=>membersPage()}
+                >
+                  Anggota
+                </Button>
                  </li>&ensp;
 
-                <li class="nav-item" id="budgets" to="/projects/manage">
-                    <button class="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
+                <li className="nav-item" id="budgets" to="/projects/manage">
+                <Button
+                  variant="contained"              
+                  onClick={()=>budgetsPage()}
+                >
+                  Anggaran
+                </Button>
                  </li>&ensp;
 
-                 <li class="nav-item" id="tasks">
-                     <button class="nav-link active" onClick={()=>tasksPage()} > Tugas</button>
+                 <li className="nav-item" id="tasks">
+                 <Button
+                  variant="contained"  
+                  color="primary"            
+                  onClick={()=>tasksPage()}
+                >
+                  Tugas
+                </Button>
                 </li>&ensp;
 
-                <li class="nav-item" id="approval" >
-                        <button class="nav-link" onClick={()=>approvalPage()}  > Persetujuan</button>
+                <li className="nav-item" id="approval" >
+                <Button
+                  variant="contained"              
+                  onClick={()=>approvalPage()}
+                >
+                  Persetujuan
+                </Button>
                  </li>&ensp;
             </ul>
         </div>

@@ -242,6 +242,7 @@ function Create(){
     console.log('long :',event.lngLat[0])
     setTempLatitude(event.lngLat[1]);
     setTempLongtitude(event.lngLat[0]);
+    console.log(event)
 
     setMarker({
       longitude: event.lngLat[0],
@@ -324,6 +325,7 @@ function Create(){
 
     setTempQuotation([...state.selectedRows]);
     if (state.selectedRows.length>0){
+    
     state.selectedRows.map((value) => grand_total+=value.grand_total );
     state.selectedRows.map((value) => ids.push(value.id));
     state.selectedRows.map((value) => quotationNumber.push(value.quotation_number));
@@ -414,6 +416,7 @@ const subHeaderComponent = useMemo(() => {
       onSubmit={(values, { setSubmitting }) => {
         setIsloading(true);
         console.log('marker drag end',onMarkerDragEnd);
+      
         const data = { 
           project_number: tempProjectNumber,
           project_created_date:tempDateCreatedProject,
@@ -425,7 +428,7 @@ const subHeaderComponent = useMemo(() => {
           description:values.description,
           latitude:tempLatitude,
           longtitude:tempLongtitude,
-          id_quotation:tempIds.toString(),
+          id_quotation:tempIds,
           status:"pending",
           quotation_number:tempQuotationNumber.toString(),
           quotations:tempQuotation
@@ -628,7 +631,8 @@ const subHeaderComponent = useMemo(() => {
                 ref={mapRef} 
                         
                //  onViewportChange={setViewport}
-                mapStyle={MAP_STYLE}
+                mapStyle={'mapbox://styles/mapbox/streets-v11'}
+                
                 onViewportChange={handleViewportChange}
                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
                >

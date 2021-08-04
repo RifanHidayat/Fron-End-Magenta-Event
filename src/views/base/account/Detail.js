@@ -1,7 +1,7 @@
 import ReactExport from "react-export-excel";
 import 'jspdf-autotable'
 
-import React,{ useState,useEffect }  from 'react'
+import React,{ useState,useEffect,useMemo }  from 'react'
 import Table from 'react-bootstrap/Table'
 import ReactDOM from "react-dom";
 import DataTable from "react-data-table-component";
@@ -10,6 +10,8 @@ import "react-data-table-component-extensions/dist/index.css";
 import { columns, data,dataPDF } from "./data/transaction";
 import Button from '@material-ui/core/Button';
 import jsPDF from 'jspdf'
+import img from '../account/images/logo.png'
+import FilterComponent from "src/views/base/components/FilterComponent";
 
 import {
   CButton,
@@ -30,6 +32,10 @@ import {
     const [projectNumber,setProjectNumber]=useState();
     const [accountNmame,setAccountName]=useState();
     const [dataExcel,setDataExcel]=useState()
+    const [filterText, setFilterText] = React.useState("");
+    const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
+      false
+    );
 
     const ExcelFile = ReactExport.ExcelFile;
     const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
@@ -91,13 +97,15 @@ import {
     dataPDF(props.match.params.id).then(response=>{
         var data_transactions_pdf=[]
         var doc = new jsPDF('p', 'px', 'a4');
-        doc.text(`${response.data.bank_name} (${response.data.account_number})`, 10, 20)
+        doc.text(`Akun ${response.data.bank_name} (${response.data.account_number})`, 10, 20)
+        doc.addImage(img, 'png', 380, 10, 50, 50)
         doc.autoTable({ html: '#my-table' })
+        
 
         response.data.transactions.map((values)=>{
             var data=[
                 dateFormat(values.date,'dd/mm/yyyy'),
-                values.description,
+                <div dangerouslySetInnerHTML={{__html: ''+values.description!==""?values.description:""}} />,
                 values.type==="in"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
                 values.type==="out"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
                 "IDR "+values.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
@@ -106,6 +114,14 @@ import {
             
         })
         doc.autoTable({
+          headStyles: {
+            fillColor: '#df0c8f',
+            textColor: [255,255,255],
+            fontSize: 10,
+            padding: 0,
+        },
+        
+         
             margin:{top:20},
             columnStyles: { 
                 0: { 
@@ -133,7 +149,17 @@ import {
         ],
     })
     doc.autoTable({
+     
+
+      
         margin:{top:20},
+        headStyles: {
+          fillColor: '#df0c8f',
+          textColor: [255,255,255],
+          fontSize: 10,
+          padding: 0,
+      },
+      
         columnStyles: {
             0: {cellWidth: 50},
         
@@ -150,7 +176,31 @@ import {
     })  
   };
 
+  const filteredItems = transaction.filter(
+    item =>
+      JSON.stringify(item)
+        .toLowerCase()
+        .indexOf(filterText.toLowerCase()) !== -1
+  );
 
+
+  const subHeaderComponent = useMemo(() => {
+    const handleClear = () => {
+      if (filterText) {
+        setResetPaginationToggle(!resetPaginationToggle);
+        setFilterText("");
+      }
+    };
+
+
+    return (
+      <FilterComponent
+        onFilter={e => setFilterText(e.target.value)}
+        onClear={handleClear}
+        filterText={filterText}
+      />
+    );
+  }, [filterText, resetPaginationToggle]);
 
 
   return (
@@ -185,7 +235,7 @@ import {
  <Table striped bordered hover style={{width:'50%'}}>
   <thead>
     <tr>
-      <th>total Cash In</th>
+      <th>Total Cash In</th>
       <th>Total Cash Out </th>
       <th>Total Saldo</th>   
     </tr>
@@ -209,14 +259,15 @@ import {
       </CCardHeader>
       <CCardBody>
       {/* <DataTableExtensions {...tableData}> */}
-        <DataTable
+      <DataTable
           columns={columns}
-          data={transaction}
-          noHeader
+          data={filteredItems}  
+          subHeader
           defaultSortField="id"
           defaultSortAsc={false}
           pagination
           highlightOnHover
+          subHeaderComponent={subHeaderComponent}
         />
       {/* </DataTableExtensions> */}
 

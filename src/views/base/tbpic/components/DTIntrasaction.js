@@ -1,62 +1,89 @@
-import React, { useMemo } from "react";
+import React, { useMemo,useState,useEffect } from "react";
 import DataTable from "react-data-table-component";
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import FilterComponent from "src/views/base/components/FilterComponent";
-import CIcon from '@coreui/icons-react'
-import  {BsThreeDots} from 'react-icons/bs'
+import {DataInTransactions} from '../data/pic'
+
+
 import {
-  CDropdown,
-  CDropdownToggle,
-  CDropdownMenu,
-  CDropdownItem,
+
   CTooltip,
   CButton
   
 } from '@coreui/react'
 import { Height } from "@material-ui/icons";
+var dateFormat=require('dateformat')
 
 const Table = props => {
+  const [data,setData]=useState([])
+  const [dataInTransactions,setDataInTransactions]=useState([])
+
+  
+
+  function getData(){
+    DataInTransactions().then((response)=>{
+      setDataInTransactions([...response.data])
+      console.log("data in",response.data)
+  
+    })
+  
+  }
+
+
+  useEffect(()=>{
+    //setData([...props.data])
+    getData()
+    
+  })
+  
     const columns = [
 
         {
-            name: "Name",
-            selector: "name",
+            name: "No Invoie",
+          
             sortable: true,
             width:'15%',
             filterable: true,
-            cell:row=><span>{row.name}</span>
+            cell:row=><span>{row.faktur_number}</span>
           },
     
           {
-            name: "Jabatan",
-            selector: "position",
+            name: "No Po",
+           
             sortable: true,
             width:'15%',
-            cell: row => row.position
+            cell: row => row.po_number
           },
           {
-            name: "email",
-            selector: "email",
+            name: "No. Project",
+        
             sortable: true,
-            width:'20%',
-            cell : row=>row.email
+            width:'15%',
+            cell : row=>row.project_number
     
           },
           {
-            name: "Saldo Awal",
+            name: "Descripsi",
             selector: "openin_balance",
             sortable: true,
             width:'15%',
-            cell: row=> <span> IDR {row.opening_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
+            cell: row=> row.description
             
           },
           {
-            name: "Saldo",
+            name: "Tanggal",
+            selector: "balance",
+            sortable: true,
+            width:'10%',
+            cell: row=> dateFormat(row.date,'dd/mm/yyyy')
+          },
+          {
+            name: "Jumlah",
             selector: "balance",
             sortable: true,
             width:'15%',
-            cell: row=> <span> IDR {row.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
+            cell: row=> <span> IDR {row.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
           },
           {
             name: "Aksi",
@@ -74,26 +101,6 @@ const Table = props => {
             <CTooltip content="Hapus PIC TB"placement="top">
             <CButton color="secondary" size="sm"  onClick={()=>deletePIC(row.id)}>{<i class="fa fa-trash"></i>}</CButton>  
             </CTooltip>  
-           
-             
-            
-          <div style={{textAlign:'right', marginLeft:'70px',width:'30px' ,marginTop:'-35px'}}>
-      
-            
-            <CDropdown  color="secondary" >
-            <CDropdownToggle  caret={false} color="transparant" >
-              {/* <CIcon name="cil-settings" color={'black'}/> */}
-              <BsThreeDots style={{backgroundColor:'secondary',width:'30px',height:'30px',borderRadius:'1px'}} />
-            </CDropdownToggle>
-            <CDropdownMenu className="pt-0" placement="left-end">
-              <CDropdownItem  to={`/pictb/in-transaction/${row.id}`}>IN OUT Transaksi</CDropdownItem>
-              <CDropdownItem to={`/pictb/transaction-pictb/${row.id}`}>Rekap IN OUT Transaksi </CDropdownItem>
-             
-              </CDropdownMenu>
-          </CDropdown>
-            </div>
-                 
-      
             </div>
           },
         ];
@@ -113,7 +120,7 @@ const Table = props => {
             confirmButtonText: 'Delete',    
             showLoaderOnConfirm: true,
             preConfirm: () => {
-                return axios.delete('http://localhost:3000/api/pic/delete-pictb/'+id)
+                return axios.delete('http://localhost:3000/api/transactions/in/'+id)
                     .then(function(response) {
                         console.log(response.data);
                     })
@@ -132,13 +139,13 @@ const Table = props => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
-                    text: 'PIC TB berhasil dihapus',
+                    text: 'Berhasil menghapus data transaksi',
                     showConfirmButton:false,
                     timer:2000
                 }).then((result) => {
                     if (result.isConfirmed) {
-                     
                        // window.location.href = '/leave';
+                      getData()
                     }
                 })
             }
@@ -152,7 +159,7 @@ const Table = props => {
 
 
   
-  const filteredItems = props.data.filter(
+  const filteredItems = dataInTransactions.filter(
     item =>
       JSON.stringify(item)
         .toLowerCase()

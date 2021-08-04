@@ -32,6 +32,8 @@ const INTransaction = React.lazy(() => import('./views/base/tbpic/IN'));
 const OUTTransaction = React.lazy(() => import('./views/base/tbpic/OUT'));
 const TransactionPICTB = React.lazy(() => import('./views/base/tbpic/Transactions'));
 
+const InOutTransaction = React.lazy(() => import('./views/base/inout/InOut'));
+
 
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
@@ -91,7 +93,7 @@ const routes = [
   { path: '/mapping/approval/:id', name: 'Approval', component: Approval },
   { path: '/mapping/members/:id', name: 'Members', component: Members },
   { path: '/mapping/transactions/:id/:project_number', name: 'Transactions', component:Transactions },
-  { path: '/mapping/l/r/:id', name: 'L/R', component:LRProject },
+  { path: '/mapping/profit-cost/:id', name: 'Profit-cost', component:LRProject },
 
   //account
   { path: '/account/manage', name: 'Account / Manage', component: ManageAccount },
@@ -106,6 +108,8 @@ const routes = [
   { path: '/pictb/in-transaction/:id', name: 'PICTB / In Transaction', component: INTransaction },
   { path: '/pictb/out-transaction/:id', name: 'PICTB / Out Transaction', component: OUTTransaction },
   { path: '/pictb/transaction-pictb/:id', name: 'PICTB / Transactions PICTB', component: TransactionPICTB },
+  
+  { path: '/in-out', name: 'In-Out', component:InOutTransaction },
 
 
 

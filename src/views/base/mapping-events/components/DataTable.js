@@ -45,7 +45,7 @@ const Table = props => {
           name: 'Total Biaya',
           sortable: true,
           right: true,   
-          cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+          cell: row => <div data-tag="allowRowEvents"><div >IDR {row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
           }</div></div>,  
         }, 
         

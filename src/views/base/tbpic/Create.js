@@ -17,6 +17,9 @@ import {
   CFormGroup,
   CInput,
   CLabel,
+  CInputGroupPrepend,
+  CInputGroupText,
+  CInputGroup
 } from '@coreui/react'
 
 
@@ -183,10 +186,20 @@ function Create(){
                     </CFormGroup>
                  </CCol>  
                  <CCol xs="6">
-                    <CFormGroup>
+                    {/* <CFormGroup>
                         <CLabel htmlFor="opening_balance">Saldo Awal</CLabel>
                         <CInput required  style={{textAlign:'right'}} id="opening_balance" name="opening_balance" onChange={handleChange}  value={values.opening_balance} />
-                    </CFormGroup>
+                    </CFormGroup> */}
+
+                  <CFormGroup>
+                 <CLabel htmlFor="total_project_cost">Saldo Awal</CLabel>
+                  <CInputGroup>
+                    <CInputGroupPrepend>
+                      <CInputGroupText>IDR</CInputGroupText>
+                    </CInputGroupPrepend>
+                    <CInput required  style={{textAlign:'right'}} id="opening_balance" name="opening_balance" onChange={handleChange}  value={values.opening_balance} />              
+                  </CInputGroup>
+                </CFormGroup>
                  </CCol>  
 
                  <br/>                 

@@ -1,4 +1,4 @@
-import React,{ useState,useEffect }  from 'react'
+import React,{ useState,useEffect,useMemo }  from 'react'
 import Table from 'react-bootstrap/Table'
 import ReactExport from "react-export-excel";
 import 'jspdf-autotable'
@@ -9,6 +9,9 @@ import "react-data-table-component-extensions/dist/index.css";
 import { getDetailPIC,dataPDF } from "./data/pic";
 import Button from '@material-ui/core/Button';
 import jsPDF from 'jspdf'
+import img from '../account/images/logo.png'
+import FilterComponent from "src/views/base/components/FilterComponent";
+
 import {
   CButton,
   CCard,
@@ -85,6 +88,11 @@ const columns = [
     const [namePIC,setNamePIC]=useState()
     const [dataExcel,setDataExcel]=useState()
 
+    const [filterText, setFilterText] = React.useState("");
+    const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
+      false
+    );
+
     const ExcelFile = ReactExport.ExcelFile;
     const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
     const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
@@ -131,7 +139,8 @@ const columns = [
     dataPDF(props.match.params.id).then(response=>{
         var data_transactions_pdf=[]
         var doc = new jsPDF('p', 'px', 'a4');
-        doc.text(`${namePIC}`, 10, 20)
+        doc.text(`TB:${namePIC}`, 10, 20)
+        doc.addImage(img, 'png', 380, 10, 50, 50)
         doc.autoTable({ html: '#my-table' })
         response.data.transactions.map((values)=>{
             var data=[
@@ -146,6 +155,12 @@ const columns = [
         })
         doc.autoTable({
             margin:{top:20},
+            headStyles: {
+              fillColor: '#df0c8f',
+              textColor: [255,255,255],
+              fontSize: 10,
+              padding: 0,
+          },
             columnStyles: { 
                 0: { 
                     halign: 'right', 
@@ -173,6 +188,12 @@ const columns = [
     })
     doc.autoTable({
         margin:{top:20},
+        headStyles: {
+          fillColor: '#df0c8f',
+          textColor: [255,255,255],
+          fontSize: 10,
+          padding: 0,
+      },
         columnStyles: {
             0: {cellWidth: 50},
         
@@ -190,7 +211,31 @@ const columns = [
   };
 
 
+  const filteredItems = transaction.filter(
+    item =>
+      JSON.stringify(item)
+        .toLowerCase()
+        .indexOf(filterText.toLowerCase()) !== -1
+  );
 
+
+  const subHeaderComponent = useMemo(() => {
+    const handleClear = () => {
+      if (filterText) {
+        setResetPaginationToggle(!resetPaginationToggle);
+        setFilterText("");
+      }
+    };
+
+
+    return (
+      <FilterComponent
+        onFilter={e => setFilterText(e.target.value)}
+        onClear={handleClear}
+        filterText={filterText}
+      />
+    );
+  }, [filterText, resetPaginationToggle]);
 
 
   return (
@@ -200,7 +245,7 @@ const columns = [
       <div style={{float:'left',position:'absolute'}}>
         <span>
             <h5><strong>
-                   {namePIC}
+                   TB: {namePIC}
           </strong></h5>
        </span>
     </div>
@@ -248,14 +293,15 @@ const columns = [
       </CCardHeader>
       <CCardBody>
       {/* <DataTableExtensions {...tableData}> */}
-        <DataTable
+      <DataTable
           columns={columns}
-          data={transaction}
-          noHeader
+          data={filteredItems}  
+          subHeader
           defaultSortField="id"
           defaultSortAsc={false}
           pagination
           highlightOnHover
+          subHeaderComponent={subHeaderComponent}
         />
 
       {/* </DataTableExtensions> */}

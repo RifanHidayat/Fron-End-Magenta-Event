@@ -47,8 +47,7 @@ function Manage(){
                 </div>
       </CCardHeader>
       <CCardBody>
-      <Table data={pictb}  />
-        
+      <Table data={pictb}  />      
       </CCardBody>
     </CCard>
   </div>

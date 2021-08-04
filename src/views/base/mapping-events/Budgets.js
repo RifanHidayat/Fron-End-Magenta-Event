@@ -1,4 +1,5 @@
-import React,{ useState,useEffect }  from 'react'
+ import React,{ useState,useEffect }  from 'react'
+ import Button from '@material-ui/core/Button';
 import axios from 'axios'
 import { useHistory } from "react-router-dom";
 import { Formik } from 'formik';
@@ -26,6 +27,11 @@ import { Projects } from './components/Projects';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {getDataAccounts} from './data/accounts'
+import 'jquery/dist/jquery.min.js';
+
+//Datatable Modules
+import "datatables.net-dt/js/dataTables.dataTables"
+import "datatables.net-dt/css/jquery.dataTables.min.css"
 
 
 const columns = [  
@@ -63,6 +69,7 @@ function Budgets(props){
     const [datatable, setDatatable] = React.useState({});
     const [status,setStatus]=useState();
     const [TotalBudgetProject,setTotalBudgetProject]=useState();
+    var dateFormat = require('dateformat');
 
     //loading spinner
     const [tempIsloadingBudgets,setTempIsLoadingBudgets]=useState(true);
@@ -177,6 +184,32 @@ function Budgets(props){
         $('#use-datatable tbody').append(row);      
       }
       
+      const setDataBudgetCreated=(data)=>{
+        var row='';
+       
+       
+     
+        if (data.length===0){
+      
+        } else{
+          console.log('masuk ke perulangan',data.length)
+          for(var i=0;i<data.length;i++){
+           
+  
+            row +=`<tr>
+            <td>IDR ${data[i].amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</td>           
+                     <td>${dateFormat(data[i].date,'dd/mm/yyyy')}</td>
+                     <td>  ${data[i].account.bank_name} (${data[i].account.account_number})
+                     </td>
+  
+                     </tr>
+            `
+          }
+          
+      
+          }
+          $(".data-budget-selected").html(row);
+      }
 
     const saveBudgets=(data)=>{
    
@@ -212,45 +245,64 @@ function Budgets(props){
       })
     }
 
+    const getDateSelected=()=>{
+      var id=props.match.params.id;
+      axios.get('http://localhost:3000/api/budgets/detail-budget/'+id)
+      .then((response)=>{
+        if (response.data.data.transactions.length>0){      
+       
+        setDataBudgetCreated(response.data.data.transactions)
+        console.log("erew",response.data.data.transactions)
+        calculation();  
+        $('#budgets-datatable').DataTable();
+        }    
+      })
+      .catch((response)=>{
+        setTempIsLoadingBudgets(false)
+        setMainIsLoading(false)      
+      })    
+
+    }
+
     useEffect(()=>{  
       var id=props.match.params.id;
-      var dateFormat = require('dateformat');
-      getDataAccounts().then(accounts=>{
-        setAccount([...accounts])
-    
 
+      getDataAccounts().then(accounts=>{
+      setAccount([...accounts])
+      console.log('id',id)
       //get detail budgets
       axios.get('http://localhost:3000/api/budgets/detail-budget/'+id)
       .then((response)=>{
-
-        console.log("tes",response)
-        if (response.data.data.transactions.length>0){
+        console.log("tes");
+        if (response.data.data.transactions.length>0){      
         setBudgets(response.data.data.transactions)
-        BudgetProject(response.data.data.transactions)
+        BudgetProject(response.data.data.transactions)    
         setStatus(response.data.data.status)
         setBudgetStartDate(dateFormat(response.data.data.budget_start_date,'yyyy-mm-dd'))
         setBudgetEndtDate(dateFormat(response.data.data.budget_end_date,'yyyy-mm-dd'));
         setTotalBudgetProject(response.data.data.total_budget.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."));
- 
         setTempIsLoadingBudgets(false)
         setMainIsLoading(false) 
         response.data.data.transactions.map((value)=>updateBudgets(value.amount,value.date,value.
         account_id,accounts))  
+        setDataBudgetCreated(response.data.data.transactions)
+        console.log("erew",response.data.data.transactions)
         calculation();  
+        $('#budgets-datatable').DataTable();
         }else{
           setMainIsLoading(false) 
           setTempIsLoadingBudgets(false)
           setMainIsLoading(false) 
-          setStatus(response.data.data.status)
-          
+          setStatus(response.data.data.status)         
         }     
       })
       .catch((response)=>{
         setTempIsLoadingBudgets(false)
-        setMainIsLoading(false) 
-       
+        setMainIsLoading(false)      
       })       
-        })    
+    
+        })  
+       // $('.budgets-datatable').DataTable();  
     },[])
 
 
@@ -262,24 +314,46 @@ function Budgets(props){
       <Projects id={props.match.params.id} ></Projects>:
     
       <div class="pills-regular">
-          <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+        <ul className="nav nav-pills mb-2" id="pills-tab" role="tablist">
 
-              <li class="nav-item" id="members">
-                  <button class="nav-link" onClick={()=>membersPage()}  > Anggota</button>
-               </li>&ensp;
+                <li className="nav-item" id="members">
+                <Button
+                  variant="contained"
+                  
+                  onClick={()=>membersPage()}
+                >
+                  Anggota
+                </Button>
+                 </li>&ensp;
 
-              <li class="nav-item" id="budgets" to="/projects/manage">
-                  <button class="nav-link active" onClick={()=>budgetsPage()} > Anggaran</button>
-               </li>&ensp;
+                <li className="nav-item" id="budgets" to="/projects/manage">
+                <Button
+                  variant="contained"    
+                  color="primary"          
+                  onClick={()=>budgetsPage()}
+                >
+                  Anggaran
+                </Button>
+                 </li>&ensp;
 
-               <li class="nav-item" id="tasks">
-                   <button class="nav-link" onClick={()=>tasksPage()} > Tugas</button>
-              </li>&ensp;
+                 <li className="nav-item" id="tasks">
+                 <Button
+                  variant="contained"              
+                  onClick={()=>tasksPage()}
+                >
+                  Tugas
+                </Button>
+                </li>&ensp;
 
-              <li class="nav-item" id="approval" >
-                      <button class="nav-link" onClick={()=>approvalPage()}  > Persetujuan</button>
-               </li>&ensp;
-          </ul>
+                <li className="nav-item" id="approval" >
+                <Button
+                  variant="contained"              
+                  onClick={()=>approvalPage()}
+                >
+                  Persetujuan
+                </Button>
+                 </li>&ensp;
+            </ul>
       </div>
 
       {mainisLoading===false  
@@ -342,7 +416,25 @@ function Budgets(props){
                     </CFormGroup>
               </CCol>
                   <CCol xs="12">
-                  <MDBDataTableV5
+                  <br></br>
+            <table tyle={{width:'100%'}} class="table table-striped budgets-datatable"  id="budgets-datatable">
+                  <thead s>
+                    <tr>
+                    <th>
+                        Nominal
+                      </th>
+                      <th>
+                        Tanggal Transfer
+                      </th>
+                      <th style={{width:'30%'}} >
+                        Akun Transfer
+                      </th>                  
+                    </tr>
+                  </thead>
+                  <tbody id="data-budget-selected" class="data-budget-selected">
+                  </tbody>
+                </table> 
+                  {/* <MDBDataTableV5
                   hover
                   entriesOptions={[5, 20, 25]}
                   entries={5}
@@ -352,7 +444,8 @@ function Budgets(props){
                   searchTop
                   searchBottom={false}
                   barReverse                                         
-              />
+              /> */}
+              
               </CCol>
            </CFormGroup>      
               } 
@@ -439,13 +532,6 @@ function Budgets(props){
       // create transacton project
         axios.post('http://localhost:3000/api/projects/transaction-project',data_transaction_project)
         .then((response)=>{
-          
-          setModalBudgets(false)
-          setBudgets([...datatable_budgets]);
-          BudgetProject(datatable_budgets)
-          setTotalBudgetProject(total_budget.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
-          setBudgetStartDate(values.budget_start_date)
-          setBudgetEndtDate(values.budget_end_date)
           toast.success('Berhasil menambahkan anggaran project', {
             position: "top-right",
             autoClose: 5000,
@@ -456,6 +542,18 @@ function Budgets(props){
             progress: undefined,
             color:'success'
             });
+            getDateSelected()
+          
+          setModalBudgets(false)
+          setBudgets([...datatable_budgets]);
+          BudgetProject(datatable_budgets)
+        
+          setTotalBudgetProject(total_budget.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+          setBudgetStartDate(values.budget_start_date)
+          setBudgetEndtDate(values.budget_end_date)
+
+          
+          
           
           })         
         .catch((error)=>{

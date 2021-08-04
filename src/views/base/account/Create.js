@@ -17,6 +17,9 @@ import {
   CFormGroup,
   CInput,
   CLabel,
+  CInputGroup,
+  CInputGroupPrepend,
+  CInputGroupText
 } from '@coreui/react'
 
 
@@ -59,7 +62,7 @@ function Add(){
 
   const options = [
     { value: 'eo', label: 'Event Organizer' },
-    { value: 'metaprint', label: 'Metaprint' },
+    
     { value: 'all', label: 'Semua' }
   ]  
   return (
@@ -139,15 +142,25 @@ function Add(){
                  </CCol> 
                  <CCol xs="6">
                     <CFormGroup>
-                        <CLabel htmlFor="bank_account_number">No. Rekening</CLabel>
+                        <CLabel htmlFor="bank_account_number">No. Akun</CLabel>
                         <CInput required id="bank_account_number" name="bank_account_number"  onChange={handleChange}  value={values.bank_account_number} />
                     </CFormGroup>
                  </CCol>  
                  <CCol xs="6">
-                    <CFormGroup>
+                    {/* <CFormGroup>
                         <CLabel htmlFor="bank_account_balance">Saldo Awal</CLabel>
                         <CInput required  oninput="convertToRupiah(this);"  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />
-                    </CFormGroup>
+                    </CFormGroup> */}
+
+                    <CFormGroup>
+                 <CLabel htmlFor="total_project_cost">Saldo Awal</CLabel>
+                  <CInputGroup>
+                    <CInputGroupPrepend>
+                      <CInputGroupText>IDR</CInputGroupText>
+                    </CInputGroupPrepend>
+                    <CInput required  oninput="convertToRupiah(this);"  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />                
+                  </CInputGroup>
+                </CFormGroup>
                  </CCol>  
 
                   <CCol xs="6">

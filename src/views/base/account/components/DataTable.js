@@ -26,7 +26,7 @@ const Table = props => {
         {
           name: 'Saldo',
           sortable: true,   
-          cell: row => <div data-tag="allowRowEvents"><div >{row.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</div></div>,  
+          cell: row => <div data-tag="allowRowEvents"><div >{"IDR " +row.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</div></div>,  
         },
   
         {

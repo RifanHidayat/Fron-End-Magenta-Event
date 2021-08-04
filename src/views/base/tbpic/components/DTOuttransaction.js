@@ -3,104 +3,87 @@ import DataTable from "react-data-table-component";
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import FilterComponent from "src/views/base/components/FilterComponent";
-import CIcon from '@coreui/icons-react'
-import  {BsThreeDots} from 'react-icons/bs'
+
+
+
 import {
-  CDropdown,
-  CDropdownToggle,
-  CDropdownMenu,
-  CDropdownItem,
+
   CTooltip,
   CButton
   
 } from '@coreui/react'
 import { Height } from "@material-ui/icons";
+var dateFormat=require('dateformat')
+const DataOutTransactions= async () => fetch("http://localhost:3000/api/transactions/out")
+.then(response => response.json())
+.then((json)=>json)
 
 const Table = props => {
     const columns = [
 
         {
-            name: "Name",
-            selector: "name",
-            sortable: true,
-            width:'15%',
-            filterable: true,
-            cell:row=><span>{row.name}</span>
-          },
-    
-          {
-            name: "Jabatan",
-            selector: "position",
-            sortable: true,
-            width:'15%',
-            cell: row => row.position
-          },
-          {
-            name: "email",
-            selector: "email",
+            name: "Nama PICTB/ No. Project",      
             sortable: true,
             width:'20%',
-            cell : row=>row.email
+            filterable: true,
+            cell:row=><span>{row.label}</span>
+          },
+    
+          {
+            name: "Keterangan",
+           
+            sortable: true,
+            width:'15%',
+            cell: row => row.project_id!==0?" Laba Rugi project":"PIC Tb Pindahan"
+          },
+          {
+            name: "Tanggal",
+        
+            sortable: true,
+            width:'15%',
+            cell: row=> dateFormat(row.date,'dd/mm/yyyy')
     
           },
           {
-            name: "Saldo Awal",
-            selector: "openin_balance",
+            name: "Deskripsi",
+            
             sortable: true,
             width:'15%',
-            cell: row=> <span> IDR {row.opening_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
+            cell: row=> row.description
             
           },
+          
           {
-            name: "Saldo",
-            selector: "balance",
+            name: "Jumlah",
+            
             sortable: true,
             width:'15%',
-            cell: row=> <span> IDR {row.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
+            cell: row=> <span> IDR {row.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
           },
           {
             name: "Aksi",
             selector: "",
             sortable: true,
             width:'15%',
+            center:true,
            
             cell:row=>
-            <div style={{float:'left',width:'250%'}}>
+            <div>
                   <CTooltip content="Edit PIC TB"placement="top">
             <CButton color="secondary"  size="sm" to= {`/pictb/edit/${row.id}`}>{<i class="fa fa-edit"></i>}</CButton>
             </CTooltip>
           
             &ensp;
             <CTooltip content="Hapus PIC TB"placement="top">
-            <CButton color="secondary" size="sm"  onClick={()=>deletePIC(row.id)}>{<i class="fa fa-trash"></i>}</CButton>  
+            <CButton color="secondary" size="sm"  onClick={()=>deletePIC(row.id,row.project_id,row.pictb_id)}>{<i class="fa fa-trash"></i>}</CButton>  
             </CTooltip>  
-           
-             
-            
-          <div style={{textAlign:'right', marginLeft:'70px',width:'30px' ,marginTop:'-35px'}}>
-      
-            
-            <CDropdown  color="secondary" >
-            <CDropdownToggle  caret={false} color="transparant" >
-              {/* <CIcon name="cil-settings" color={'black'}/> */}
-              <BsThreeDots style={{backgroundColor:'secondary',width:'30px',height:'30px',borderRadius:'1px'}} />
-            </CDropdownToggle>
-            <CDropdownMenu className="pt-0" placement="left-end">
-              <CDropdownItem  to={`/pictb/in-transaction/${row.id}`}>IN OUT Transaksi</CDropdownItem>
-              <CDropdownItem to={`/pictb/transaction-pictb/${row.id}`}>Rekap IN OUT Transaksi </CDropdownItem>
-             
-              </CDropdownMenu>
-          </CDropdown>
-            </div>
-                 
-      
             </div>
           },
         ];
     
     
     
-        const deletePIC=(id)=>{
+        const deletePIC=(id,project_id,pictb_id)=>{
           Swal.fire({
             title: 'Apakah anda yakin?',
             text: "PIC TB akan dihapus",
@@ -113,7 +96,7 @@ const Table = props => {
             confirmButtonText: 'Delete',    
             showLoaderOnConfirm: true,
             preConfirm: () => {
-                return axios.delete('http://localhost:3000/api/pic/delete-pictb/'+id)
+                return axios.delete('http://localhost:3000/api/transactions/out/'+id+'/'+project_id+'/'+pictb_id)
                     .then(function(response) {
                         console.log(response.data);
                     })
@@ -132,19 +115,20 @@ const Table = props => {
                 Swal.fire({
                     icon: 'success',
                     title: 'Success',
-                    text: 'PIC TB berhasil dihapus',
+                    text: 'Transaksi Out Berhasil dihapus',
                     showConfirmButton:false,
                     timer:2000
                 }).then((result) => {
                     if (result.isConfirmed) {
-                     
                        // window.location.href = '/leave';
+                      // getAllOutTransactions()
                     }
                 })
             }
     
         })
         }
+        
   const [filterText, setFilterText] = React.useState("");
   const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
     false

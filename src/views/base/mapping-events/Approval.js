@@ -7,7 +7,7 @@ import Swal from 'sweetalert2'
 import "mapbox-gl/dist/mapbox-gl.css";
 import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import { Alert } from 'reactstrap';
-
+import Button from '@material-ui/core/Button';
 import {
   CCard,
   CCardBody,
@@ -85,6 +85,7 @@ function Approval(props){
     const [tempMap, setTempMap] = useState(false)
     const [status,setStatus]=useState();
     const [tempProfits,setTempProfits]=useState();
+    const [tempIds,setTempids]=useState([])
 
     const [TotalProject,setTotalProject]=useState();
     const [disabledButton,setDisabledButton]=useState(true)
@@ -137,7 +138,7 @@ function Approval(props){
       } else{
         for(var i=0;i<data.length;i++){
           row +=`<tr>
-                  <td>${data[i].name}<br> ${data[i].employee_id}</td>
+                  <td>${data[i].first_name}<br> ${data[i].employee_id}</td>
                  
                    <td>${data[i].identity_number}</td>
                    <td> 
@@ -165,15 +166,18 @@ function Approval(props){
           let month_created = date.getMonth() + 1;
           let year_created = date.getFullYear();
           let date_transfer='00'.substr( String(date_crated).length ) +date_crated+'/'+'00'.substr( String(month_created).length ) + month_created+'/'+year_created;
-
-          row +=`<tr>
+          if (data[i].type=='in'){
+            row +=`<tr>
                   <td>IDR ${data[i].amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</td>            
                    <td>${date_transfer}</td>
-                   <td> 
+                   <td> ${data[i].account.bank_name} (${data[i].account.account_number})
                    </td>
 
                    </tr>
           `
+
+          }
+          
         }
         $("#data-budgets").html(row);
     
@@ -205,7 +209,8 @@ function Approval(props){
       var description=`Penambahan anggaran untuk project dengan No. Project <a href='http://localhost:3001/mapping/manage#/mapping/approval/${id}'>${project_number}</a>` 
       var data={
         description:description,
-        profits:tempProfits        
+        profits:tempProfits,
+        id_quotation:tempIds   
       }
       console.log("prods",profits)
       //values save L/R project
@@ -312,27 +317,38 @@ function Approval(props){
     useEffect(()=>{
         let id=props.match.params.id;
         var dateFormat = require('dateformat');   
+        let ids=[];
      
            
         //get detail project
         axios.get('http://localhost:3000/api/projects/detail-project/'+id)
         .then((response)=>{
-          console.log("quotation",response.data.data)
+       
           setQuotations(response.data.data.quotations)
+        
           response.data.data.quotations.map((value)=>{
+            ids.push(value.id);
             //set data quotation to save profit / loss project
             var description=`${value.quotation_number}/${response.data.data.project_number}`
             var data=[dateFormat(response.data.data.project_start_date,'yyyy-mm-dd'),description,value.grand_total,'in',id]
             profits.push(data)
+
         })
+        
          
-          if (response.data.data.budget!==''){           
+          if (response.data.data.budget!==''){  
+                
             //budget
-            setDataBudgets(response.data.data.budget.transactions)       
+            if (response.data.data.budget.transactions.length>0){
+              setDataBudgets(response.data.data.budget.transactions)   
+
+            }
+               
             setBudgetEndtDate(dateFormat(response.data.data.budget.budget_end_date,'yyyy-mm-dd'))
             setBudgetStartDate(dateFormat(response.data.data.budget.budget_start_date,'yyyy-mm-dd'))                 
             setTotalProject(response.data.data.budget.opening_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."));  
             
+            console.log("quotation",response.data.data)  
              //set data transactions budget to save profit / loss project
             response.data.data.budget.transactions.map((value)=>{
               var data=[dateFormat(value.date,'yyyy-mm-dd'),value.description,value.amount,'out',id]
@@ -340,6 +356,7 @@ function Approval(props){
             })
                      
           }
+       //   console.log("quotation",response.data.data)
          
   
 
@@ -348,7 +365,7 @@ function Approval(props){
           }
 
           if ((response.data.data.members!=null)){
-            setDataMembers(JSON.parse(response.data.data.members))
+            setDataMembers(response.data.data.members)
           }
         
             setTempProjectNumber(response.data.data.project_number)
@@ -380,7 +397,7 @@ function Approval(props){
            //disable button approve and reject
            
            
-
+          setTempids([...ids])
           //iniaslisasi datatable
             $('#members-datatable').DataTable();
             $('#budgets-datatable').DataTable();
@@ -561,22 +578,44 @@ function Approval(props){
 
           {/* //menu */}
           <div class="pills-regular">
-            <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
+                  <ul className="nav nav-pills mb-2" id="pills-tab" role="tablist">
 
-                <li class="nav-item" id="members">
-                    <button class="nav-link" onClick={()=>membersPage()}  > Anggota</button>
+                <li className="nav-item" id="members">
+                <Button
+                  variant="contained"
+                 
+                  onClick={()=>membersPage()}
+                >
+                  Anggota
+                </Button>
                  </li>&ensp;
 
-                <li class="nav-item" id="budgets" to="/projects/manage">
-                    <button class="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
+                <li className="nav-item" id="budgets" to="/projects/manage">
+                <Button
+                  variant="contained"              
+                  onClick={()=>budgetsPage()}
+                >
+                  Anggaran
+                </Button>
                  </li>&ensp;
 
-                 <li class="nav-item" id="tasks">
-                     <button class="nav-link" onClick={()=>tasksPage()} > Tugas</button>
+                 <li className="nav-item" id="tasks">
+                 <Button
+                  variant="contained"              
+                  onClick={()=>tasksPage()}
+                >
+                  Tugas
+                </Button>
                 </li>&ensp;
 
-                <li class="nav-item" id="approval" >
-                        <button class="nav-link active" onClick={()=>approvalPage()}  > Persetujuan</button>
+                <li className="nav-item" id="approval" >
+                <Button
+                 color="primary"
+                  variant="contained"              
+                  onClick={()=>approvalPage()}
+                >
+                  Persetujuan
+                </Button>
                  </li>&ensp;
             </ul>
         </div>
@@ -727,7 +766,7 @@ function Approval(props){
                 ref={mapRef} 
                         
                //  onViewportChange={setViewport}
-                mapStyle={MAP_STYLE}
+               mapStyle={'mapbox://styles/mapbox/streets-v11'}
                 onViewportChange={handleViewportChange}
                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
                >

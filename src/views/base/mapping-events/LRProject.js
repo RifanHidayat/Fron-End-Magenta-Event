@@ -1,4 +1,4 @@
-import React,{ useState,useEffect,useRef,useCallback }  from 'react'
+import React,{ useState,useEffect,useRef,useCallback,useMemo }  from 'react'
 import axios from 'axios'
 import './css/style.css'
 import { useHistory } from "react-router-dom";
@@ -15,7 +15,11 @@ import jsPDF from 'jspdf'
 import ReactExport from "react-export-excel";
 import 'jspdf-autotable'
 import {dataPDFLR} from './data/transactions'
-
+import FilterComponent from "src/views/base/components/FilterComponent";
+import DataTable from "react-data-table-component";
+import {getDataCostProjects} from './data/cost'
+import Swal from 'sweetalert2'
+import img from '../account/images/logo.png'
 
 import {
   CCard,
@@ -34,8 +38,11 @@ import {
   CInputGroupPrepend,
   CInputGroupText,
   CCardFooter,
+  CTooltip
 
 } from '@coreui/react'
+
+
 
 import MapGL, {
   Marker,  
@@ -47,16 +54,16 @@ import ControlPanel from './components/controll-panel';
 import Pin from './components/pin';
 import MAP_STYLE from './components/mapstyle';
 
-//Bootstrap and jQuery libraries
-// import 'bootstrap/dist/css/bootstrap.min.css';
-import 'jquery/dist/jquery.min.js';
 
+
+import 'jquery/dist/jquery.min.js';
 //Datatable Modules
 import "datatables.net-dt/js/dataTables.dataTables"
 import "datatables.net-dt/css/jquery.dataTables.min.css"
 import { CardBody } from 'reactstrap';
 
 
+var dateFormat=require('dateformat')
 const geolocateStyle = {
   top: 0,
   left: 0,
@@ -82,6 +89,9 @@ const scaleControlStyle = {
 };
 
 
+
+
+
 function Approval(props){
     const [tempProjectNumber, setTempProjectNumber] = useState(''); 
     const [tempProjectCreatedDate, setTempProjectCreatedDate] = useState('');
@@ -96,11 +106,14 @@ function Approval(props){
     const [tempMap, setTempMap] = useState(false)
     const [quotations,setQuotations]=useState([])
     const [tempTransactions,setTempTransactions]=useState();
+    const [costProject,setCostProject]=useState([]);
 
+    const [tempisloadingCostProject,setTempsIsLoadingCostProject]=useState(true)
     const [tempIsLoadingGetTransactions,setTempIsLoadingGetTransaction]=useState(true)
     const [dataExcel,setDataExcel]=useState()
+    const [idCostTransactions,setIdCostTransactions]=useState("")
+    const [tempIsLoading,setTempIsLoading]=useState()
 
-    var dateFormat=require('dateformat')
 
 
     const ExcelFile = ReactExport.ExcelFile;
@@ -129,17 +142,169 @@ function Approval(props){
         console.log('data',response.data.data.transactions)
      
      
-
       })
       .catch((response)=>{
 
       })
     }
-  
-    useEffect(()=>{
-        let id=props.match.params.id;
-      
     
+    
+    const getAllDataCostProject=()=>{
+      getDataCostProjects(props.match.params.id).then((response)=>{
+        setCostProject([...response.data])
+      
+       // setTempsIsLoadingCostProject(false)
+
+      })
+    }
+    const columns = [  
+      {
+        name: 'Tanggal',
+        sortable: true,    
+        cell: row => dateFormat(row.date,'dd/mm/yyyy')
+      }, 
+    
+      {
+        name: 'Deskripsi',
+        sortable: true,   
+        cell: row => 
+        <div data-tag="allowRowEvents"><div >{row.description}</div></div>,  
+      }, 
+    
+      {
+        name: 'Jumlah',
+        sortable: true,
+        right:true,
+        cell: row => "IDR "+row.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+          
+      },
+      {
+        name: "Aksi",
+        selector: "",
+        sortable: true,
+        width:'15%',
+        center:true,
+       
+        cell:row=>
+        <div>
+              <CTooltip content="Edit Cost"placement="top">
+        <CButton color="secondary"  size="sm" onClick={()=>editData(
+          row.id,
+          row.date,
+          row.description,
+          row.amount
+        )} >{<i class="fa fa-edit"></i>}</CButton>
+        </CTooltip>
+      
+        &ensp;
+        <CTooltip content="Hapus PIC TB"placement="top">
+        <CButton color="secondary" size="sm"  onClick={()=>deletePIC(row.id)}>{<i class="fa fa-trash"></i>}</CButton>  
+        </CTooltip>  
+        </div>
+      },
+    
+     
+      
+    ];
+
+    //masking 
+  $(document).on('input', '#total', function(e) {
+    e.preventDefault();
+    var objek=$('#total').val();
+    var separator = ".";
+    var a = objek;
+    var b = a.replace(/[^\d]/g,"")
+    var c = "";
+    var panjang = b.length; 
+    var j = 0; 
+    for (var i = panjang; i > 0; i--) {
+      j = j + 1;
+      if (((j % 3) == 1) && (j != 1)) {
+        c = b.substr(i-1,1) + separator + c;
+      } else {
+        c = b.substr(i-1,1) + c;
+      }
+    }
+    $('#total').val(c)
+   });
+    
+   const editData=(
+     id,
+     date,
+     description,
+     amount
+   )=>{
+     console.log(description)
+    
+    
+    $('#date').val(dateFormat(date,'yyyy-mm-dd'))
+    $('#description').val(description)
+    $('#total').val(amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+    setIdCostTransactions(id)
+   }
+    const deletePIC=(id)=>{
+      Swal.fire({
+        title: 'Apakah anda yakin?',
+        text: "PIC TB akan dihapus",
+        icon: 'warning',
+        reverseButtons: true,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Delete',    
+        showLoaderOnConfirm: true,
+        preConfirm: () => {
+        
+            return axios.delete('http://localhost:3000/api/projects/cost/'+id)
+                .then(function(response) {
+                    console.log(response.data);
+                })
+                .catch(function(error) {
+                    console.log(error.data);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops',
+                        text: 'Terjadi Kesalahan',
+                    })
+                });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      getAllTransactions()
+      getAllDataCostProject()
+        if (result.isConfirmed) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Transaksi berhasil dihapus',
+                showConfirmButton:false,
+                timer:2000
+            }).then((result) => {
+                if (result.isConfirmed) {
+                   // window.location.href = '/leave';
+                  // getAllOutTransactions()
+               
+                 
+                 
+                }
+            })
+        }
+
+    })
+    }
+    const backToSave=()=>{
+      $('#total').val("")
+     
+      $('#date').val("")
+      $('#description').val("")
+   
+        setIdCostTransactions("")
+
+     
+}
+    useEffect(()=>{
+        let id=props.match.params.id;  
         //get detail project
         axios.get('http://localhost:3000/api/projects/detail-project/'+id)
         .then((response)=>{   
@@ -190,9 +355,11 @@ function Approval(props){
         
     
         })
-
-  
+        getAllDataCostProject();
     },[])
+
+
+
 
 
     const[viewport, setViewport] = useState({
@@ -236,7 +403,9 @@ function Approval(props){
         var data_transactions_pdf=[]
         var doc = new jsPDF('p', 'px', 'a4');
         doc.text(`Laba Rugi Project ${$('#project_number').val()} `, 10, 20)
+        doc.addImage(img, 'png', 380, 10, 50, 50)
         doc.autoTable({ html: '#my-table' })
+
 
         response.data.transactions.map((values)=>{
             var data=[
@@ -251,6 +420,13 @@ function Approval(props){
         })
         doc.autoTable({
             margin:{top:20},
+         
+              headStyles: {
+                fillColor: '#df0c8f',
+                textColor: [255,255,255],
+                fontSize: 10,
+                padding: 0,
+            },
             columnStyles: { 
                 0: { 
                     halign: 'right', 
@@ -278,6 +454,13 @@ function Approval(props){
     })
     doc.autoTable({
         margin:{top:20},
+       
+          headStyles: {
+            fillColor: '#df0c8f',
+            textColor: [255,255,255],
+            fontSize: 10,
+            padding: 0,
+        },
         columnStyles: {
             0: {cellWidth: 50},
         
@@ -294,6 +477,37 @@ function Approval(props){
     })  
   };
 
+  const [filterText, setFilterText] = React.useState("");
+  const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
+    false
+  );
+
+
+  const filteredItems = costProject.filter(
+    item =>
+      JSON.stringify(item)
+        .toLowerCase()
+        .indexOf(filterText.toLowerCase()) !== -1
+  );
+
+
+  const subHeaderComponent = useMemo(() => {
+    const handleClear = () => {
+      if (filterText) {
+        setResetPaginationToggle(!resetPaginationToggle);
+        setFilterText("");
+      }
+    };
+
+
+    return (
+      <FilterComponent
+        onFilter={e => setFilterText(e.target.value)}
+        onClear={handleClear}
+        filterText={filterText}
+      />
+    );
+  }, [filterText, resetPaginationToggle]);
   return (
       
     <div>
@@ -353,8 +567,8 @@ function Approval(props){
 
                <CCol xs="6">
                  <CFormGroup>
-                   <CLabel htmlFor="description">Deskripsi</CLabel>
-                   <CInput readOnly id="description" name="description" placeholder=""  value={tempDescription} />
+                   <CLabel >Deskripsi</CLabel>
+                   <CInput readOnly  placeholder=""  value={tempDescription} />
                  </CFormGroup>
                </CCol>
                <CCol xs="6">
@@ -459,9 +673,10 @@ function Approval(props){
 
       <Formik
       initialValues={{ 
-       out_amount:'',
-       out_date:'',
-       out_description:''
+        // _date:'',
+        // description:'',
+        // out_amount:''
+       
 
       
   
@@ -470,40 +685,74 @@ function Approval(props){
 
       }}
       onSubmit={(values, { setSubmitting }) => {
-        var  date=values.out_date
-        var description=values.out_description
-        var amount=values.out_amount
-        var id=props.match.params.id
-        var type="out"
+      
+         var id=props.match.params.id
+     
+       
         var data={
-            date:date,
-            description:description,
-            amount:amount.replace(/[^\w\s]/gi, ''),
-            type:type,
-            id:id
+            date:dateFormat($("#date").val(),'yyyy-mm-dd'),
+            description:$('#description').val(),
+            amount:$('#total').val().replace(/[^\w\s]/gi, ''),
+            project_id:id
         }
+       
 
-        axios.post("http://localhost:3000/api/projects/create-transaction",data)
-        .then((response)=>{
-            $('#out_date').val("")
-            $('#out_description').val("")
-            $('#out_amount').val("")
-            getAllTransactions()
+        if (idCostTransactions===""){
+          axios.post("http://localhost:3000/api/projects/create-out-transaction",data)
+          .then((response)=>{
+           
+           
+  
+              Swal.fire({
+                title: 'success',
+                text: 'Berhasil menambahkan cost/out project',
+                icon: 'success',
+                timer:2000,
+                showConfirmButton:false,
+              }).then(_=>{
+                getAllDataCostProject();
+                backToSave();
+                setIdCostTransactions("")
+                  getAllTransactions()
+               
+                
+    
+              });
+  
+              
+          })
+          .catch((error)=>{
+  
+          })
 
-            toast.success('Berhasil menambahkan Cost/Out', {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                color:'success'
-                });
-        })
-        .catch((error)=>{
+        }else{
+          axios.patch("http://localhost:3000/api/projects/cost/"+idCostTransactions,data)
+          .then((response)=>{
+           
+            getAllDataCostProject();
+            backToSave();
+            setIdCostTransactions("")
+              getAllTransactions()
+  
+              Swal.fire({
+                title: 'success',
+                text: 'Berhasil mengubah cost/out project',
+                icon: 'success',
+                timer:2000,
+                showConfirmButton:false,
+              }).then(_=>{
+               
+              
+    
+              });
+  
+              
+          })
+          .catch((error)=>{
+  
+          })
 
-        })
+        }
 
        
        
@@ -526,47 +775,90 @@ function Approval(props){
                  <CFormGroup row>
                  <CCol xs="4">
                    <CFormGroup>
-                       <CLabel  htmlFor="out_date">Tanggal Out</CLabel>
-                       <CInput required id="out_date" name="out_date" type='date'  onChange={handleChange}  value={values.out_date}  />
+                       <CLabel  htmlFor="date">Tanggal Out</CLabel>
+                       <CInput required id="date" name="date" type='date'  onChange={handleChange}    />
                    </CFormGroup>
                 </CCol> 
 
     
                 <CCol xs="4">                  
                     <CFormGroup>
-                        <CLabel   htmlFor="out_description" >Deskripsi </CLabel>
-                        <CInput  id="out_description" name="out_description" onChange={handleChange}  value={values.out_description}  />
+                        <CLabel   htmlFor="description" >Deskripsi </CLabel>
+                        <CInput  id="description" name="description" onChange={handleChange}    />
                     </CFormGroup>
                  </CCol> 
                 
                 <CCol xs="4">
                 <CFormGroup>
-                 <CLabel htmlFor="out_amount">jumlah</CLabel>
+                 <CLabel htmlFor="total">jumlah</CLabel>
                   <CInputGroup>
                     <CInputGroupPrepend>
                       <CInputGroupText>IDR</CInputGroupText>
                     </CInputGroupPrepend>
-                    <CInput required  style={{textAlign:'right'}} id="out_amount" name="out_amount" onChange={handleChange}  value={values.out_amount} />               
+                    <CInput required  style={{textAlign:'right'}} id="total" name="total" onChange={handleChange}  />               
                   </CInputGroup>
                 </CFormGroup>             
                 </CCol>      
 
                 </CFormGroup>  
                 <CCardFooter>
-              <div  style={{textAlign: 'right'}}>
+              {/* <div  style={{textAlign: 'right'}}>
                   <CButton type="submit" size="sm col-1"  className="btn-brand mr-1 mb-1" color='primary'>
                  Simpan
                   </CButton>
                   
-                  {}
- 
-       
+                  {}      
+              </div> */}
+
+              {idCostTransactions===''?
+                  <div  style={{textAlign: 'right'}}>                
+                  <CButton to="/pictb/manage"   size="sm xs-1" className="btn-secondary btn-brand mr-1 mb-1">Kembali</CButton>
+                  <CButton type="submit" disabled={tempIsLoading} size="sm xs-2"  className="btn-brand mr-1 mb-1" color='primary'>
+                   {tempIsLoading===true? <i class="spinner-border"/>: <i class="fa fa-save"/>}<span className="mfs-1">Simpan</span>
+                  </CButton>
+                </div>
+                :
+                <div  style={{textAlign: 'right'}}>                
+                <CButton onClick={()=>backToSave()}  size="sm xs-1" className="btn-secondary btn-brand mr-1 mb-1">X</CButton>
+                <CButton type="submit" size="sm xs-1" disabled={tempIsLoading}  className="btn-brand mr-1 mb-1" color='primary'>
+                {tempIsLoading===true?  <i class="spinner-border"/>: <i class="fa fa-edit"/>}<span className="mfs-2">Ubah</span>
+                </CButton>
               </div>
+                  
+                }
+              
+
              </CCardFooter>           
 
         </form>
       )}
     </Formik>
+
+    {/* manage cost/ out projects */}
+   {tempisloadingCostProject===false?
+    <DataTable
+     
+    columns={columns}
+    data={costProject}
+    defaultSortField="name"
+    pagination
+    subHeader
+    paginationPerPage={5}   
+   // subHeaderComponent={subHeaderComponent}
+  
+  />:
+  <DataTable
+     
+  columns={columns}
+  data={costProject}
+  defaultSortField="name"
+  pagination
+  subHeader
+  paginationPerPage={5}   
+ // subHeaderComponent={subHeaderComponent}
+
+/>
+   }
 
         </CCardBody>  
         </CCard>

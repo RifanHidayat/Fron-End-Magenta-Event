@@ -11,6 +11,12 @@ import {Projects} from './components/Projects'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import FilterComponent from "src/views/base/components/FilterComponent";
+import BootstrapTable from 'react-bootstrap-table-next';
+import 'jquery/dist/jquery.min.js';
+import Button from '@material-ui/core/Button';
+//Datatable Modules
+import "datatables.net-dt/js/dataTables.dataTables"
+import "datatables.net-dt/css/jquery.dataTables.min.css"
 
 import {
   CCard,
@@ -121,6 +127,8 @@ function Members(props){
     const [filterText, setFilterText] = React.useState("");
     const [resetPaginationToggle, setResetPaginationToggle] = React.useState(false);
 
+    const [tempIdMembers,setTempidmembers]=useState([])
+
 
 
 const filteredItems =  employess.filter(
@@ -169,6 +177,31 @@ const subHeaderComponent = useMemo(() => {
     const approvalPage=()=>{
       var id=props.match.params.id;
       navigator.push('/mapping/approval/'+id);
+    }
+
+
+    const setDataMembersSelected=(data)=>{
+      var row='';
+      if (data.length===0){
+    
+      } else{
+        for(var i=0;i<data.length;i++){
+          row +=`<tr>
+                  <td>${data[i].first_name}<br> ${data[i].employee_id}</td>
+                 
+                   <td>${data[i].identity_number}</td>
+                   <td> 
+                   IDR ${data[i].daily_money_regular}
+                   </td>
+                    <td>
+                    ${data[i].status==="pic"?"PIC":"Anggota"}
+                     </td>
+                   </tr>
+          `
+        }
+        $("#data-members-selected").html(row);
+    
+        }
     }
       
     //toast success
@@ -254,20 +287,20 @@ const subHeaderComponent = useMemo(() => {
         var identity_number = $(this).find('td:nth-child(3)').text().toString().trim();
         var daily_money_regular = $(this).find('td:nth-child(4) input').val().toString().trim();
         var status = $(this).find('td:nth-child(5) select').val().toString().trim();
-        var data={employee_id:employee_id,name:name,identity_number:identity_number,daily_money_regular:parseInt(daily_money_regular),status:status}
+        var data={employee_id:employee_id,first_name:name,identity_number:identity_number,daily_money_regular:parseInt(daily_money_regular),status:status}
         data_members.push(data);        
       });
       const req_data={
-        members:JSON.stringify(data_members)
+        members:JSON.stringify(data_members),
+        members_id:tempIdMembers.toString()
       };
    
 
      axios.patch('http://localhost:3000/api/projects/'+id+'/save-members/',req_data)
      .then((response)=>{  
     
-      setDataMembers(JSON.stringify(data_members))
-      setTempMembers([...data_members]);
-       
+      //setDataMembers(JSON.stringify(data_members))
+      setTempMembers([...data_members]);   
       setTempIsLoadingMembers(false)
       setModalMembers(false)
       toast.success('Berhasil menambahkan anggota project', {
@@ -280,6 +313,9 @@ const subHeaderComponent = useMemo(() => {
         progress: undefined,
         color:'success'
         });
+        setDataMembersSelected(data_members)
+        $('#members-datatable').DataTable();
+       
      })
      .then((error)=>{
       setTempIsLoadingMembers(false)
@@ -288,6 +324,7 @@ const subHeaderComponent = useMemo(() => {
     }
   
     useEffect(()=>{
+    
       // eslint-disable-next-line react-hooks/exhaustive-deps
    
  
@@ -304,22 +341,31 @@ const subHeaderComponent = useMemo(() => {
         //get data members
         axios.get('http://localhost:3000/api/projects/detail-project/'+id)
         .then((response)=>{
+
           if (response.data.data.members!==null){
-          setDataMembers(response.data.data.members)   
-          setTempMembers([...JSON.parse(response.data.data.members)])
-          setTempSelectedMembers([...JSON.parse(response.data.data.members)])
+          
+          
+            setTempSelectedMembers([...response.data.data.members])
+           
+       //   setDataMembers(response.data.data.members)   
       
-          setDataSelectedMembers(JSON.parse(response.data.data.members))   
+          setTempMembers([...response.data.data.members])
+        
+          setDataMembersSelected([...response.data.data.members])
+      
+          setDataSelectedMembers([...response.data.data.members])  
           //onCheck([...tempSelectedMembers])
 
          
          
           setStatus(response.data.data.status)
+          $('#members-datatable').DataTable();
 
           }else{
             setStatus(response.data.data.status)
 
           }
+        
        
              
 
@@ -334,9 +380,19 @@ const subHeaderComponent = useMemo(() => {
 
 // selection table
   const onCheck = (state) => {
+    var members_id=[];
+    if (state.selectedRows.length>0){
+      state.selectedRows.map((value)=>members_id.push(value.id))
+
+    }else{
+      
+
+
+    }
    
   setTempSelectedMembers([...state.selectedRows]);
   setDataSelectedMembers(state.selectedRows)
+  setTempidmembers([...members_id])
 
   };
 
@@ -350,19 +406,40 @@ const subHeaderComponent = useMemo(() => {
             <ul className="nav nav-pills mb-2" id="pills-tab" role="tablist">
 
                 <li className="nav-item" id="members">
-                    <button className="nav-link active" onClick={()=>membersPage()}  > Anggota</button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={()=>membersPage()}
+                >
+                  Anggota
+                </Button>
                  </li>&ensp;
 
                 <li className="nav-item" id="budgets" to="/projects/manage">
-                    <button className="nav-link" onClick={()=>budgetsPage()} > Anggaran</button>
+                <Button
+                  variant="contained"              
+                  onClick={()=>budgetsPage()}
+                >
+                  Anggaran
+                </Button>
                  </li>&ensp;
 
                  <li className="nav-item" id="tasks">
-                     <button className="nav-link" onClick={()=>tasksPage()} > Tugas</button>
+                 <Button
+                  variant="contained"              
+                  onClick={()=>tasksPage()}
+                >
+                  Tugas
+                </Button>
                 </li>&ensp;
 
                 <li className="nav-item" id="approval" >
-                        <button className="nav-link" onClick={()=>approvalPage()}  > Persetujuan</button>
+                <Button
+                  variant="contained"              
+                  onClick={()=>approvalPage()}
+                >
+                  Persetujuan
+                </Button>
                  </li>&ensp;
             </ul>
         </div>
@@ -407,17 +484,39 @@ const subHeaderComponent = useMemo(() => {
                     </div>
 
                 :
-                <MDBDataTableV5
-                    hover
-                    entriesOptions={[5, 20, 25]}
-                    entries={5}
-                    pagesAmount={10}
-                    data={datatable}    
-                    paging={false}                 
-                    searchTop
-                    searchBottom={false}
-                    barReverse                                       
-               />
+              //   <MDBDataTableV5
+              //       hover
+              //       entriesOptions={[5, 20, 25]}
+              //       entries={5}
+              //       pagesAmount={10}
+              //       data={datatable}    
+              //       paging={false}                 
+              //       searchTop
+              //       searchBottom={false}
+              //       barReverse                                       
+              //  />
+              <table tyle={{width:'100%'}} class="table table-striped"  id="members-datatable">
+              <thead >
+                <tr>
+                <th>
+                    Nama
+                  </th>
+                
+                  <th>
+                    KTP
+                  </th>
+                  <th>
+                    Uang Harian
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                  
+                </tr>
+              </thead>
+              <tbody id="data-members-selected">
+              </tbody>
+            </table>
                 }
             
             </CCardBody>

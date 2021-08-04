@@ -321,7 +321,7 @@ const UNIT = "px";
                 ref={mapRef} 
                         
                //  onViewportChange={setViewport}
-                mapStyle={MAP_STYLE}
+                mapStyle={'mapbox://styles/mapbox/streets-v11'}
                 onViewportChange={handleViewportChange}
                 mapboxApiAccessToken={'pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg'}
                >

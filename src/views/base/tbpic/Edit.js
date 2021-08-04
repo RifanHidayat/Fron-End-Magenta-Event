@@ -16,6 +16,9 @@ import {
   CFormGroup,
   CInput,
   CLabel,
+  CInputGroupText,
+  CInputGroupPrepend,
+  CInputGroup
 } from '@coreui/react'
 
 function Edit(props){
@@ -27,6 +30,7 @@ function Edit(props){
   const [mainIsLoading,setMainIsloading]=useState(true);
   const [tempNamePIC,setTempNamePIC]=useState(); 
   const [pic,setPIC]=useState([])
+  const [value,setValue]=useState()
 
 
 
@@ -58,6 +62,7 @@ function Edit(props){
 
  
   const onSelected = (selectedOptions) => {
+    setValue(selectedOptions)
     setId(selectedOptions['value'])
     setPosition(selectedOptions['position'])
     setEmail(selectedOptions['email'])  
@@ -72,12 +77,17 @@ function Edit(props){
 
         getDetailPIC(id).then((response)=>{
         console.log("detail data edit ",response.data)
-        settTempOpeningBalance(response.data.opening_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+        $('#opening_balance').val(response.data.opening_balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+        
         setEmail(response.data.email)
-        setId(response.data.id_event)
+        setPosition(response.data.position)    
+        settTempOpeningBalance(response.data.opening_balance)
+        console.log(response.data.name)
+        setId(response.data.event_id)
         setTempNamePIC(response.data.name)
-   
-        setPosition(response.data.position)
+        var option={ label:response.data.name ,value: response.data.id }
+        setValue(option)
+       
       
         })
         
@@ -97,7 +107,7 @@ function Edit(props){
     },[])
   return (
     <div>
-    {mainIsLoading==false?
+    {mainIsLoading===false?
       <CCard>
       <CCardHeader>
         <span><strong>Edit PIC TB</strong></span>
@@ -105,7 +115,7 @@ function Edit(props){
       <CCardBody>
       <Formik
       initialValues={{ 
-        opening_balance:tempOpeningBalance,
+        
       
       }}
       validate={values => {
@@ -118,8 +128,8 @@ function Edit(props){
         setTempIsloading(true)     
         const data = { 
             pic_id:id,
-            opening_balance:values.opening_balance,
-            balance:values.opening_balance
+            opening_balance: $('#opening_balance').val().replace(/[^\w\s]/gi, ''),
+            balance: $('#opening_balance').val().replace(/[^\w\s]/gi, '')
         };
     
         
@@ -167,7 +177,8 @@ function Edit(props){
                                 onChange={onSelected}                       
                                 className="basic-single"
                                 classNamePrefix="select" 
-                                defaultValue={{ label:tempNamePIC,  value: id }}
+                                value={value}
+                               
                                 options={pic}
                                 name="color"/>    
                         </CFormGroup>
@@ -186,10 +197,20 @@ function Edit(props){
                     </CFormGroup>
                  </CCol>  
                  <CCol xs="6">
-                    <CFormGroup>
+                    {/* <CFormGroup>
                         <CLabel htmlFor="opening_balance">Saldo Awal</CLabel>
                         <CInput required  style={{textAlign:'right'}} id="opening_balance" name="opening_balance" onChange={handleChange}  value={values.opening_balance} />
-                    </CFormGroup>
+                    </CFormGroup> */}
+
+                         <CFormGroup>
+                 <CLabel htmlFor="total_project_cost">Saldo Awal</CLabel>
+                  <CInputGroup>
+                    <CInputGroupPrepend>
+                      <CInputGroupText>IDR</CInputGroupText>
+                    </CInputGroupPrepend>
+                    <CInput  required  style={{textAlign:'right'}} id="opening_balance" name="opening_balance" onChange={handleChange}   />           
+                  </CInputGroup>
+                </CFormGroup>
                  </CCol>  
 
                  <br/>                 

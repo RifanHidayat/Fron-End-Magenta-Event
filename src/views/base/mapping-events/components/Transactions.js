@@ -8,7 +8,7 @@ const Transactions = props => {
     {
       name: 'Tanggal',
       sortable: true,    
-      cell: row => <div  data-tag="allowRowEvents"><div >{dateformat(row.date,'yyyy-mm-dd')}</div></div>, 
+      cell: row => <div  data-tag="allowRowEvents"><div >{dateformat(row.date,'dd/mm/yyyy')}</div></div>, 
     }, 
   
     {
@@ -19,7 +19,7 @@ const Transactions = props => {
     }, 
   
     {
-      name: 'In',
+      name: 'Cash In',
       sortable: true,
       right:true,
       cell: row => 
@@ -31,7 +31,7 @@ const Transactions = props => {
     },
   
     {
-      name: 'Out',
+      name: 'Cash Out',
       sortable: true,
       right:true,    
       cell: row => 

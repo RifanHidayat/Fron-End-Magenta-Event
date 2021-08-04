@@ -1,5 +1,5 @@
+import Button from '@material-ui/core/Button';
 var dateFormat = require('dateformat');
-
 
 export const data= async (props) => fetch("http://localhost:3000/api/projects/detail-transactions/"+props)
   .then(response => response.json())
@@ -14,7 +14,6 @@ export const data= async (props) => fetch("http://localhost:3000/api/projects/de
   .then((json)=>json)
  
   export const columns = [
-
     {
         name: "Tanggal",
         selector: "date",
@@ -73,6 +72,35 @@ export const data= async (props) => fetch("http://localhost:3000/api/projects/de
         width:'10%',
        
         sortable: true
+      },
+      {
+        name: "",
+        selector: "year",
+        width:'10%',
+       
+        sortable: true,
+        cell:row=>
+        <div>
+          {row.status=="pending"?
+          
+          <Button style={{width:'20px',height:'20px',fontSize:'5px'}} variant="contained" color="primary" 
+          onClick={()=>approval()} >
+          Approved
+         </Button>
+          :
+  
+          ""}
+          </div>
+       
       }
     ];
+
+    const approval=(id,date,amount,description,image,account_id,project_number)=>{
+      console.log("tes")
+    
+
+
+    }
+
+
 
