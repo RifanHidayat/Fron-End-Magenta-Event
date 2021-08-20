@@ -1,6 +1,5 @@
-import ReactExport from "react-export-excel";
+import ReactExport from 'react-data-export';
 import 'jspdf-autotable'
-
 import React,{ useState,useEffect,useMemo }  from 'react'
 import Table from 'react-bootstrap/Table'
 import ReactDOM from "react-dom";
@@ -31,7 +30,7 @@ import {
     const [balance,setBalance]=useState();
     const [projectNumber,setProjectNumber]=useState();
     const [accountNmame,setAccountName]=useState();
-    const [dataExcel,setDataExcel]=useState()
+    const [dataExcel,setDataExcel]=useState([])
     const [filterText, setFilterText] = React.useState("");
     const [resetPaginationToggle, setResetPaginationToggle] = React.useState(
       false
@@ -40,6 +39,7 @@ import {
     const ExcelFile = ReactExport.ExcelFile;
     const ExcelSheet = ReactExport.ExcelFile.ExcelSheet;
     const ExcelColumn = ReactExport.ExcelFile.ExcelColumn;
+    const [fileName,setFileName]=useState();
 
   
 
@@ -47,50 +47,104 @@ import {
     var dateFormat = require('dateformat');
 
   useEffect(() => {
+
+
+   
+  
+
     let id=props.match.params.id;
     let project_number=props.match.params.project_number;
+    var data_transactions=[];
     
     setProjectNumber(project_number)
     data(id).then(response=>{
      //setProjectNumber(props.project_number)
      console.log(props.project_number)
      setAccountName(`${response.bank_name} (${response.account_number})`)
+     setFileName(`Rekap Transaksi akun ${response.bank_name} (${response.account_number!=null?response.account_number:""})`)
 
    if (response.transactions.length>0){
       setTransaction([...response.transactions])
       setTotalIn('IDR '+response.total_in.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
       setTotalOut('IDR '+response.total_out.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
       setBalance('IDR '+response.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+      console.log(response.transactions)
+
     //  setProjectNumber(response.project_number)
 
-   }
-   
 
+      
+
+    response.transactions.map((value,index)=>{
+    
+      var data=[
+        {
+          value:dateFormat(value.date,'dd/mm/yyyy'),width:100,
+        },
+        {
+          value: `${value.type=="out"?"Advance":"deposit"}`,width: {wpx: 80}
+        },
+        {
+          value: `${value.description==null?"":value.description}`,width: {wpx: 150}
+        },
+        {
+          value:value.type==="in"?value.amount:"",width: {wpx: 100}
+        },
+        {
+          value:value.type==="out"?value.amount:"",width: {wpx: 100},
+        },
+        {
+          value:value.balance,width: {wpx: 80}
+        }
+      ]
+      data_transactions.push(data)
+      if (index+1>=response.transactions.length){
+        const header=[
+        {  value:response.total_in,width: {wpx: 100},},
+        {  value:response.total_out,width: {wpx: 100},},
+        {  value:response.balance,width: {wpx: 100},}
+
+        ]
+        const multiDataSet = [
+          
+          {
+           
+              columns: [
+                  {title: "Total In", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},//pixels width 
+                  {title: "Total Ou", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},//char width 
+                  {title: "Saldo", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},
+                  
+              ],
+              data: [header]
+          },
+          {
+         
+            ySteps: 1, //will put space of 5 rows,
+           
+            
+            columns: [
+                {title: "Tanggal", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},//pixels width 
+                {title: "Tipe", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},
+               
+                {title: "Deskripsi", width: {wpx: 250},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},//char width 
+                {title: "Cash In", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},
+               
+                {title: "Cash Out", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},
+                {title: "Saldo", width: {wpx: 100},style: {fill: {patternType: "solid", fgColor: {rgb: "808080"}}}},
+            ],
+            data: data_transactions
+        },
+          
+          
+      ];
+      setDataExcel([...multiDataSet])
+      }
+
+    })
+   }
       })
   },[]);
 
-
-  function showExcel(){
-    dataPDF(props.match.params.id).then((response)=>{
-        var data_transactions_excel=[]
-         response.data.transactions.map((values)=>{
-             console.log('tee',values)
-             var data={
-                 date:values.date,
-                 description:values.description,
-                 in:values.type==='in'?values.amount:"",
-                 out:values.type==="out"?values.amount:"",
-                 balance:values.balance
-             }
-              data_transactions_excel.push(data)          
-         })
-         setDataExcel([...data_transactions_excel])
-    
-       })
-     
-
-
-  }
 
   function showPDF(){
 
@@ -105,7 +159,7 @@ import {
         response.data.transactions.map((values)=>{
             var data=[
                 dateFormat(values.date,'dd/mm/yyyy'),
-                <div dangerouslySetInnerHTML={{__html: ''+values.description!==""?values.description:""}} />,
+                values.description,
                 values.type==="in"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
                 values.type==="out"?"IDR "+values.amount.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."):"",
                 "IDR "+values.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
@@ -219,14 +273,19 @@ import {
   <Button variant="contained" color="secondary" onClick={()=>showPDF()}>
     PDF
 </Button>
+
 &nbsp;
 &nbsp;
 
- <ExcelFile element={
-    <Button variant="contained" style={{backgroundColor:'green', color:'white'}}  onClick={()=>showExcel()}>Excel</Button>
- }>
-   <ExcelSheet name="Organization"/>
-  </ExcelFile>
+
+                <ExcelFile  filename="Rekap Transaksi Akun"  element={
+                <Button variant="contained" color="success"  style={{backgroundColor:'green',color:'white'}}>
+                Excel
+            </Button>
+                }>
+                    <ExcelSheet dataSet={dataExcel} name="Organization"/>
+                </ExcelFile>
+           
 
 
    </div>                                  

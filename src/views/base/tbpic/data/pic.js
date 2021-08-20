@@ -31,5 +31,19 @@ export const getAllPIC= async (props) => fetch("http://localhost:3000/api/pic")
   .then((json)=>json)
 
   
+
+  export const getInOutNumber = async (props) => fetch("http://localhost:3000/api/inout/inout-number")
+  .then(response => response.json())
+  .then((json)=>json)
+
+  export const getAcounts = async (props) => fetch("http://localhost:3000/api/accounts")
+  .then(response => response.json())
+  .then((json)=>json)
+
+  export const getInOutTransaction = async (props) => fetch("http://localhost:3000/api/pict/add-saldo-pictb/"+props)
+  .then(response => response.json())
+  .then((json)=>json)
+
+  
   
   

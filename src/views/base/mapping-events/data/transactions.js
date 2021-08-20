@@ -34,7 +34,7 @@ export const data= async (props) => fetch("http://localhost:3000/api/projects/de
         selector: "type",
         sortable: true,
         width:'15%',
-        cell : row=><span>{row.type==="in"?"Deposit":"Expense"}</span>
+        cell : row=><span>{row.type==="in"?"Deposit":"Advance"}</span>
 
       },
       {

@@ -26,17 +26,21 @@ const DetailAccount = React.lazy(() => import('./views/base/account/Detail'));
 
 //pic tb
 const CreatePIC=React.lazy(()=>import('./views/base/tbpic/Create'))
+const AddPIC=React.lazy(()=>import('./views/base/tbpic/Add'))
 const ManagePIC=React.lazy(()=>import('./views/base/tbpic/Manage'))
 const EditPIC=React.lazy(()=>import('./views/base/tbpic/Edit'))
 const INTransaction = React.lazy(() => import('./views/base/tbpic/IN'));
 const OUTTransaction = React.lazy(() => import('./views/base/tbpic/OUT'));
 const TransactionPICTB = React.lazy(() => import('./views/base/tbpic/Transactions'));
 
+
 const InOutTransaction = React.lazy(() => import('./views/base/inout/InOut'));
 
 
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
+
+const Login = React.lazy(() => import('./views/pages/login/Login'));
 
 
 
@@ -103,6 +107,7 @@ const routes = [
 
   //pic tb
   { path: '/pictb/create', name: 'PICTB / Create', component: CreatePIC },
+  { path: '/pictb/add/:id', name: 'PICTB / Add', component: AddPIC },
   { path: '/pictb/manage', name: 'PICTB / Manage', component: ManagePIC },
   { path: '/pictb/edit/:id', name: 'PICTB / Edit', component: EditPIC },
   { path: '/pictb/in-transaction/:id', name: 'PICTB / In Transaction', component: INTransaction },
@@ -110,6 +115,8 @@ const routes = [
   { path: '/pictb/transaction-pictb/:id', name: 'PICTB / Transactions PICTB', component: TransactionPICTB },
   
   { path: '/in-out', name: 'In-Out', component:InOutTransaction },
+
+  { path: '/login', name: 'In-Out', component:Login },
 
 
 

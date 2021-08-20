@@ -87,6 +87,7 @@ const Table = props => {
             </CDropdownToggle>
             <CDropdownMenu className="pt-0" placement="left-end">
               <CDropdownItem  to={`/pictb/in-transaction/${row.id}`}>IN OUT Transaksi</CDropdownItem>
+              <CDropdownItem  to={`/pictb/add/${row.id}`}>Tambah Saldo TB</CDropdownItem>
               <CDropdownItem to={`/pictb/transaction-pictb/${row.id}`}>Rekap IN OUT Transaksi </CDropdownItem>
              
               </CDropdownMenu>

@@ -470,7 +470,7 @@ const InOutNumber=()=>{
                  </CCol> 
                  <CCol xs="3">
                    <CFormGroup>
-                       <CLabel  htmlFor="date">Tanggal Out</CLabel>
+                       <CLabel  htmlFor="date">Tanggal</CLabel>
                        <CInput required id="date" name="date" type='date'  onChange={handleChange}  />
                    </CFormGroup>
                 </CCol> 

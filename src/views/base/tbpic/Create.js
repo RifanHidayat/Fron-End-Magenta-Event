@@ -74,8 +74,13 @@ function Create(){
         getAllPIC().then((response=>{
             // eslint-disable-next-line array-callback-return
             response.data.map((values)=>{
-                var data={value:values.id_event,label:values.pic_name,position:values.jabatan,email:values.email}
+
+              if (values.pic_id==null){
+                var data={value:values.id_event,label:`${values.pic_name} | ${values.name}`,position:values.jabatan,email:values.email}
                 options.push(data);
+
+              }
+               
 
             })
             console.log(options)
@@ -182,7 +187,7 @@ function Create(){
                  <CCol xs="6">
                     <CFormGroup>
                         <CLabel >Email</CLabel>
-                        <CInput required  type="email"  onChange={handleChange}  value={email} />
+                        <CInput required  type="text"  onChange={handleChange}  value={email} />
                     </CFormGroup>
                  </CCol>  
                  <CCol xs="6">

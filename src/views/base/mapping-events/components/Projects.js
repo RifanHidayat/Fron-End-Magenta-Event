@@ -30,15 +30,13 @@ import {
 import CIcon from '@coreui/icons-react'
 import MapGL, {
   Marker,  
-  Popup,
   NavigationControl,
   FullscreenControl,
   ScaleControl,
   GeolocateControl} from 'react-map-gl';
 import ControlPanel from './controll-panel';
 import Pin from './pin';
-import MAP_STYLE from './mapstyle';
-import {fromJS} from 'immutable';;
+
 
 const geolocateStyle = {
     top: 0,
@@ -243,13 +241,13 @@ const UNIT = "px";
                <CCol xs="6">
                  <CFormGroup>
                    <CLabel htmlFor="project_start_date">Tanggal Mulai Project</CLabel>
-                   <CInput readOnly required id="project_start_date" name="project_start_date" placeholder=""  value={tempProjectStartedDate}/>
+                   <CInput readOnly required id="project_start_date" name="project_start_date" type="date"  placeholder=""  value={tempProjectStartedDate}/>
                  </CFormGroup>
                </CCol>
                <CCol xs="6">
                  <CFormGroup>
                    <CLabel htmlFor="project_end_date">Tanggal Akhir Project</CLabel>
-                   <CInput readOnly required  id="project_end_date" name="project_end_date"  placeholder=""   value={tempProjectEndDate}/>
+                   <CInput readOnly required  type="date"  id="project_end_date" name="project_end_date"  placeholder=""   value={tempProjectEndDate}/>
                  </CFormGroup>
                </CCol>
 

@@ -2,13 +2,21 @@ import React, { useMemo } from "react";
 import DataTable from "react-data-table-component";
 import FilterComponent from "src/views/base/components/FilterComponent";
 
+const detailQuotation=(quotation_number)=>{
+  //window.location.replace= `http://localhost/magentaeo/Quotation/print_quotation/${quotation_number}`;
+  window.open(`http://localhost/magentaeo/Quotation/print_quotation/${quotation_number}`, '_blank');
+}
 
-const Table = props => {
+
+const TableQuotation = props => {
     const columns = [  
         {
           name: 'No. quotation',
           sortable: true,    
-          cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>, 
+          cell: row =><span onClick={()=>detailQuotation(row.quotation_number)} style={{color:'blue'}}>
+            {`#${row.quotation_number}`}</span>
+          
+        
         }, 
       
         {
@@ -101,4 +109,4 @@ const Table = props => {
   );
 };
 
-export default Table;
+export default TableQuotation

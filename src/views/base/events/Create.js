@@ -19,6 +19,11 @@ import FilterComponent from "src/views/base/components/FilterComponent";
 import Geocoder from "react-map-gl-geocoder";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
+import Checkbox from '@material-ui/core/Checkbox';
+
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import  _ from 'lodash';
+import $ from 'jquery'
 
 
 import {
@@ -68,52 +73,8 @@ const scaleControlStyle = {
 
 
 
-const columns = [  
-  {
-    name: 'No. quotation',
-    sortable: true,    
-    cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>, 
-  }, 
 
-  {
-    name: 'tanggal quotation',
-    sortable: true,   
-    cell: row => 
-    <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  
-  }, 
 
-  {
-    name: 'No. PO',sortable: true,
-    cell: row => <div data-tag="allowRowEvents"><div >{row.po_number}</div></div>,
-  },
-
-  {
-    name: 'Tanggal PO',
-    sortable: true,    
-    cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,
-  }, 
-
-  {
-    name: 'Customer',
-    sortable: true,    
-    cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, 
-  },
-
-  {
-    name: 'PIC Event',
-    sortable: true,    
-    cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,
-  }, 
-
-  {
-    name: 'Total Biaya',
-    sortable: true,
-    right: true,   
-    cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
-    }</div></div>,  
-  }, 
-  
-];
 
 var  quotations=[];
 var selected_quotation=[];
@@ -166,6 +127,119 @@ function getMapStyle({visibility, color}) {
 
 function Create(){
 
+  const columns = [  
+    {
+      name: '',
+      sortable: true,
+      width:'10%',
+    
+      cell: row => 
+      <FormControlLabel
+      onChange={()=>onCheck1(row)}
+      
+     
+      control={<Checkbox color="primary" />}
+  
+      
+      />
+    },
+    {
+      name: 'No. quotation',
+      sortable: true,    
+      cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>, 
+    }, 
+  
+    {
+      name: 'tanggal quotation',
+      sortable: true,   
+      cell: row => 
+      <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  
+    }, 
+  
+    {
+      name: 'No. PO',sortable: true,
+      cell: row => <div data-tag="allowRowEvents"><div >{row.po_number}</div></div>,
+    },
+  
+    {
+      name: 'Tanggal PO',
+      sortable: true,    
+      cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,
+    }, 
+  
+    {
+      name: 'Customer',
+      sortable: true,    
+      cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, 
+    },
+  
+    {
+      name: 'PIC Event',
+      sortable: true,    
+      cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,
+    }, 
+  
+    {
+      name: 'Total Biaya',
+      sortable: true,
+      right: true,   
+      cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+      }</div></div>,  
+    }, 
+    
+    
+  ];
+
+  const columns_selected = [  
+  
+    {
+      name: 'No. quotation',
+      sortable: true,    
+      cell: row => <div  data-tag="allowRowEvents"><div >{row.quotation_number}</div></div>, 
+    }, 
+  
+    {
+      name: 'tanggal quotation',
+      sortable: true,   
+      cell: row => 
+      <div data-tag="allowRowEvents"><div >{row.date_quotation}</div></div>,  
+    }, 
+  
+    {
+      name: 'No. PO',sortable: true,
+      cell: row => <div data-tag="allowRowEvents"><div >{row.po_number}</div></div>,
+    },
+  
+    {
+      name: 'Tanggal PO',
+      sortable: true,    
+      cell: row => <div data-tag="allowRowEvents"><div >{row.date_po_number}</div></div>,
+    }, 
+  
+    {
+      name: 'Customer',
+      sortable: true,    
+      cell: row => <div data-tag="allowRowEvents"><div >{row.customer_event}</div></div>, 
+    },
+  
+    {
+      name: 'PIC Event',
+      sortable: true,    
+      cell: row => <div data-tag="allowRowEvents"><div >{row.pic_event}</div></div>,
+    }, 
+  
+    {
+      name: 'Total Biaya',
+      sortable: true,
+      right: true,   
+      cell: row => <div data-tag="allowRowEvents"><div >{row.grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+      }</div></div>,  
+    }, 
+    
+    
+  ];
+  
+
   //varoable state
 
   const [large, setLarge] = useState(false)
@@ -181,6 +255,10 @@ function Create(){
   const [tempDateCreatedProject,setTempDateCreatedPeoject]=useState();
   const [tempLatitude,setTempLatitude]=useState();
   const [tempLongtitude,setTempLongtitude]=useState();
+
+  const [titleEvent,setTitleEvent]=useState("")
+
+  const t=[];
 
   const mapRef = useRef();
   const handleViewportChange = useCallback(
@@ -212,6 +290,8 @@ function Create(){
   );
 
  
+
+
 
 
   //varible map react gl
@@ -260,6 +340,8 @@ function Create(){
     background: true
   });
 
+
+  
   const [color, setColor] = useState({
     water: '#DBE2E6',
     parks: '#E6EAE9',
@@ -282,6 +364,8 @@ function Create(){
 
 
   useEffect(() => {
+
+   
     setIsloading(false);
 
     // var data="-101.84452, 39.71375";
@@ -316,7 +400,59 @@ function Create(){
     });
   }, []);
 
+  useEffect(()=>{
+    var grand_total=0;
+    if (tempQuotation.length>0){
+    
+      tempQuotation.map((value) => grand_total+=value.grand_total );
+      tempQuotation.map((value) => ids.push(value.id));
+      tempQuotation.map((value) => quotationNumber.push(value.quotation_number));
+      
+      //set data value quotation
+      setTempEventPic(tempQuotation[0]['pic_event']);
+      setTempEventCustomer(tempQuotation[0]['customer_event']);
+      setTotalProjectost(tempQuotation[0]['grand_total'])
+      setTotalProjectost(grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
+      setTitleEvent(tempQuotation[0]['tittle_event'])
+      $('#description').val(`${tempQuotation[0]['tittle_event']} | ${tempQuotation[0]['venue_event']} | ${tempQuotation[0]['date_event']}`)
 
+  
+  
+      }else{
+        $('#description').val("")
+
+    setTempEventPic('');
+    setTempEventCustomer('');
+    setTotalProjectost('0')
+    setTitleEvent("0")
+
+    }
+    //set data list quotation
+    setTempIds([...ids]);
+    setTempQuotationNumber([...quotationNumber])
+
+  }, [tempQuotation])
+
+  var lenghth=0;
+const onCheck1=(row)=>{
+  console.log('tes',row.venue_event)
+  console.log('tes',row.date_event)
+
+  //setTempQuotation([...tempQuotation,row ])
+  const index=_.findIndex(tempQuotation, { 'quotation_number': row.quotation_number});
+  if (index>=0){
+    setTempQuotation(tempQuotation.filter((quotation, i)=>{
+      return i !== index
+    }))
+    lenghth=Number(lenghth)-1;
+
+  
+  }else{
+    setTempQuotation([...tempQuotation,row ])
+    lenghth=Number(lenghth)+1;
+
+  } 
+}
   
   const onCheck = (state) => {
     selected_quotation=[];
@@ -400,8 +536,9 @@ const subHeaderComponent = useMemo(() => {
         project_end_date:'',
         latitude:'',
         longtitude:'',
-        description:''
+        description:titleEvent
       }}
+    
       validate={values => {
         const errors = {};
         if (!values.project_start_date){
@@ -414,8 +551,11 @@ const subHeaderComponent = useMemo(() => {
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        setIsloading(true);
-        console.log('marker drag end',onMarkerDragEnd);
+        // tempQuotation.map((value) => ids.push(value.id));
+        // tempQuotation.selectedRows.map((value) => quotationNumber.push(value.quotation_number));
+        // //setIsloading(true);
+        // console.log('marker drag end',onMarkerDragEnd);
+        // console.log(ids)
       
         const data = { 
           project_number: tempProjectNumber,
@@ -425,7 +565,7 @@ const subHeaderComponent = useMemo(() => {
           event_customer:tempEventCustomer,
           event_pic:tempEventPic,
           total_project_cost:tempTotalProjectCost.replace(/[^\w\s]/gi, ''),
-          description:values.description,
+          description:$('#description').val(),
           latitude:tempLatitude,
           longtitude:tempLongtitude,
           id_quotation:tempIds,
@@ -460,7 +600,8 @@ const subHeaderComponent = useMemo(() => {
 
     
       }}
-    >     
+    >  
+   
       {({
         values,
         errors,
@@ -518,7 +659,7 @@ const subHeaderComponent = useMemo(() => {
                <CCol xs="6">
                  <CFormGroup>
                    <CLabel htmlFor="description">Deskripsi</CLabel>
-                   <CInput id="description" name="description" placeholder="" onChange={handleChange}  value={values.description} />
+                   <CInput id="description" name="description" placeholder="" onChange={handleChange}   />
                  </CFormGroup>
                </CCol>
                <CCol xs="6">
@@ -562,7 +703,7 @@ const subHeaderComponent = useMemo(() => {
              <CButton style={{width:'155px'}} size="sm col" onClick={() => setLarge(!large)} color="primary"><span className="mfs-2">Pilih Quotation</span></CButton>
              </div>
               <DataTable      
-                 columns={columns}        
+                 columns={columns_selected}        
                  data={tempQuotation}                    
               /> 
               <CCardFooter>
@@ -594,19 +735,19 @@ const subHeaderComponent = useMemo(() => {
                   columns={columns}
                   data={filteredItems}
                   defaultSortField="name"
-                  selectableRows  
+                  subHeaderComponent={subHeaderComponent}  
+                  subHeader      
+                
                   pagination
-                   onSelectedRowsChange={onCheck}               
-                  subHeader
-                  subHeaderComponent={subHeaderComponent}
-                  selectableRowsComponentProps={{ inkDisabled: true }}  
+                                
+                  
                   paginationDefaultPage
                   paginationPerPage={5}   
                />
               <hr/>
               <div><span>Data quotation terpilih</span></div>
                <DataTable      
-                  columns={columns}        
+                  columns={columns_selected}        
                   data={tempQuotation}                    
                /> 
               </CModalBody>
@@ -627,7 +768,7 @@ const subHeaderComponent = useMemo(() => {
               <CModalBody>
 
               <MapGL {...viewport} 
-                width="53vw" height="60vh" 
+                width="48vw" height="60vh" 
                 ref={mapRef} 
                         
                //  onViewportChange={setViewport}

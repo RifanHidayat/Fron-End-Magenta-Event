@@ -2,7 +2,7 @@ import React,{ useState,useEffect,useMemo}  from 'react'
 
 import Button from '@material-ui/core/Button';
 import {getAllFaktur,getDetailPIC,DataInTransactions} from './data/pic'
-import DeleteIcon from '@material-ui/icons/Delete';
+
 import { Formik } from 'formik';
 import Select from 'react-select'
 import $ from 'jquery'
@@ -62,7 +62,7 @@ function IN(props){
 
       },
       {
-        name: "Descripsi",
+        name: "Deskripsi",
         selector: "openin_balance",
         sortable: true,
         width:'15%',
@@ -130,11 +130,12 @@ function IN(props){
   const [picEvent,setPicEvent]=useState()
   const [idPicEvent,setIdPicEvent]=useState();
   const [descriptionProject,setDescrionProject]=useState()
-  const [nameTb,setNameTb]=useState()
+ 
   const [projectId,setProjectId]=useState()
   const [totalFaktur,setTotalFaktur]=useState(0)
   const [poNumber,setPoNumber]=useState()
   const [balanceTb,setBalanceTB]=useState(0);
+  const [nameTb,setNameTb]=useState()
   const [totalProject,setTotalProject]=useState()
   const [value,setvalue]=useState(null);
   const [dataInTransactions,setDataInTransactions]=useState([])
@@ -173,24 +174,35 @@ function IN(props){
       }
     }
     $('#payment').val(c)
+    console.log($('#payment').val().replace(/[^\w\s]/gi, '') )
 
-    if ($('#payment').val().replace(/[^\w\s]/gi, '')>totalFaktur){
+    if ( Number($('#payment').val().replace(/[^\w\s]/gi, '')) > Number(totalFaktur)){
       payment_error.textContent="Jumlah bayar melebihi batas maksimal"
 
      setDisabledButton(true)
 
-    }else{
+    }else if(Number($('#payment').val().replace(/[^\w\s]/gi, '')) > Number(balanceTb)) {
+      payment_error.textContent="Jumlah bayar melebihi Saldo TB"
+
+     setDisabledButton(true)
    
-     setDisabledButton(false)
+    
+
+    }else{
+      setDisabledButton(false)
       
       payment_error.textContent=""
-
     }
    });
 
 
 
   const onSelected = (selectedOptions) => {
+
+    var payment_error = document.getElementById("payment_error");
+    payment_error.textContent=""
+   
+    var pembayaran=Number(selectedOptions.total_faktur)-Number(selectedOptions.payment);
     setvalue(selectedOptions)
     console.log(selectedOptions.quotation_number)
     console.log(selectedOptions)
@@ -202,17 +214,19 @@ function IN(props){
     setProjectNumber(selectedOptions.project_number)
     setDescrionProject(selectedOptions.project_description)
     setPoNumber(selectedOptions.po_number)
-    setTotalFaktur(selectedOptions.payment!=null?Number(selectedOptions.total_faktur)-Number(selectedOptions.payment):selectedOptions.total_faktur)
   
     $('#total_project_cost').val(selectedOptions.total_project_cost.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
     setTotalProject(selectedOptions.total_project_cost)
 
-  $('#payment').val(selectedOptions.payment!=null?
+  pembayaran>balanceTb?$('#payment').val(balanceTb.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")):$('#payment').val(selectedOptions.payment!=null?
     (Number(selectedOptions.total_faktur)-Number(selectedOptions.payment)).toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
     :selectedOptions.total_faktur.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."))
 
     setPayment(selectedOptions.payment!=null?selectedOptions.payment:0)
     setQuotationNumber(selectedOptions.quotation_number)
+
+    setTotalFaktur(selectedOptions.payment!=null?Number(selectedOptions.total_faktur)-Number(selectedOptions.payment):selectedOptions.total_faktur)
+    
       
   }
   function getData(){
@@ -360,8 +374,18 @@ function IN(props){
     getAllFaktur().then((response)=>{
       const options=[];   
       response.data.map((data)=>{
+       
+
         var option={value:data.id_faktur,label:`${data.faktur_number} | ${data.quotation_number}`,total_faktur:data.total_faktur,po_number:data.po_number,pic:data.pic_event,pic_id:data.id_pic_event,customer:data.event_customer,project_id:data.project_id,project_number:data.project_number,project_description:data.description,total_project_cost:data.total_project_cost,payment:data.pembayaran,quotation_number:data.quotation_number}
-        options.push(option)
+
+
+        if (Number(data.total_faktur)-Number(data.pembayaran)>0){
+          options.push(option)
+        }
+
+     
+
+
         setTempisLoading(false);
         setDisabledButton(false)
       })
