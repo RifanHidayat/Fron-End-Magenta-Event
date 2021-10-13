@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-
 import { useHistory } from "react-router-dom";
-
 import "mapbox-gl/dist/mapbox-gl.css";
-
 import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
- 
 import "react-toastify/dist/ReactToastify.css";
 import { Formik } from "formik";
 import $ from "jquery";
@@ -17,6 +13,7 @@ import Select from "react-select";
 import { getAcounts, getInOutTransaction, getDetailPIC } from "./data/pic";
 import { API_URL } from "src/views/base/components/constants";
 import Swal from "sweetalert2";
+
 
 import {
   CCard,
@@ -34,6 +31,8 @@ import {
   CTooltip,
 } from "@coreui/react";
 
+import { getProjects } from "src/views/dashboard/data/Data";
+import { getDataAccounts } from "../mapping-events/data/accounts";
 var dateFormat = require("dateformat");
 function InOut(props) {
   const [costProject, setCostProject] = useState([]);
@@ -54,16 +53,11 @@ function InOut(props) {
 
   const getAllInOutDataCostProject = () => {
     getInOutTransaction(props.match.params.id).then((response) => {
-      // console.log(response.data[1].quotation_po);
+      console.log(response.data);
       setInOutTransactions([...response.data]);
     });
   };
   const columns = [
-    {
-      name: "No. Po",
-      sortable: true,
-      cell: (row) => row.quotation_po.code,
-    },
     {
       name: "Tanggal",
       sortable: true,
@@ -74,7 +68,11 @@ function InOut(props) {
       sortable: true,
       cell: (row) => row.description,
     },
-
+    {
+      name: "Akun",
+      sortable: true,
+      cell: (row) => `${row.bank_name} (${row.account_number})`,
+    },
     {
       name: "Jumlah",
       sortable: true,
@@ -180,7 +178,7 @@ function InOut(props) {
     setIdCostTransactions(id);
   };
   const deleteData = (id) => {
-    console.log("ee", id);
+    console.log("dd", id);
     Swal.fire({
       title: "Apakah anda yakin?",
       text: "Data akan dihapus",
@@ -194,9 +192,12 @@ function InOut(props) {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .delete(`${API_URL}/api/add-tb-transactions/` + id)
-          .then(function (response) {})
+          .delete(`${API_URL}/api/pict/add-saldo-pictb/` + id)
+          .then(function (response) {
+            console.log(response.data);
+          })
           .catch(function (error) {
+            console.log(error.data);
             Swal.fire({
               icon: "error",
               title: "Oops",
@@ -224,17 +225,13 @@ function InOut(props) {
       }
     });
   };
-
+  const onSelectedIn = (selectedOptions) => {
+    setValuein(selectedOptions);
+    setIdAccountIn(selectedOptions.value);
+  };
   const onSelectedOut = (selectedOptions) => {
     setValueout(selectedOptions);
-    console.log("1", parseInt(selectedOptions.value));
-    setIdAccountOut(parseInt(selectedOptions.value));
-    getBalanceQuotationPo(selectedOptions.value);
-    $("#amount").val(
-      selectedOptions.amount
-        .toString()
-        .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
-    );
+    setIdAccountOut(selectedOptions.value);
   };
   const backToSave = () => {
     setIdInOutTransaction("");
@@ -252,19 +249,9 @@ function InOut(props) {
     var id = props.match.params.id;
     //get detail pic
     getDetailPIC(id).then((response) => {
-      //setBalanceTB(response.data.balance=="N");
+      setBalanceTB(response.data.balance);
       setNameTb(response.data.name);
     });
-  };
-
-  const getBalanceQuotationPo = async (quotation_po_id) => {
-    var id = props.match.params.id;
-    axios
-      .get(`${API_URL}/api/pictb/${id}/quotation-po/balance/${quotation_po_id}`)
-      .then((response) => {
-        setBalanceTB(response.data.data != null ? response.data.data : 0);
-      })
-      .catch((error) => {});
   };
 
   useEffect(() => {
@@ -274,35 +261,29 @@ function InOut(props) {
       Navigator.push("/dashboard");
     }
     detailPIC();
+    // getAllDataCostProject();
+    var option_accounts = [];
 
     getAllInOutDataCostProject();
-    axios
-      .get(`${API_URL}/api/quotation-po`)
-      .then((response) => {
-        setAccounts([...response.data.data]);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
 
-    // getAcounts().then((response) => {
-    // response.data.map((values) => {
-    //   var data = {
-    //     value: values.id,
-    //     label: values.bank_name + ` (${values.account_number})`,
-    //   };
-    //   if (
-    //     values.id === 108 ||
-    //     values.id === 100 ||
-    //     values.id === 101 ||
-    //     values.status !== "Active"
-    //   ) {
-    //   } else {
-    //     option_accounts.push(data);
-    //   }
-    // });
-    // setAccounts([...option_accounts]);
-    //});
+    getAcounts().then((response) => {
+      response.data.map((values) => {
+        var data = {
+          value: values.id,
+          label: values.bank_name + ` (${values.account_number})`,
+        };
+        if (
+          values.id === 108 ||
+          values.id === 100 ||
+          values.id === 101 ||
+          values.status !== "Active"
+        ) {
+        } else {
+          option_accounts.push(data);
+        }
+      });
+      setAccounts([...option_accounts]);
+    });
   }, []);
 
   const [filterText, setFilterText] = React.useState("");
@@ -367,13 +348,23 @@ function InOut(props) {
                 amount: $("#amount")
                   .val()
                   .replace(/[^\w\s]/gi, ""),
-                pictb_id: props.match.params.id,
-                quotationpo_id: idAccountOut,
+                id: props.match.params.id,
+                account_id: idAccountOut,
                 name: nameTb,
               };
+              console.log("id account", idAccountOut);
+              console.log("date ", $("#date").val());
+              console.log("description", $("#description").val());
+              console.log(
+                "amount",
+                $("#amount")
+                  .val()
+                  .replace(/[^\w\s]/gi, "")
+              );
+              console.log("id pic", props.match.params.id);
 
               axios
-                .post(`${API_URL}/api/add-tb-transactions`, data)
+                .post(`${API_URL}/api/pict/add-saldo-pictb`, data)
                 .then((response) => {
                   getAllInOutDataCostProject();
                   detailPIC();
@@ -396,28 +387,18 @@ function InOut(props) {
             }}
           >
             {({
+              values,
+              errors,
+              touched,
               handleChange,
-
+              handleBlur,
               handleSubmit,
-
+              isSubmitting,
               /* and other goodies */
             }) => (
               <form onSubmit={handleSubmit} autoComplete="off">
                 <CFormGroup row>
-                  <CCol xs="4">
-                    <CFormGroup>
-                      <CLabel htmlFor="type">No. Po</CLabel>
-                      <Select
-                        className="basic-single"
-                        classNamePrefix="select"
-                        options={accounts}
-                        onChange={onSelectedOut}
-                        value={valueOut}
-                        name="color"
-                      />
-                    </CFormGroup>
-                  </CCol>
-                  <CCol xs="4">
+                  <CCol xs="3">
                     <CFormGroup>
                       <CLabel>Saldo TB</CLabel>
                       <CInputGroup>
@@ -452,7 +433,7 @@ function InOut(props) {
                     </CFormGroup>
                   </CCol>
 
-                  <CCol xs="4">
+                  <CCol xs="3">
                     <CFormGroup>
                       <CLabel htmlFor="description">Deskripsi </CLabel>
                       <CInput
@@ -463,7 +444,7 @@ function InOut(props) {
                     </CFormGroup>
                   </CCol>
 
-                  <CCol xs="4">
+                  <CCol xs="3">
                     <CFormGroup>
                       <CLabel htmlFor="total">jumlah</CLabel>
                       <CInputGroup>

@@ -21,6 +21,7 @@ import Checkbox from "@material-ui/core/Checkbox";
 
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import _ from "lodash";
+import { API_URL } from "src/views/base/components/constants";
 
 import {
   CCard,
@@ -371,10 +372,7 @@ function Members(props) {
     };
 
     axios
-      .patch(
-        "http://localhost:3000/api/projects/" + id + "/save-members/",
-        req_data
-      )
+      .patch(`${API_URL}/api/projects/` + id + "/save-members/", req_data)
       .then((response) => {
         //setDataMembers(JSON.stringify(data_members))
         setTempMembers([...data_members]);
@@ -399,6 +397,11 @@ function Members(props) {
   };
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "mapping");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     var id = props.match.params.id;
     //all employess eo
     getDataEmployess().then((response) => {
@@ -409,7 +412,7 @@ function Members(props) {
     });
     //get data members
     axios
-      .get("http://localhost:3000/api/projects/detail-project/" + id)
+      .get(`${API_URL}/api/projects/detail-project/` + id)
       .then((response) => {
         if (response.data.data.members !== null) {
           setTempSelectedMembers([...response.data.data.members]);

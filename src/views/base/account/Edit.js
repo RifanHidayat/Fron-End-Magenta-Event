@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import BeatLoader from "react-spinners/BeatLoader";
 import $ from "jquery";
+import { API_URL } from "src/views/base/components/constants";
 
 import {
   CButton,
@@ -28,14 +29,21 @@ import {
 // }
 
 function Edit(props) {
+  const [tempSelectedStatus, setTempSelectedStatus] = useState();
+
+  const dateFormat = require("dateformat");
   const [tempSelected, setTempSelected] = useState();
   const [tempIsloading, setTempIsloading] = useState(false);
-
   const [tempBankAccountName, setTempBankAccountName] = useState();
   const [tempBankAccountNumber, setTempBankAccountNumber] = useState();
   const [tempBankAccountBalance, setTempBankAccountBalance] = useState();
   const [mainLoading, setMainloading] = useState(true);
   const [tempIndexSelected, setTempIndexSelected] = useState(0);
+  const [tempIndexSelectedStatus, setTempIndexSelectedStatus] = useState(0);
+  const [valueTypeAccount, setvalueTypeAccount] = useState(null);
+  const [valueStatusAccount, setvalueStatusAccount] = useState(null);
+
+  const [date, setDate] = useState();
 
   //masking
   $(document).on("input", "#bank_account_balance", function (e) {
@@ -59,11 +67,17 @@ function Edit(props) {
   });
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "account");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
+
     let id = props.match.params.id;
 
     //get data detail
     axios
-      .get("http://localhost:3000/api/accounts/detail-account/" + id)
+      .get(`${API_URL}/api/accounts/detail-account/` + id)
       .then((response) => {
         console.log("detail project :", response);
 
@@ -74,16 +88,47 @@ function Edit(props) {
             .toString()
             .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
+        setDate(dateFormat(response.data.data.date, "yyyy-mm-dd"));
         setTempSelected(response.data.data.type);
         //eo =1.metaprint=2,all =3
+
+        setTempSelectedStatus();
         if (response.data.data.type === "eo") {
+          var optionType = {
+            value: "eo",
+            label: "Event organizer",
+          };
+          setvalueTypeAccount(optionType);
+
           setTempIndexSelected(0);
         } else if (response.data.data.type === "metaprint") {
           setTempIndexSelected(1);
         } else if (response.data.data.type === "all") {
+          var optionType = {
+            value: "all",
+            label: "Semua",
+          };
+          setvalueTypeAccount(optionType);
+          setTempSelected(response.data.data.type);
           setTempIndexSelected(2);
         }
+        if (response.data.data.status === "Active") {
+          var optionStatus = {
+            value: "Active",
+            label: "Active",
+          };
+          setvalueStatusAccount(optionStatus);
 
+          setTempIndexSelectedStatus(0);
+        } else {
+          setTempIndexSelectedStatus(1);
+          var optionStatus = {
+            value: "In Active",
+            label: "In Active",
+          };
+          setvalueStatusAccount(optionStatus);
+        }
+        setTempSelectedStatus(response.data.data.status);
         //laading false
         setMainloading(false);
       })
@@ -99,12 +144,23 @@ function Edit(props) {
 
   const onSelected = (selectedOptions) => {
     setTempSelected(selectedOptions["value"]);
+    setvalueTypeAccount(selectedOptions);
+  };
+
+  const onSelectedStatus = (selectedOptions) => {
+    setTempSelectedStatus(selectedOptions["value"]);
+    setvalueStatusAccount(selectedOptions);
   };
 
   const options = [
     { value: "eo", label: "Event Organizer" },
 
     { value: "all", label: "Semua" },
+  ];
+  const optionsStatus = [
+    { value: "Active", label: "Active" },
+
+    { value: "In Active", label: "In Active" },
   ];
   return (
     <div>
@@ -123,6 +179,7 @@ function Edit(props) {
                 bank_account_owner: "",
                 bank_account_balance: tempBankAccountBalance,
                 type: "",
+                date: date,
               }}
               validate={(values) => {
                 const errors = {};
@@ -130,26 +187,27 @@ function Edit(props) {
                 return errors;
               }}
               onSubmit={(values, { setSubmitting }) => {
+                console.log(values.date);
                 //setTempIsloading(true);
                 var id = props.match.params.id;
                 console.log("selectead:", tempSelected);
 
                 const data = {
+                  date: values.date,
                   bank_account_name: values.bank_account_name,
                   bank_account_number: values.bank_account_number,
                   //bank_account_owner:values.bank_account_owner,
+                  status: tempSelectedStatus,
                   bank_account_balance: values.bank_account_balance.replace(
                     /[^\w\s]/gi,
                     ""
                   ),
                   type: tempSelected,
                 };
+                console.log(data);
 
                 axios
-                  .patch(
-                    "http://localhost:3000/api/accounts/edit-account/" + id,
-                    data
-                  )
+                  .patch(`${API_URL}/api/accounts/edit-account/` + id, data)
                   .then((response) => {
                     console.log(response);
                     Swal.fire({
@@ -207,6 +265,18 @@ function Edit(props) {
                     </CFormGroup>
                   </CCol>
                   <CCol xs="6">
+                    <CFormGroup>
+                      <CLabel>Tanggal</CLabel>
+                      <CInput
+                        id="date"
+                        name="date"
+                        type="date"
+                        value={values.date}
+                        onChange={handleChange}
+                      />
+                    </CFormGroup>
+                  </CCol>
+                  <CCol xs="6">
                     {/* <CFormGroup>
                         <CLabel htmlFor="bank_account_balance">Saldo Awal</CLabel>
                         <CInput required  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />
@@ -219,7 +289,6 @@ function Edit(props) {
                           <CInputGroupText>IDR</CInputGroupText>
                         </CInputGroupPrepend>
                         <CInput
-                          readOnly
                           required
                           oninput="convertToRupiah(this);"
                           style={{ textAlign: "right" }}
@@ -237,15 +306,28 @@ function Edit(props) {
                       <CLabel htmlFor="type">Jenis Akun</CLabel>
                       <Select
                         onChange={onSelected}
-                        defaultValue={options[tempIndexSelected]}
                         className="basic-single"
                         classNamePrefix="select"
                         options={options}
+                        value={valueTypeAccount}
                         name="color"
                       />
                     </CFormGroup>
                   </CCol>
                   <br />
+                  <CCol xs="6">
+                    <CFormGroup>
+                      <CLabel htmlFor="type">Status</CLabel>
+                      <Select
+                        onChange={onSelectedStatus}
+                        className="basic-single"
+                        classNamePrefix="select"
+                        options={optionsStatus}
+                        value={valueStatusAccount}
+                        name="color"
+                      />
+                    </CFormGroup>
+                  </CCol>
 
                   <CCardFooter>
                     <div style={{ textAlign: "right" }}>

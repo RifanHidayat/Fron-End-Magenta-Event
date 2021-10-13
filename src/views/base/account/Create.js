@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik } from "formik";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import $ from "jquery";
+import { API_URL } from "src/views/base/components/constants";
 
 import {
   CButton,
@@ -23,7 +24,16 @@ import {
 
 function Add() {
   const [tempSelected, setTempSelected] = useState("eo");
+  const [tempSelectedStatus, setTempSelectedStatus] = useState("Active");
   const [tempIsloading, setTempIsloading] = useState(false);
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "account");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
+  }, []);
 
   //masking
   $(document).on("input", "#bank_account_balance", function (e) {
@@ -51,11 +61,19 @@ function Add() {
   const onSelected = (selectedOptions) => {
     setTempSelected(selectedOptions["value"]);
   };
+  const onSelectedStatus = (selectedOptions) => {
+    setTempSelectedStatus(selectedOptions["value"]);
+  };
 
   const options = [
     { value: "eo", label: "Event Organizer" },
 
     { value: "all", label: "Semua" },
+  ];
+  const optionsStatus = [
+    { value: "Active", label: "Active" },
+
+    { value: "In Active", label: "In Active" },
   ];
   return (
     <div>
@@ -85,6 +103,7 @@ function Add() {
               const data = {
                 bank_account_name: values.bank_account_name,
                 bank_account_number: values.bank_account_number,
+                status: tempSelectedStatus,
                 //bank_account_owner:values.bank_account_owner,
                 bank_account_balance: values.bank_account_balance.replace(
                   /[^\w\s]/gi,
@@ -95,7 +114,7 @@ function Add() {
               };
 
               axios
-                .post("http://localhost:3000/api/accounts/create-account", data)
+                .post(`${API_URL}/api/accounts/create-account`, data)
                 .then((response) => {
                   console.log(response);
                   Swal.fire({
@@ -203,6 +222,19 @@ function Add() {
                   </CFormGroup>
                 </CCol>
                 <br />
+                <CCol xs="6">
+                  <CFormGroup>
+                    <CLabel htmlFor="type">Status</CLabel>
+                    <Select
+                      onChange={onSelectedStatus}
+                      defaultValue={optionsStatus[0]}
+                      className="basic-single"
+                      classNamePrefix="select"
+                      options={optionsStatus}
+                      name="color"
+                    />
+                  </CFormGroup>
+                </CCol>
 
                 <CCardFooter>
                   <div style={{ textAlign: "right" }}>

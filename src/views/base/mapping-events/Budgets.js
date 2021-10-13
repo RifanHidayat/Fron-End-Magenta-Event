@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import { Formik } from "formik";
 import $ from "jquery";
 import { MDBDataTableV5 } from "mdbreact";
+import { API_URL } from "src/views/base/components/constants";
 import {
   CCard,
   CCardBody,
@@ -70,6 +71,11 @@ const columns = [
 ];
 
 function Budgets(props) {
+  const data = JSON.parse(localStorage.getItem("permission"));
+  const permission = data.filter((value) => value === "mapping");
+  if (permission <= 0) {
+    Navigator.push("/dashboard");
+  }
   const [modalBudgets, setModalBudgets] = useState(false);
 
   const [tempTotalBudgets, setTempTotalBudgets] = useState([]);
@@ -159,20 +165,22 @@ function Budgets(props) {
     // eslint-disable-next-line no-lone-blocks
     {
       account.map((data) =>
-        data.id === 100
-          ? ""
-          : data.id === 108
-          ? ""
-          : data.id === 101
-          ? ""
-          : (row +=
-              '<option value="' +
-              data.id +
-              '">' +
-              data.bank_name +
-              "(" +
-              data.account_number +
-              ")</option>")
+        data.status == "Active"
+          ? data.id === 100
+            ? ""
+            : data.id === 108
+            ? ""
+            : data.id === 101
+            ? ""
+            : (row +=
+                '<option value="' +
+                data.id +
+                '">' +
+                data.bank_name +
+                "(" +
+                data.account_number +
+                ")</option>")
+          : ""
       );
     }
     row += "</select>";
@@ -319,7 +327,7 @@ function Budgets(props) {
   const getDateSelected = () => {
     var id = props.match.params.id;
     axios
-      .get("http://localhost:3000/api/budgets/detail-budget/" + id)
+      .get(`${API_URL}/api/budgets/detail-budget/` + id)
       .then((response) => {
         if (response.data.data.transactions.length > 0) {
           setDataBudgetCreated(response.data.data.transactions);
@@ -337,7 +345,7 @@ function Budgets(props) {
   const getBudgetTransaction = () => {
     var id = props.match.params.id;
     axios
-      .get("http://localhost:3000/api/budgets/detail-budget/" + id)
+      .get(`${API_URL}/api/budgets/detail-budget/` + id)
       .then((response) => {
         console.log("tes");
         if (response.data.data.transactions.length > 0) {
@@ -355,9 +363,8 @@ function Budgets(props) {
 
       //get detail budgets
       axios
-        .get("http://localhost:3000/api/budgets/detail-budget/" + id)
+        .get(`${API_URL}/api/budgets/detail-budget/` + id)
         .then((response) => {
-          console.log("tes");
           if (response.data.data.transactions.length > 0) {
             setBudgets([...response.data.data.transactions]);
             BudgetProject(response.data.data.transactions);
@@ -385,7 +392,8 @@ function Budgets(props) {
                 value.id
               )
             );
-            setDataBudgetCreated(response.data.data.transactions);
+            //setDataBudgetCreated(response.data.data.transactions);
+            getDateSelected();
             //getDateSelected(response.data.data.transactions)
             console.log("erew", response.data.data.transactions);
             calculation();
@@ -402,6 +410,7 @@ function Budgets(props) {
           setMainIsLoading(false);
         });
     });
+
     // $('.budgets-datatable').DataTable();
   }, []);
 
@@ -716,15 +725,12 @@ function Budgets(props) {
                     };
 
                     axios
-                      .post(
-                        "http://localhost:3000/api/budgets/create-budget",
-                        data_budget
-                      )
+                      .post(`${API_URL}/api/budgets/create-budget`, data_budget)
                       .then((response) => {
                         // create transacton project
                         axios
                           .post(
-                            "http://localhost:3000/api/projects/transaction-project",
+                            `${API_URL}/api/projects/transaction-project`,
                             data_transaction_project
                           )
                           .then((response) => {

@@ -3,6 +3,8 @@ import Swal from "sweetalert2";
 import DataTable from "react-data-table-component";
 import axios from "axios";
 import FilterComponent from "src/views/base/components/FilterComponent";
+import { API_URL } from "src/views/base/components/constants";
+import BeatLoader from "react-spinners/BeatLoader";
 
 import {
   CButton,
@@ -10,15 +12,26 @@ import {
   CCardBody,
   CCardHeader,
   CTooltip,
+  CBadge,
 } from "@coreui/react";
 
 import env from "react-dotenv";
 
 function Manage() {
+  const getBadge = (status) => {
+    switch (status) {
+      case "Active":
+        return "success";
+      case "In Active":
+        return "danger";
+    }
+  };
+
   const columns = [
     {
       name: "Nama Akun",
       sortable: true,
+      width: "20%",
       cell: (row) => (
         <div style={{ width: "100%" }} data-tag="allowRowEvents">
           <div>{row.bank_name}</div>
@@ -27,6 +40,7 @@ function Manage() {
     },
     {
       name: "No. Rekening",
+      width: "20%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
@@ -36,7 +50,9 @@ function Manage() {
     },
     {
       name: "Saldo",
+      width: "30%",
       sortable: true,
+
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
@@ -46,9 +62,26 @@ function Manage() {
         </div>
       ),
     },
+    {
+      name: "Status",
+      width: "20%",
+      sortable: true,
+      cell: (row) => (
+        <div>
+          <div></div>
+          <CBadge style={{ width: "100%" }} color={getBadge(row.status)}>
+            <span style={{ color: "white", alignContent: "center" }}>
+              {" "}
+              {row.status}
+            </span>
+          </CBadge>
+        </div>
+      ),
+    },
 
     {
       name: "Aksi",
+      width: "10%",
       sortable: true,
       center: true,
       cell: (row) => (
@@ -64,7 +97,7 @@ function Manage() {
               </CButton>
             </CTooltip>
             &ensp;
-            <CTooltip content="Delete Akun" placement="top">
+            {/* <CTooltip content="Delete Akun" placement="top">
               <CButton
                 color="secondary"
                 size="sm"
@@ -72,7 +105,7 @@ function Manage() {
               >
                 {<i class="fa fa-trash"></i>}
               </CButton>
-            </CTooltip>
+            </CTooltip> */}
             &ensp;
             <CTooltip content="Lihat Transaksi." placement="top">
               <CButton
@@ -90,6 +123,7 @@ function Manage() {
   ];
 
   const [accounts, setAccounts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const deleteAccount = (id) => {
     Swal.fire({
@@ -105,7 +139,7 @@ function Manage() {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .delete(`http://localhost:3000/api/accounts/delete-account/` + id)
+          .delete(`${API_URL}/api/accounts/delete-account/` + id)
           .then(function (response) {
             console.log("rww", response.data);
           })
@@ -141,17 +175,25 @@ function Manage() {
   };
 
   const getDataAccounts = () => {
+ 
     axios
-      .get(`http://localhost:3000/api/accounts`)
+      .get(`${API_URL}/api/accounts`)
       .then((response) => {
         setAccounts([...response.data.data]);
+        setIsLoading(false);
       })
       .catch((error) => {
+        setIsLoading(false);
         console.log(error);
       });
   };
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "account");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     getDataAccounts();
   }, []);
 
@@ -200,14 +242,22 @@ function Manage() {
         </CCardHeader>
         <CCardBody>
           {/* <Table data={accounts}  /> */}
-          <DataTable
-            columns={columns}
-            data={filteredItems}
-            defaultSortField="name"
-            pagination
-            subHeader
-            subHeaderComponent={subHeaderComponent}
-          />
+          {isLoading == false ? (
+            <DataTable
+              columns={columns}
+              data={filteredItems}
+              defaultSortField="name"
+              pagination
+              subHeader
+              subHeaderComponent={subHeaderComponent}
+            />
+          ) : (
+            <center>
+              <div style={{ height: "200px" }}>
+                <BeatLoader color={"blue"} loading={true} size={20} />
+              </div>
+            </center>
+          )}
         </CCardBody>
       </CCard>
     </div>

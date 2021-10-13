@@ -9,6 +9,7 @@ import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
 // import { Alert } from 'reactstrap';
 import Alert from "@material-ui/lab/Alert";
 import Button from "@material-ui/core/Button";
+import { API_URL } from "src/views/base/components/constants";
 import {
   CCard,
   CCardBody,
@@ -89,6 +90,7 @@ function Approval(props) {
 
   const [TotalProject, setTotalProject] = useState();
   const [disabledButton, setDisabledButton] = useState(true);
+  const [tempLocation, setTempLocation] = useState("");
 
   const [quotations, setQuotations] = useState();
 
@@ -209,9 +211,9 @@ function Approval(props) {
   const approvalProject = (id) => {
     var id = props.match.params.id;
     var project_number = $("#project_number").val();
-    var description = `Penambahan anggaran untuk project dengan No. Project <a href='http://localhost:3001/mapping/manage#/mapping/approval/${id}'>${project_number}</a>`;
+    // var description = `Penambahan anggaran untuk project dengan No. Project <a href='${}/mapping/manage#/mapping/approval/${id}'>${project_number}</a>`;
     var data = {
-      description: description,
+      description: "",
       profits: tempProfits,
       id_quotation: tempIds,
     };
@@ -231,7 +233,7 @@ function Approval(props) {
 
       preConfirm: () => {
         return axios
-          .patch("http://localhost:3000/api/projects/approval/" + id, data)
+          .patch(`${API_URL}/api/projects/approval/` + id, data)
           .then(function (response) {
             console.log(response.data);
           })
@@ -278,7 +280,7 @@ function Approval(props) {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .patch("http://localhost:3000/api/projects/rejection/" + id)
+          .patch(`${API_URL}/api/projects/rejection/` + id)
           .then(function (response) {
             console.log(response.data);
           })
@@ -312,13 +314,18 @@ function Approval(props) {
   };
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "mapping");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     let id = props.match.params.id;
     var dateFormat = require("dateformat");
     let ids = [];
 
     //get detail project
     axios
-      .get("http://localhost:3000/api/projects/detail-project/" + id)
+      .get(`${API_URL}/api/projects/detail-project/` + id)
       .then((response) => {
         if (response.data.data.members != null) {
           setDataMembers(response.data.data.members);
@@ -397,6 +404,7 @@ function Approval(props) {
         setTempDescription(response.data.data.description);
         setTempLatitude(response.data.data.latitude);
         setTempLongtitude(response.data.data.longtitude);
+        setTempLocation(response.data.data.location);
         setTempTotalProjectCos(
           response.data.data.total_project_cost
             .toString()
@@ -635,8 +643,21 @@ function Approval(props) {
                 </CInputGroup>
               </CFormGroup>
             </CCol>
+            <CCol xs="12">
+              <CFormGroup>
+                <CLabel htmlFor="location">Lokasi Project</CLabel>
+                <CInput
+                  required
+                  id="location"
+                  name="location"
+                  placeholder=""
+                  readOnly
+                  value={tempLocation}
+                />
+              </CFormGroup>
+            </CCol>
 
-            <CCol xs="5">
+            {/* <CCol xs="5">
               <CFormGroup>
                 <CLabel htmlFor="latitude">Latitude</CLabel>
                 <CInput
@@ -647,8 +668,8 @@ function Approval(props) {
                   value={tempLatitude}
                 />
               </CFormGroup>
-            </CCol>
-            <CCol xs="5">
+            </CCol> */}
+            {/* <CCol xs="5">
               <CFormGroup>
                 <CLabel htmlFor="longtitude">Longitude</CLabel>
                 <CInput
@@ -659,8 +680,8 @@ function Approval(props) {
                   value={tempLongtitude}
                 />
               </CFormGroup>
-            </CCol>
-            <CCol xs="2">
+            </CCol> */}
+            {/* <CCol xs="2">
               <CFormGroup>
                 <div
                   style={{
@@ -680,7 +701,7 @@ function Approval(props) {
                   </CButton>
                 </div>
               </CFormGroup>
-            </CCol>
+            </CCol> */}
           </CFormGroup>
         </CCardBody>
       </CCard>
@@ -854,9 +875,9 @@ function Approval(props) {
             <CModalTitle></CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <MapGL
+            {/* <MapGL
               {...viewport}
-              width="53vw"
+              width="48vw"
               height="60vh"
               ref={mapRef}
               //  onViewportChange={setViewport}
@@ -883,7 +904,7 @@ function Approval(props) {
               <NavigationControl style={navStyle} />
               <ScaleControl style={scaleControlStyle} />
             </MapGL>
-            <ControlPanel events={events} />
+            <ControlPanel events={events} /> */}
           </CModalBody>
           <CModalFooter>
             {/* <CButton color="primary" onClick={() => setLarge(!large)}>Save</CButton>{' '} */}

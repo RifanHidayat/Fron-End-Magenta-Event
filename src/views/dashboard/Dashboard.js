@@ -457,7 +457,7 @@ const Dashboard = () => {
             </span>
           </CCardHeader>
           <CCardBody>
-            <MapGL
+            {/* <MapGL
               {...viewport}
               width="100%"
               height="70vh"
@@ -485,7 +485,7 @@ const Dashboard = () => {
                 offsetLeft={-10}
               >
                 {/* <Pin size={20} /> */}
-                <Pins data={projects} onClick={setPopupInfo} />
+            {/* <Pins data={projects} onClick={setPopupInfo} />
                 {popupInfo && (
                   <Popup
                     tipSize={5}
@@ -505,7 +505,7 @@ const Dashboard = () => {
               <NavigationControl style={navStyle} />
               <ScaleControl style={scaleControlStyle} />
             </MapGL>
-            <ControlPanel events={events} />
+            <ControlPanel events={events} /> */}
           </CCardBody>
         </Card>
       </CContainer>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Table from "react-bootstrap/Table";
-import ReactExport from "react-export-excel";
+import ReactExport from "react-data-export";
 import "jspdf-autotable";
 import { useHistory } from "react-router-dom";
 import DataTable from "react-data-table-component";
@@ -13,9 +13,16 @@ import img from "../account/images/logo.png";
 import Swal from "sweetalert2";
 import FilterComponent from "src/views/base/components/FilterComponent";
 import ModalImage from "react-modal-image";
-import { CButton, CCard, CCardBody, CCardHeader } from "@coreui/react";
+import {
+  CButton,
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CCol,
+  CFormGroup,
+} from "@coreui/react";
 import axios from "axios";
-
+import { API_URL } from "src/views/base/components/constants";
 function Transaction(props) {
   require("dotenv/config");
   //const [accounts,setAccounts]=useState([]);
@@ -132,24 +139,12 @@ function Transaction(props) {
     {
       name: "",
       selector: "year",
-      width: "10%",
+      width: "20%",
 
       sortable: true,
       cell: (row) => (
         <div>
           {row.status == "pending" ? (
-            //   <Button style={{width:'20px',height:'20px',fontSize:'5px'}} variant="contained" color="primary"
-            //   onClick={()=>approval(
-            //     row.id,
-            //     row.date,
-            //     row.amount,
-            //     row.description,
-            //     row.image,
-            //     row.account_id,
-            //   )} >
-            //   Approve
-            //  </Button>
-
             <CButton
               size="sm"
               bloc
@@ -166,6 +161,27 @@ function Transaction(props) {
               }
             >
               Approve
+            </CButton>
+          ) : (
+            " "
+          )}
+          {row.status == "pending" ? (
+            <CButton
+              size="sm"
+              bloc
+              color="danger"
+              onClick={() =>
+                rejection(
+                  row.id,
+                  row.date,
+                  row.amount,
+                  row.description,
+                  row.image,
+                  row.account_id
+                )
+              }
+            >
+              Reject
             </CButton>
           ) : (
             ""
@@ -236,16 +252,13 @@ function Transaction(props) {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      cancelButtonText: "Cancel",
+      cancelButtonText: "Rejected",
       confirmButtonText: "Approve",
       showLoaderOnConfirm: true,
 
       preConfirm: () => {
         return axios
-          .patch(
-            "http://localhost:3000/api/project/transactions/approval/" + id,
-            data
-          )
+          .patch(`${API_URL}/api/project/transactions/approval/` + id, data)
           .then(function (response) {
             console.log(response.data);
           })
@@ -274,9 +287,215 @@ function Transaction(props) {
     });
   };
 
+  const rejection = (id, date, amount, description, image, account_id) => {
+    var data = {
+      date: date,
+      amount: amount,
+      description: description,
+      image: image,
+      account_id: account_id,
+      project_number: projectNumber,
+      status: "rejection",
+    };
+    Swal.fire({
+      title: "Apakah anda yakin?",
+      text: "Transaksi akan direject",
+      icon: "warning",
+      reverseButtons: true,
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      cancelButtonText: "Cancel",
+      confirmButtonText: "Reject",
+      showLoaderOnConfirm: true,
+
+      preConfirm: () => {
+        return axios
+          .patch(`${API_URL}/api/project/transactions/rejection/` + id, data)
+          .then(function (response) {
+            console.log(response.data);
+          })
+          .catch(function (error) {
+            console.log(error.data);
+            Swal.fire({
+              icon: "error",
+              title: "Oops",
+              text: "Terjadi Kesalahan",
+            });
+          });
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "transaksi berhasil  direject",
+          showConfirmButton: false,
+          timer: 2000,
+        }).then((result) => {
+          navigator.push("/mapping");
+        });
+      }
+    });
+  };
+
   useEffect(() => {
+    var data_transactions = [];
+    const data_permission = JSON.parse(localStorage.getItem("permission"));
+    const permission = data_permission.filter((value) => value === "mapping");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     let id = props.match.params.id;
     let project_number = props.match.params.project_number;
+
+    dataPDF(props.match.params.id).then((response) => {
+      var data_transactions_excel = [];
+      response.data.transactions.map((value, index) => {
+        var data = [
+          {
+            value: dateFormat(value.date, "dd/mm/yyyy"),
+            width: 100,
+          },
+          {
+            value: `${value.type == "out" ? "Advance" : "deposit"}`,
+            width: { wpx: 80 },
+          },
+          {
+            value: `${value.description == null ? "" : value.description}`,
+            width: { wpx: 150 },
+          },
+          {
+            value: value.type === "in" ? value.amount : "",
+            width: { wpx: 100 },
+          },
+          {
+            value: value.type === "out" ? value.amount : "",
+            width: { wpx: 100 },
+          },
+          {
+            value: value.balance,
+            width: { wpx: 80 },
+          },
+        ];
+        data_transactions.push(data);
+        if (index + 1 >= response.data.transactions.length) {
+          const header = [
+            { value: response.total_in, width: { wpx: 100 } },
+            { value: response.total_out, width: { wpx: 100 } },
+            { value: response.balance, width: { wpx: 100 } },
+          ];
+          const multiDataSet = [
+            {
+              columns: [
+                {
+                  title: "Total Cash In",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                }, //pixels width
+                {
+                  title: "Total Cash Out",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                }, //char width
+                {
+                  title: "Saldo",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                },
+              ],
+              data: [header],
+            },
+            {
+              ySteps: 1, //will put space of 5 rows,
+
+              columns: [
+                {
+                  title: "Tanggal",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                }, //pixels width
+                {
+                  title: "Tipe",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                },
+
+                {
+                  title: "Deskripsi",
+                  width: { wpx: 250 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                }, //char width
+                {
+                  title: "Cash In",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                },
+
+                {
+                  title: "Cash Out",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                },
+                {
+                  title: "Saldo",
+                  width: { wpx: 100 },
+                  style: {
+                    fill: {
+                      patternType: "solid",
+                      fgColor: { rgb: "808080" },
+                    },
+                  },
+                },
+              ],
+              data: data_transactions,
+            },
+          ];
+          setDataExcel([...multiDataSet]);
+        }
+      });
+    });
 
     setProjectNumber(project_number);
     data(id).then((response) => {
@@ -312,7 +531,6 @@ function Transaction(props) {
     dataPDF(props.match.params.id).then((response) => {
       var data_transactions_excel = [];
       response.data.transactions.map((values) => {
-        console.log("tee", values);
         var data = {
           date: values.date,
           description: values.description,
@@ -339,21 +557,17 @@ function Transaction(props) {
           dateFormat(values.date, "dd/mm/yyyy"),
           values.description,
           values.type === "in"
-            ? "IDR " +
-              values.amount
+            ? values.amount
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
             : "",
           values.type === "out"
-            ? "IDR " +
-              values.amount
+            ? values.amount
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
             : "",
-          "IDR " +
-            values.balance
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+
+          values.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
         ];
         data_transactions_pdf.push(data);
       });
@@ -382,18 +596,17 @@ function Transaction(props) {
         head: [["Total Cash In", "Total Cash Out", "Saldo"]],
         body: [
           [
-            "IDR " +
-              response.data.total_in
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
-            "IDR " +
-              response.data.total_out
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
-            "IDR " +
-              response.data.balance
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+            response.data.total_in
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+
+            response.data.total_out
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+
+            response.data.balance
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
           ],
         ],
       });
@@ -428,8 +641,11 @@ function Transaction(props) {
         <div style={{ float: "left", position: "absolute" }}>
           <span>
             <h5>
-              <strong>{projectNumber}</strong>
+              <strong>Advance Transaksi</strong>
             </h5>
+          </span>
+          <span>
+            <h7>No. project: {projectNumber}</h7>
           </span>
         </div>
         <div style={{ float: "right" }}>
@@ -442,22 +658,23 @@ function Transaction(props) {
           </Button>
           &nbsp; &nbsp;
           <ExcelFile
+            filename="Rekap Adavence transaksi"
             element={
               <Button
                 variant="contained"
+                color="success"
                 style={{ backgroundColor: "green", color: "white" }}
-                onClick={() => showExcel()}
               >
                 Excel
               </Button>
             }
           >
-            <ExcelSheet name="Organization" />
+            <ExcelSheet dataSet={dataExcel} name="Organization" />
           </ExcelFile>
         </div>
       </div>
 
-      <Table striped bordered hover style={{ width: "50%" }}>
+      {/* <Table striped bordered hover style={{ width: "50%" }}>
         <thead>
           <tr>
             <th>Total Cash In</th>
@@ -472,7 +689,54 @@ function Transaction(props) {
             <td align="right">{balance}</td>
           </tr>
         </tbody>
-      </Table>
+      </Table> */}
+      <div style={{ marginTop: "20px" }}>
+        <br></br>
+        <br></br>
+        <br></br>
+        <CFormGroup row>
+          <CCol col="4">
+            <CCard>
+              <CCardHeader>
+                <div>
+                  <span>
+                    <strong>Total In</strong>
+                  </span>
+                  <br></br>
+                  <span>{totalIn}</span>
+                </div>
+              </CCardHeader>
+            </CCard>
+          </CCol>
+          <CCol col="4">
+            <CCard>
+              <CCardHeader>
+                <div>
+                  <span>
+                    <strong>Total Out</strong>
+                  </span>
+                  <br></br>
+                  <span>{totalOut}</span>
+                </div>
+              </CCardHeader>
+            </CCard>
+          </CCol>
+          <CCol col="4">
+            <CCard>
+              <CCardHeader>
+                <div>
+                  <span>
+                    <strong>Balance</strong>
+                  </span>
+                  <br></br>
+                  <span>{balance}</span>
+                </div>
+              </CCardHeader>
+            </CCard>
+          </CCol>
+        </CFormGroup>
+      </div>
+
       <CCard>
         <CCardHeader>
           <span>

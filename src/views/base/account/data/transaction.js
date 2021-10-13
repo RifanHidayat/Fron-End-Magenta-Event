@@ -1,16 +1,18 @@
+import { API_URL } from "src/views/base/components/constants";
 require("dotenv").config();
+
 var dateFormat = require("dateformat");
 export const data = async (props) =>
-  fetch("http://localhost:3000/api/accounts/detail-account/" + props)
+  fetch(`${API_URL}/api/accounts/detail-account/` + props)
     .then((response) => response.json())
     .then((json) => json["data"]);
 
 export const dataPDF = async (props) =>
-  fetch("http://localhost:3000/api/accounts/detail-account/" + props)
+  fetch(`${API_URL}/api/accounts/detail-account/` + props)
     .then((response) => response.json())
     .then((json) => json);
 export const dataAccounts = async (props) =>
-  fetch("http://localhost:3000/api/accounts")
+  fetch(`${API_URL}/api/accounts`)
     .then((response) => response.json())
     .then((json) => json);
 
@@ -44,7 +46,7 @@ export const columns = [
     cell: (row) => <span>{row.type === "in" ? "Deposit" : "Expense"}</span>,
   },
   {
-    name: "Cash In",
+    name: "In",
     selector: "amount",
     sortable: true,
     width: "15%",
@@ -59,7 +61,7 @@ export const columns = [
     ),
   },
   {
-    name: "Cash Out",
+    name: "Out",
     selector: "amount",
     sortable: true,
     width: "15%",

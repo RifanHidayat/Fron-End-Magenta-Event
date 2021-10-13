@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Table from "react-bootstrap/Table";
-
 import "jspdf-autotable";
 import ReactExport from "react-data-export";
 import ReactDOM from "react-dom";
@@ -18,9 +17,11 @@ import {
   CCardBody,
   CCardHeader,
   CCol,
+  CForm,
   CFormGroup,
 } from "@coreui/react";
-
+import axios from "axios";
+import { API_URL } from "../components/constants";
 var dateFormat = require("dateformat");
 
 const columns = [
@@ -47,7 +48,7 @@ const columns = [
   },
 
   {
-    name: "In",
+    name: "Cash In",
     selector: "amount",
     sortable: true,
     ritgh: true,
@@ -63,7 +64,7 @@ const columns = [
     ),
   },
   {
-    name: "Out",
+    name: "Cash Out",
     selector: "amount",
     sortable: true,
     ritgh: true,
@@ -103,6 +104,8 @@ function Transaction(props) {
   const [namePIC, setNamePIC] = useState();
   const [dataExcel, setDataExcel] = useState();
 
+  const [poNumber, setPoNumber] = useState();
+
   const [filterText, setFilterText] = React.useState("");
   const [resetPaginationToggle, setResetPaginationToggle] =
     React.useState(false);
@@ -119,176 +122,46 @@ function Transaction(props) {
     }
     let id = props.match.params.id;
 
-    getDetailPIC(id).then((response) => {
-      console.log(response.data);
-      setNamePIC(response.data.name);
-      var data_transactions = [];
-      if (response.data.transactions.length > 0) {
-        setTransaction([...response.data.transactions]);
+    axios
+      .get(
+        `${API_URL}/api/quotation-po/detail/${props.match.params.quotation_po_id}`
+      )
+      .then((response) => {
+        console.log(response.data.data);
+        setPoNumber(response.data.data[0].code);
+      })
+      .catch((error) => {});
+
+    axios
+      .get(
+        `${API_URL}/api/pictb/${props.match.params.pictb_id}/tb-transactions/quotation-po/${props.match.params.quotation_po_id}`
+      )
+      .then((response) => {
+        setTransaction(response.data.data);
+
         setTotalIn(
-          "IDR " +
-            response.data.total_in
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+          response.data.data
+            .reduce((a, b) => (b.type === "in" ? a + b.amount : (a = a)), 0)
+            .toString()
+            .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
         setTotalOut(
-          "IDR " +
-            response.data.total_out
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+          response.data.data
+            .reduce((a, b) => (b.type === "out" ? a + b.amount : (a = a)), 0)
+            .toString()
+            .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
         setBalance(
-          "IDR " +
-            response.data.balance
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+          response.data.data
+            .reduce(
+              (a, b) => (b.type === "in" ? a + b.amount : a - b.amount),
+              0
+            )
+            .toString()
+            .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
-        console.log("ss", response.data.transactions);
-        response.data.transactions.map((value, index) => {
-          var data = [
-            {
-              value: dateFormat(value.date, "dd/mm/yyyy"),
-              width: 100,
-            },
-            {
-              value: `${value.type == "out" ? "Advance" : "deposit"}`,
-              width: { wpx: 80 },
-            },
-            {
-              value: `${value.description == null ? "" : value.description}`,
-              width: { wpx: 150 },
-            },
-            {
-              value: value.type === "in" ? value.amount : "",
-              width: { wpx: 100 },
-            },
-            {
-              value: value.type === "out" ? value.amount : "",
-              width: { wpx: 100 },
-            },
-            {
-              value: value.balance,
-              width: { wpx: 80 },
-            },
-          ];
-          data_transactions.push(data);
-          if (index + 1 >= response.data.transactions.length) {
-            const header = [
-              { value: response.data.total_in, width: { wpx: 100 } },
-              { value: response.data.total_out, width: { wpx: 100 } },
-              { value: response.data.balance, width: { wpx: 100 } },
-            ];
-            const multiDataSet = [
-              {
-                columns: [
-                  {
-                    title: "Total In",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  }, //pixels width
-                  {
-                    title: "Total Ou",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  }, //char width
-                  {
-                    title: "Saldo",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  },
-                ],
-                data: [header],
-              },
-              {
-                ySteps: 1, //will put space of 5 rows,
-
-                columns: [
-                  {
-                    title: "Tanggal",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  }, //pixels width
-                  {
-                    title: "Tipe",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  },
-
-                  {
-                    title: "Deskripsi",
-                    width: { wpx: 250 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  }, //char width
-                  {
-                    title: "Cash In",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  },
-
-                  {
-                    title: "Cash Out",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  },
-                  {
-                    title: "Saldo",
-                    width: { wpx: 100 },
-                    style: {
-                      fill: {
-                        patternType: "solid",
-                        fgColor: { rgb: "808080" },
-                      },
-                    },
-                  },
-                ],
-                data: data_transactions,
-              },
-            ];
-            setDataExcel([...multiDataSet]);
-          }
-        });
-      }
-    });
+      })
+      .catch((error) => {});
   }, []);
 
   function showExcel() {
@@ -428,77 +301,59 @@ function Transaction(props) {
 
   return (
     <div>
+      {/* header */}
       <div style={{ float: "right", width: "100%" }}>
         <div style={{ float: "left", position: "absolute" }}>
           <span>
             <h5>
-              <strong>Detail PICTB</strong>
+              <strong>Detail Transaksi PO</strong>
             </h5>
           </span>
           <span>
-            <h7>Nama PIC: {namePIC}</h7>
+            <h7>No. PO: {poNumber}</h7>
           </span>
         </div>
         <div style={{ float: "right" }}>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => showPDF()}
-          >
+          {/* <Button variant="outline" color="secondary" onClick={() => showPDF()}>
             PDF
-          </Button>
+          </Button> */}
+          <Button variant="outlined" onClick={() => showPDF()}>PDF</Button>
           &nbsp; &nbsp;
           <ExcelFile
             filename="Rekap Transaksi PIC TB"
             element={
-              <Button
-                variant="contained"
-                color="success"
-                style={{ backgroundColor: "green", color: "white" }}
-              >
-                Excel
-              </Button>
+              // <Button
+              //   variant="contained"
+              //   color="success"
+              //   style={{ backgroundColor: "green", color: "white" }}
+              // >
+              //   Excel
+              // </Button>
+              <Button variant="outlined"
+              >Excel</Button>
             }
           >
             <ExcelSheet dataSet={dataExcel} name="Organization" />
           </ExcelFile>
         </div>
       </div>
-      {/* header */}
-      {/* <div style={{ float: "right", width: "100%" }}>
-        <div style={{ float: "left", position: "absolute" }}>
-          <span>
-            <h5>
-              <strong>TB: {namePIC}</strong>
-            </h5>
-          </span>
-        </div>
-        <div style={{ float: "right" }}>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => showPDF()}
-          >
-            PDF
-          </Button>
-          &nbsp; &nbsp;
-          <ExcelFile
-            filename="Rekap Transaksi PIC TB"
-            element={
-              <Button
-                variant="contained"
-                color="success"
-                style={{ backgroundColor: "green", color: "white" }}
-              >
-                Excel
-              </Button>
-            }
-          >
-            <ExcelSheet dataSet={dataExcel} name="Organization" />
-          </ExcelFile>
-        </div>
-      </div> */}
 
+      {/* <Table striped bordered hover style={{ width: "50%" }}>
+        <thead>
+          <tr>
+            <th>Total Cash In</th>
+            <th>Total Cash Out </th>
+            <th>Total Saldo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="right">{totalIn}</td>
+            <td align="right">{totalOut}</td>
+            <td align="right">{balance}</td>
+          </tr>
+        </tbody>
+      </Table> */}
       <div style={{ marginTop: "20px" }}>
         <br></br>
         <br></br>

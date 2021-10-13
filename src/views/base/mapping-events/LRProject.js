@@ -29,6 +29,7 @@ import img from "../account/images/logo.png";
 import Table from "react-bootstrap/Table";
 import Select from "react-select";
 import { getDataAccounts } from "./data/accounts";
+import { API_URL } from "src/views/base/components/constants";
 
 import {
   CCard,
@@ -113,6 +114,7 @@ function Approval(props) {
   const [costProject, setCostProject] = useState([]);
   const [valueIn, setValuein] = useState(null);
   const [accounts, setAccounts] = useState([]);
+  const [tempLocation, setTempLocation] = useState("");
 
   const [tempisloadingCostProject, setTempsIsLoadingCostProject] =
     useState(true);
@@ -142,7 +144,7 @@ function Approval(props) {
     var data_transactions = [];
     var id = props.match.params.id;
     axios
-      .get(`http://localhost:3000/api/projects/${id}/transactions`)
+      .get(`${API_URL}/api/projects/${id}/transactions`)
       .then((response) => {
         setTempTransactions([...response.data.data.transactions]);
 
@@ -276,7 +278,7 @@ function Approval(props) {
                       },
                     }, //char width
                     {
-                      title: "Cash In",
+                      title: "In",
                       width: { wpx: 100 },
                       style: {
                         fill: {
@@ -287,7 +289,7 @@ function Approval(props) {
                     },
 
                     {
-                      title: "Cash Out",
+                      title: "Out",
                       width: { wpx: 100 },
                       style: {
                         fill: {
@@ -462,7 +464,7 @@ function Approval(props) {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .delete("http://localhost:3000/api/projects/cost/" + id)
+          .delete(`${API_URL}/api/projects/cost/` + id)
           .then(function (response) {
             console.log(response.data);
           })
@@ -506,6 +508,11 @@ function Approval(props) {
     setValuein(null);
   };
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "mapping");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     var option_accounts = [];
     getDataAccounts().then((response) => {
       response.map((values) => {
@@ -513,7 +520,12 @@ function Approval(props) {
           value: values.id,
           label: values.bank_name + ` (${values.account_number})`,
         };
-        if (values.id === 100 || values.id === 108 || values.id === 101) {
+        if (
+          values.id === 100 ||
+          values.id === 108 ||
+          values.id === 101 ||
+          values.status !== "Active"
+        ) {
         } else {
           option_accounts.push(data);
         }
@@ -523,7 +535,7 @@ function Approval(props) {
     let id = props.match.params.id;
     //get detail project
     axios
-      .get("http://localhost:3000/api/projects/detail-project/" + id)
+      .get(`${API_URL}/api/projects/detail-project/${id}`)
       .then((response) => {
         setQuotations([...response.data.data.quotations]);
         setTempProjectNumber(response.data.data.project_number);
@@ -587,6 +599,7 @@ function Approval(props) {
             .toString()
             .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
+        setTempLocation(response.data.data.location);
 
         getAllTransactions();
         setMarker({
@@ -648,21 +661,17 @@ function Approval(props) {
           dateFormat(values.date, "dd/mm/yyyy"),
           values.description,
           values.type === "in"
-            ? "IDR " +
-              values.amount
+            ? values.amount
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
             : "",
           values.type === "out"
-            ? "IDR " +
-              values.amount
+            ? values.amount
                 .toString()
                 .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
             : "",
-          "IDR " +
-            values.balance
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+
+          values.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
         ];
         data_transactions_pdf.push(data);
       });
@@ -689,21 +698,20 @@ function Approval(props) {
 
         margin: { left: 10, right: "70%", top: "10%" },
 
-        head: [["Total In", "Total Out", "Saldo"]],
+        head: [["Total Project", "Total Out", "Saldo"]],
         body: [
           [
-            "IDR " +
-              response.data.total_in
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
-            "IDR " +
-              response.data.total_out
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
-            "IDR " +
-              response.data.balance
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+            response.data.total_in
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+
+            response.data.total_out
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
+
+            response.data.balance
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1."),
           ],
         ],
       });
@@ -725,7 +733,7 @@ function Approval(props) {
         },
         thema: "grid",
         margin: { left: 10, right: 10 },
-        head: [["tanggal", "Deskripsi", "Cash In", "Cash Out", "Saldo"]],
+        head: [["tanggal", "Deskripsi", "In", "Out", "Saldo"]],
         body: data_transactions_pdf,
       });
       window.open(doc.output("bloburl"), "_blank");
@@ -888,50 +896,17 @@ function Approval(props) {
                 </CInputGroup>
               </CFormGroup>
             </CCol>
-
-            <CCol xs="5">
+            <CCol xs="12">
               <CFormGroup>
-                <CLabel htmlFor="latitude">Latitude</CLabel>
+                <CLabel htmlFor="location">Lokasi Project</CLabel>
                 <CInput
-                  readOnly
-                  id="latitude"
-                  name="latitude"
+                  required
+                  id="location"
+                  name="location"
                   placeholder=""
-                  value={tempLatitude}
-                />
-              </CFormGroup>
-            </CCol>
-            <CCol xs="5">
-              <CFormGroup>
-                <CLabel htmlFor="longtitude">Longitude</CLabel>
-                <CInput
                   readOnly
-                  id="longtitude"
-                  name="longtitude"
-                  placeholder=""
-                  value={tempLongtitude}
+                  value={tempLocation}
                 />
-              </CFormGroup>
-            </CCol>
-            <CCol xs="2">
-              <CFormGroup>
-                <div
-                  style={{
-                    textAlign: "right",
-                    marginTop: "35px",
-                    width: "100%",
-                  }}
-                >
-                  <CButton
-                    color="primary"
-                    onClick={() => setTempMap(!tempMap)}
-                    size="sm"
-                    block
-                  >
-                    {" "}
-                    <i class="fa fa-map-marker" aria-hidden="true"></i>
-                  </CButton>
-                </div>
               </CFormGroup>
             </CCol>
           </CFormGroup>
@@ -950,7 +925,7 @@ function Approval(props) {
             <CModalTitle></CModalTitle>
           </CModalHeader>
           <CModalBody>
-            <MapGL
+            {/* <MapGL
               {...viewport}
               width="53vw"
               height="60vh"
@@ -978,7 +953,7 @@ function Approval(props) {
               <FullscreenControl style={fullscreenControlStyle} />
               <NavigationControl style={navStyle} />
               <ScaleControl style={scaleControlStyle} />
-            </MapGL>
+            </MapGL> */}
             <ControlPanel events={events} />
           </CModalBody>
           <CModalFooter>
@@ -1011,6 +986,8 @@ function Approval(props) {
             validate={(values) => {}}
             onSubmit={(values, { setSubmitting }) => {
               var id = props.match.params.id;
+              setTempsIsLoadingCostProject(true);
+              setTempIsLoading(true);
 
               var data = {
                 date: dateFormat($("#date").val(), "yyyy-mm-dd"),
@@ -1025,11 +1002,9 @@ function Approval(props) {
 
               if (idCostTransactions === "") {
                 axios
-                  .post(
-                    "http://localhost:3000/api/projects/create-out-transaction",
-                    data
-                  )
+                  .post(`${API_URL}/api/projects/create-out-transaction`, data)
                   .then((response) => {
+                    setTempIsLoading(false);
                     Swal.fire({
                       title: "success",
                       text: "Berhasil menambahkan cost/out project",
@@ -1037,6 +1012,7 @@ function Approval(props) {
                       timer: 2000,
                       showConfirmButton: false,
                     }).then((_) => {
+                      setTempsIsLoadingCostProject(false);
                       getAllDataCostProject();
                       backToSave();
                       setIdCostTransactions("");
@@ -1047,11 +1023,12 @@ function Approval(props) {
               } else {
                 axios
                   .patch(
-                    "http://localhost:3000/api/projects/cost/" +
-                      idCostTransactions,
+                    `${API_URL}/api/projects/cost/` + idCostTransactions,
                     data
                   )
                   .then((response) => {
+                    setTempIsLoading(false);
+                    setTempsIsLoadingCostProject(false);
                     getAllDataCostProject();
                     backToSave();
                     setIdCostTransactions("");
@@ -1065,7 +1042,10 @@ function Approval(props) {
                       showConfirmButton: false,
                     }).then((_) => {});
                   })
-                  .catch((error) => {});
+                  .catch((error) => {
+                    setTempIsLoading(false);
+                    setTempsIsLoadingCostProject(false);
+                  });
               }
             }}
           >
@@ -1221,6 +1201,52 @@ function Approval(props) {
           )}
         </CCardBody>
       </CCard>
+      <div style={{ marginTop: "20px" }}>
+        <br></br>
+        <br></br>
+        <br></br>
+        <CFormGroup row>
+          <CCol col="4">
+            <CCard>
+              <CCardHeader>
+                <div>
+                  <span>
+                    <strong>Total Project</strong>
+                  </span>
+                  <br></br>
+                  <span>{totalIn}</span>
+                </div>
+              </CCardHeader>
+            </CCard>
+          </CCol>
+          <CCol col="4">
+            <CCard>
+              <CCardHeader>
+                <div>
+                  <span>
+                    <strong>Total Out</strong>
+                  </span>
+                  <br></br>
+                  <span>{totalOut}</span>
+                </div>
+              </CCardHeader>
+            </CCard>
+          </CCol>
+          <CCol col="4">
+            <CCard>
+              <CCardHeader>
+                <div>
+                  <span>
+                    <strong>Balance</strong>
+                  </span>
+                  <br></br>
+                  <span>{balance}</span>
+                </div>
+              </CCardHeader>
+            </CCard>
+          </CCol>
+        </CFormGroup>
+      </div>
 
       <CCard>
         <CCardHeader>
@@ -1255,7 +1281,7 @@ function Approval(props) {
           </div>
           <br />
           <br />
-
+          {/* 
           <Table striped bordered hover style={{ width: "50%" }}>
             <thead>
               <tr>
@@ -1271,7 +1297,8 @@ function Approval(props) {
                 <td align="right">{balance}</td>
               </tr>
             </tbody>
-          </Table>
+          </Table> */}
+
           {tempIsLoadingGetTransactions === true ? (
             <span></span>
           ) : (

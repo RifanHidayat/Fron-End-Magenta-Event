@@ -1,3 +1,5 @@
-export const getDataCostProjects = async (props) => fetch("http://localhost:3000/api/projects/"+props+"/cost")
-  .then(response => response.json())
-  .then((json)=>json)
+import { API_URL } from "src/views/base/components/constants";
+export const getDataCostProjects = async (props) =>
+  fetch(`${API_URL}/api/projects/` + props + "/cost")
+    .then((response) => response.json())
+    .then((json) => json);

@@ -8,7 +8,8 @@ import { useHistory } from "react-router-dom";
 import { BsGear } from "react-icons/bs";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import FilterComponent from "src/views/base/components/FilterComponent";
-
+import { API_URL } from "src/views/base/components/constants";
+import BeatLoader from "react-spinners/BeatLoader";
 import {
   CCard,
   CCardBody,
@@ -48,6 +49,7 @@ function Manage() {
   const columns = [
     {
       name: "No. Project",
+      width: "12%",
       sortable: true,
       cell: (row) => (
         <div style={{ width: "100%" }} data-tag="allowRowEvents">
@@ -128,54 +130,58 @@ function Manage() {
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {row.budget.balance !== 0 ? (
-              `IDR ${row.budget.balance
-                .toString()
-                .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}`
-            ) : (
-              <CBadge
-                style={{ width: "100%" }}
-                color={getBadge(
-                  row.status === "approved"
-                    ? "paid_off"
-                    : row.status === "closed"
-                    ? "paid_off"
-                    : ""
-                )}
-              >
-                {row.status === "approved" ? (
-                  <span
-                    style={{
-                      color: "white",
-                      alignContent: "center",
-                      width: "120px",
-                    }}
-                  >
-                    &nbsp;&nbsp; Lunas &nbsp;&nbsp;{" "}
-                  </span>
-                ) : row.status === "closed" ? (
-                  <span
-                    style={{
-                      color: "white",
-                      alignContent: "center",
-                      width: "120px",
-                    }}
-                  >
-                    &nbsp;&nbsp; Lunas &nbsp;&nbsp;{" "}
-                  </span>
-                ) : (
-                  <span
-                    style={{
-                      color: "black",
-                      alignContent: "center",
-                      width: "120px",
-                    }}
-                  >
-                    &nbsp;&nbsp;<span></span> &nbsp;&nbsp;{" "}
-                  </span>
-                )}
-              </CBadge>
-            )}
+            {row.budget.balance !== 0
+              ? `IDR ${row.budget.balance
+                  .toString()
+                  .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}`
+              : "IDR 0"
+                // <CBadge
+                //   style={{ width: "100%" }}
+                //   color={getBadge(
+                //     row.status === "approved"
+                //       ? "paid_off"
+                //       : row.status === "closed"
+                //       ? "paid_off"
+                //       : ""
+                //   )}
+                // >
+                // {row.status === "approved" ? (
+                //   "IDR 0"
+                // ) :
+                // <span
+                //   style={{
+                //     color: "white",
+                //     alignContent: "center",
+                //     width: "120px",
+                //   }}
+                // >
+
+                // </span>
+                // row.status === "closed" ? (
+                //   "IDR 0"
+                // ) : (
+                // <span
+                //   style={{
+                //     color: "white",
+                //     alignContent: "center",
+                //     width: "120px",
+                //   }}
+                // >
+                //   &nbsp;&nbsp; Lunas &nbsp;&nbsp;{" "}
+                //   // </span>
+                //   <span
+                //     style={{
+                //       color: "black",
+                //       alignContent: "center",
+                //       width: "120px",
+                //     }}
+                //   >
+                //     &nbsp;&nbsp;<span></span> &nbsp;&
+                //     nbsp;{" "}
+                //   </span>
+                // )}
+                // </CBadge>
+            }
           </div>
         </div>
       ),
@@ -325,7 +331,7 @@ function Manage() {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .patch(`http://localhost:3000/api/project/${id}/close`)
+          .patch(`${API_URL}/api/project/${id}/close`)
           .then(function (response) {
             console.log(response.data);
           })
@@ -359,7 +365,7 @@ function Manage() {
   };
 
   const getProjects = () => {
-    fetch("http://localhost:3000/api/projects")
+    fetch(`${API_URL}/api/projects`)
       .then((response) => response.json())
       .then((json) => {
         projects = json["data"];
@@ -371,8 +377,14 @@ function Manage() {
   };
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "mapping");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     setTempIsloading(true);
     getProjects();
+    setTempIsloading(false);
   }, []);
 
   const filteredItems = tempProjects.filter(
@@ -421,15 +433,20 @@ function Manage() {
               sortable
             />
           ) : (
-            <DataTable
-              columns={columns}
-              data={filteredItems}
-              pagination
-              defaultSortFieldId
-              subHeader
-              subHeaderComponent={subHeaderComponent}
-              sortable
-            />
+            <center>
+              <div style={{ height: "200px" }}>
+                <BeatLoader color={"blue"} loading={true} size={20} />
+              </div>
+            </center>
+            // <DataTable
+            //   columns={columns}
+            //   data={filteredItems}
+            //   pagination
+            //   defaultSortFieldId
+            //   subHeader
+            //   subHeaderComponent={subHeaderComponent}
+            //   sortable
+            // />
           )}
         </CCardBody>
       </CCard>

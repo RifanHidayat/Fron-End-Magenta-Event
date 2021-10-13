@@ -38,7 +38,7 @@ const Login = () => {
     console.log($("#username").val());
     console.log($("#password").val());
     await axios
-      .post("http://localhost:3000/api/login", data)
+      .post("http://react.magentamediatama.net/api/login", data)
       .then((response) => {
         console.log(response.data.data);
 
@@ -102,7 +102,7 @@ const Login = () => {
               <CCard className="p-4">
                 <CCardBody>
                   <CForm>
-                    <h1>Magenta Event</h1>
+                    <h1>Magenta Projects</h1>
                     <p className="text-muted">Sign In to your account</p>
                     <CInputGroup className="mb-3">
                       <CInputGroupPrepend>

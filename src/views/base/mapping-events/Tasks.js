@@ -8,6 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MDBDataTableV5 } from "mdbreact";
 import Button from "@material-ui/core/Button";
+import { API_URL } from "src/views/base/components/constants";
 
 import {
   CCard,
@@ -83,7 +84,7 @@ function Tasks(props) {
   const getAllTask = () => {
     var project_id = props.match.params.id;
     axios
-      .get(`http://localhost:3000/api/projects/${project_id}/tasks`)
+      .get(`${API_URL}/api/projects/${project_id}/tasks`)
       .then((response) => {
         if (response.data.data.length > 0) {
           setTasks([...response.data.data]);
@@ -98,10 +99,15 @@ function Tasks(props) {
   };
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "mapping");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     var employee_id = props.match.params.id;
     //get members
     axios
-      .get("http://localhost:3000/api/projects/detail-project/" + employee_id)
+      .get(`${API_URL}/api/projects/detail-project/` + employee_id)
       .then((response) => {
         if (response.data.data.tasks.length > 0) {
           setTempIsLoadingAddTasks(false);
@@ -235,7 +241,7 @@ function Tasks(props) {
     console.log(taskss);
 
     axios
-      .post("http://localhost:3000/api/projects/create-tasks", data_task)
+      .post(`${API_URL}/api/projects/create-tasks`, data_task)
       .then((response) => {
         console.log(response.data.data);
         setTempIsLoadingTask(false);

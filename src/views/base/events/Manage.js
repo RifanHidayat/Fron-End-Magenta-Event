@@ -4,6 +4,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import FilterComponent from "src/views/base/components/FilterComponent";
 import { API_URL } from "src/views/base/components/constants";
+import BeatLoader from "react-spinners/BeatLoader";
 import {
   CButton,
   CCard,
@@ -74,6 +75,7 @@ function Manage() {
     },
     {
       name: "Tanggal",
+      width: "20%",
       sortable: true,
       cell: (row) => (
         <div style={{ width: "150%" }} data-tag="allowRowEvents">
@@ -119,6 +121,7 @@ function Manage() {
 
     {
       name: "Aksi",
+      width: "10%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
@@ -157,18 +160,21 @@ function Manage() {
   ];
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "manage");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     getDataProjects();
+    setTempIsloading(false);
   }, []);
 
   const getDataProjects = () => {
     fetch(`${API_URL}/api/projects`)
       .then((response) => response.json())
       .then((json) => {
-        setTempIsloading(true);
         projects = json["data"];
         setTempProjects([...json["data"]]);
-
-        setTempIsloading(false);
       });
   };
 
@@ -186,7 +192,7 @@ function Manage() {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .delete("http://localhost:3000/api/projects/delete-project/" + id)
+          .delete(`${API_URL}/api/projects/delete-project/` + id)
           .then(function (response) {
             console.log(response.data);
           })
@@ -202,6 +208,7 @@ function Manage() {
       allowOutsideClick: () => !Swal.isLoading(),
     }).then((result) => {
       if (result.isConfirmed) {
+        getDataProjects();
         Swal.fire({
           icon: "success",
           title: "Success",
@@ -210,7 +217,6 @@ function Manage() {
           timer: 2000,
         }).then((result) => {
           if (result.isConfirmed) {
-            getDataProjects();
             // window.location.href = '/leave';
           }
         });
@@ -286,15 +292,9 @@ function Manage() {
               sortable
             />
           ) : (
-            <DataTable
-              columns={columns}
-              data={filteredItems}
-              pagination
-              defaultSortFieldId
-              subHeader
-              subHeaderComponent={subHeaderComponent}
-              sortable
-            />
+            <center>
+              <BeatLoader color={"blue"} loading={true} size={20} />
+            </center>
           )}
         </CCardBody>
       </CCard>

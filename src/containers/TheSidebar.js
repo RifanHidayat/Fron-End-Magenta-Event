@@ -5,6 +5,7 @@ import { RiDashboardFill } from "react-icons/ri";
 import { ImUserTie } from "react-icons/im";
 import account from "./icons/account.svg";
 import money from "./icons/money-flow.svg";
+import { useHistory } from "react-router-dom";
 
 import {
   CCreateElement,
@@ -31,12 +32,21 @@ let iconStyles = {
 };
 
 const TheSidebar = () => {
+  const navigator = useHistory();
+
   const dispatch = useDispatch();
   const show = useSelector((state) => state.sidebarShow);
 
   const [nav, setNavavigation] = useState([]);
 
   useEffect(() => {
+    const logout = () => {
+      localStorage.clear();
+      navigator.push("/login");
+
+      //sessionStorage
+    };
+
     const data = JSON.parse(localStorage.getItem("permission"));
     const DataNav = [];
 
@@ -128,52 +138,52 @@ const TheSidebar = () => {
     let navaccount = 0;
     let navinout = 0;
     let navpictb = 0;
+    if (data !== null) {
+      data.map((value) => {
+        if (value === "inout") {
+          // DataNav.push(inout);
+          navinout = 1;
+        }
+        if (value == "account") {
+          //  DataNav.push(account);
+          navaccount = 1;
+        }
 
-    data.map((value) => {
-      if (value === "inout") {
-        // DataNav.push(inout);
-        navinout = 1;
-      }
-      if (value == "account") {
-        //  DataNav.push(account);
-        navaccount = 1;
+        if (value === "pictb") {
+          navpictb = 1;
+        }
+        if (value === "manage") {
+          manage = 1;
+        }
+
+        if (value === "mapping") {
+          mapping = 1;
+        }
+      });
+
+      if (manage === 1 && mapping === 1) {
+        DataNav.push(projectsAll);
+      } else {
+        if (mapping === 1) {
+          DataNav.push(projectsMapping);
+        } else if (manage === 1) {
+          DataNav.push(projectsManage);
+        }
       }
 
-      if (value === "pictb") {
-        navpictb = 1;
+      if (navpictb === 1) {
+        DataNav.push(pictb);
       }
-      if (value === "manage") {
-        manage = 1;
+      if (navinout === 1) {
+        DataNav.push(inout);
       }
-
-      if (value === "mapping") {
-        mapping = 1;
+      if (navaccount === 1) {
+        DataNav.push(accounts);
       }
-    });
-
-    if (manage === 1 && mapping === 1) {
-      DataNav.push(projectsAll);
-    } else {
-      if (mapping === 1) {
-        DataNav.push(projectsMapping);
-      } else if (manage === 1) {
-        DataNav.push(projectsManage);
-      }
-    }
-
-    if (navpictb === 1) {
-      DataNav.push(pictb);
-    }
-    if (navinout === 1) {
-      DataNav.push(inout);
-    }
-    if (navaccount === 1) {
-      DataNav.push(accounts);
     }
 
     //setNavavigation([...navigation]);
     setNavavigation([...DataNav]);
-    console.log("ddsa", navigation[0]);
   }, []);
 
   return (
@@ -183,7 +193,7 @@ const TheSidebar = () => {
     >
       <CSidebarBrand className="d-md-down-none" to="/">
         <CLabel size="30px" className="c-sidebar-brand-full">
-          Magenta Event
+          Magenta Projects
         </CLabel>
         {/* <CIcon
           className="c-sidebar-brand-full"

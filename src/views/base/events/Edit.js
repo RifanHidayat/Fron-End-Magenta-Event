@@ -14,6 +14,7 @@ import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import _ from "lodash";
 import $ from "jquery";
+import { API_URL } from "src/views/base/components/constants";
 import {
   CButton,
   CCard,
@@ -103,6 +104,7 @@ function Edit(props) {
   const [tempDescription, setTempDescription] = useState();
   const [idProject, setIdProject] = useState();
   const [titleEvent, setTitleEvent] = useState("");
+  const [tempLocation, setTempLocation] = useState();
 
   //handle change plugin geocoder
   const mapRef = useRef();
@@ -123,11 +125,33 @@ function Edit(props) {
       ),
     },
     {
-      name: "tanggal quotation",
+      name: "Tanggal Quotation",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>{row.date_quotation}</div>
+        </div>
+      ),
+    },
+    {
+      name: "Title Event",
+      width: "13%",
+
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.tittle_event}</div>
+        </div>
+      ),
+    },
+    {
+      name: "Venue",
+
+      width: "13%",
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.venue_event}</div>
         </div>
       ),
     },
@@ -168,15 +192,13 @@ function Edit(props) {
       ),
     },
     {
-      name: "Total Biaya",
+      name: "Nominal",
       sortable: true,
       right: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {row.grand_total
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
+            {row.netto.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
           </div>
         </div>
       ),
@@ -187,6 +209,7 @@ function Edit(props) {
     {
       name: "",
       sortable: true,
+      width: "7%",
       right: true,
       cell: (row) => (
         <FormControlLabel
@@ -209,6 +232,7 @@ function Edit(props) {
     {
       name: "No. quotation",
       sortable: true,
+      width: "13%",
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>{row.quotation_number}</div>
@@ -216,8 +240,9 @@ function Edit(props) {
       ),
     },
     {
-      name: "tanggal quotation",
+      name: "Tanggal Quotation",
       sortable: true,
+      width: "13%",
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>{row.date_quotation}</div>
@@ -225,7 +250,30 @@ function Edit(props) {
       ),
     },
     {
+      name: "Title Event",
+      width: "13%",
+
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.tittle_event}</div>
+        </div>
+      ),
+    },
+    {
+      name: "Venue",
+      width: "10%",
+
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.venue_event}</div>
+        </div>
+      ),
+    },
+    {
       name: "No. PO",
+      width: "13%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
@@ -235,6 +283,7 @@ function Edit(props) {
     },
     {
       name: "Tanggal PO",
+      width: "13%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
@@ -253,6 +302,7 @@ function Edit(props) {
     },
     {
       name: "PIC Event",
+      width: "13%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
@@ -261,15 +311,14 @@ function Edit(props) {
       ),
     },
     {
-      name: "Total Biaya",
+      name: "Nominal",
+      width: "15%",
       sortable: true,
       right: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {row.grand_total
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
+            {row.netto.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
           </div>
         </div>
       ),
@@ -315,25 +364,25 @@ function Edit(props) {
 
   const [events, logEvents] = useState({});
 
-  const onMarkerDragStart = useCallback((event) => {
-    logEvents((_events) => ({ ..._events, onDragStart: event.lngLat }));
-  }, []);
+  // const onMarkerDragStart = useCallback((event) => {
+  //   logEvents((_events) => ({ ..._events, onDragStart: event.lngLat }));
+  // }, []);
 
-  const onMarkerDrag = useCallback((event) => {
-    logEvents((_events) => ({ ..._events, onDrag: event.lngLat }));
-  }, []);
+  // const onMarkerDrag = useCallback((event) => {
+  //   logEvents((_events) => ({ ..._events, onDrag: event.lngLat }));
+  // }, []);
 
-  const onMarkerDragEnd = useCallback((event) => {
-    logEvents((_events) => ({ ..._events, onDragEnd: event.lngLat }));
-    console.log("long :", event.lngLat[0]);
-    setTempLatitude(event.lngLat[1]);
-    setTempLongtitude(event.lngLat[0]);
+  // const onMarkerDragEnd = useCallback((event) => {
+  //   logEvents((_events) => ({ ..._events, onDragEnd: event.lngLat }));
+  //   console.log("long :", event.lngLat[0]);
+  //   setTempLatitude(event.lngLat[1]);
+  //   setTempLongtitude(event.lngLat[0]);
 
-    setMarker({
-      longitude: event.lngLat[0],
-      latitude: event.lngLat[1],
-    });
-  }, []);
+  //   setMarker({
+  //     longitude: event.lngLat[0],
+  //     latitude: event.lngLat[1],
+  //   });
+  // }, []);
 
   //variable push page
   const navigator = useHistory();
@@ -365,6 +414,11 @@ function Edit(props) {
   };
 
   useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("permission"));
+    const permission = data.filter((value) => value === "manage");
+    if (permission <= 0) {
+      Navigator.push("/dashboard");
+    }
     let id = props.match.params.id;
     console.log(id);
     setIsloading(false);
@@ -372,7 +426,7 @@ function Edit(props) {
 
     //get data detail
     axios
-      .get("http://localhost:3000/api/projects/detail-project/" + id)
+      .get(`${API_URL}/api/projects/detail-project/` + id)
       .then((response) => {
         console.log("detail projecs :", response);
         setTempProjectNumber(response.data.data.project_number);
@@ -431,17 +485,19 @@ function Edit(props) {
         setTempEventCustomer(response.data.data.event_pic);
         setTempLatitude(response.data.data.latitude);
         setTempLongtitude(response.data.data.longtitude);
-        setTempDescription(response.data.data.description);
+        // setTempDescription(response.data.data.description);
 
-        setMarker({
-          latitude: parseFloat(response.data.data.latitude),
-          longitude: parseFloat(response.data.data.longtitude),
-        });
-        setViewport({
-          latitude: parseFloat(response.data.data.latitude),
-          longitude: parseFloat(response.data.data.longtitude),
-          zoom: 13.5,
-        });
+        setTempLocation(response.data.data.location);
+
+        // setMarker({
+        //   latitude: parseFloat(response.data.data.latitude),
+        //   longitude: parseFloat(response.data.data.longtitude),
+        // });
+        // setViewport({
+        //   latitude: parseFloat(response.data.data.latitude),
+        //   longitude: parseFloat(response.data.data.longtitude),
+        //   zoom: 13.5,
+        // });
 
         setTotalProjectost(
           response.data.data.total_project_cost
@@ -451,15 +507,12 @@ function Edit(props) {
         setIdProject(response.data.data.id);
         setTempQuotationNumber(response.data.data.quotation_number);
         setTempIds(response.data.data.id_quotation);
-        console.log("description :", tempDescription);
 
         setTempQuotation([...response.data.data.quotations]);
-        console.log("data quotation", response.data.data.quotations);
-
-        $("#description").val(response.data.data.description);
 
         //laading false
         setMainloading(false);
+        $("#description").val(response.data.data.description);
       })
 
       .catch((error) => {
@@ -468,7 +521,7 @@ function Edit(props) {
       });
 
     //get data qutoation
-    fetch("http://localhost:3000/api/quotations")
+    fetch(`${API_URL}/api/quotations`)
       .then((response) => response.json())
       .then((json) => {
         quotations = json["data"];
@@ -479,7 +532,7 @@ function Edit(props) {
   useEffect(() => {
     var grand_total = 0;
     if (tempQuotation.length > 0) {
-      tempQuotation.map((value) => (grand_total += value.grand_total));
+      tempQuotation.map((value) => (grand_total += value.netto));
       tempQuotation.map((value) => ids.push(value.id));
       tempQuotation.map((value) =>
         quotationNumber.push(value.quotation_number)
@@ -488,7 +541,7 @@ function Edit(props) {
       //set data value quotation
       setTempEventPic(tempQuotation[0]["pic_event"]);
       setTempEventCustomer(tempQuotation[0]["customer_event"]);
-      setTotalProjectost(tempQuotation[0]["grand_total"]);
+      setTotalProjectost(tempQuotation[0]["netto"]);
       setTotalProjectost(
         grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
       );
@@ -496,6 +549,9 @@ function Edit(props) {
       $("#description").val(
         `${tempQuotation[0]["tittle_event"]} | ${tempQuotation[0]["venue_event"]} | ${tempQuotation[0]["date_event"]}`
       );
+      // setTempDescription(
+      //   `${tempQuotation[0]["tittle_event"]} | ${tempQuotation[0]["venue_event"]} | ${tempQuotation[0]["date_event"]}`
+      // );
     } else {
       $("#description").val("");
 
@@ -515,7 +571,7 @@ function Edit(props) {
 
     setTempQuotation([...state.selectedRows]);
     if (state.selectedRows.length > 0) {
-      state.selectedRows.map((value) => (grand_total += value.grand_total));
+      state.selectedRows.map((value) => (grand_total += value.netto));
       state.selectedRows.map((value) => ids.push(value.id));
       state.selectedRows.map((value) =>
         quotationNumber.push(value.quotation_number)
@@ -524,7 +580,7 @@ function Edit(props) {
       //set data value quotation
       setTempEventPic(state.selectedRows[0]["pic_event"]);
       setTempEventCustomer(state.selectedRows[0]["customer_event"]);
-      setTotalProjectost(state.selectedRows[0]["grand_total"]);
+      setTotalProjectost(state.selectedRows[0]["netto"]);
       setTotalProjectost(
         grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
       );
@@ -552,7 +608,8 @@ function Edit(props) {
               initialValues={{
                 project_start_date: tempProjectStartDate,
                 project_end_date: tempProjectEndDate,
-                description: tempDescription,
+
+                location: tempLocation,
               }}
               validate={(values) => {
                 const errors = {};
@@ -580,14 +637,14 @@ function Edit(props) {
                   latitude: tempLatitude,
                   longtitude: tempLongtitude,
                   id_quotation: tempIds,
+                  location: values.location,
 
                   quotation_number: tempQuotationNumber.toString(),
                 };
 
                 axios
                   .patch(
-                    "http://localhost:3000/api/projects/edit-project/" +
-                      idProject,
+                    `${API_URL}/api/projects/edit-project/` + idProject,
                     data
                   )
                   .then((response) => {
@@ -726,9 +783,7 @@ function Edit(props) {
                     </CCol>
                     <CCol xs="6">
                       <CFormGroup>
-                        <CLabel htmlFor="total_project_cost">
-                          Total Biaya Project
-                        </CLabel>
+                        <CLabel htmlFor="total_project_cost">Nominal</CLabel>
                         <CInputGroup>
                           <CInputGroupPrepend>
                             <CInputGroupText>IDR</CInputGroupText>
@@ -743,8 +798,21 @@ function Edit(props) {
                         </CInputGroup>
                       </CFormGroup>
                     </CCol>
+                    <CCol xs="12">
+                      <CFormGroup>
+                        <CLabel htmlFor="location">Lokasi Project</CLabel>
+                        <CInput
+                          required
+                          id="location"
+                          name="location"
+                          placeholder=""
+                          onChange={handleChange}
+                          value={values.location}
+                        />
+                      </CFormGroup>
+                    </CCol>
 
-                    <CCol xs="5">
+                    {/* <CCol xs="5">
                       <CFormGroup>
                         <CLabel htmlFor="latitude">Latitude</CLabel>
                         <CInput
@@ -755,8 +823,8 @@ function Edit(props) {
                           value={tempLatitude}
                         />
                       </CFormGroup>
-                    </CCol>
-                    <CCol xs="5">
+                    </CCol> */}
+                    {/* <CCol xs="5">
                       <CFormGroup>
                         <CLabel htmlFor="longtitude">Longitude</CLabel>
                         <CInput
@@ -767,8 +835,8 @@ function Edit(props) {
                           value={tempLongtitude}
                         />
                       </CFormGroup>
-                    </CCol>
-                    <CCol xs="2">
+                    </CCol> */}
+                    {/* <CCol xs="2">
                       <CFormGroup>
                         <div
                           style={{
@@ -788,7 +856,7 @@ function Edit(props) {
                           </CButton>
                         </div>
                       </CFormGroup>
-                    </CCol>
+                    </CCol> */}
                   </CFormGroup>
                   <br />
                   <div style={{ textAlign: "right", width: "100%" }}>
@@ -843,6 +911,7 @@ function Edit(props) {
                 <DataTable
                   columns={columns}
                   data={quotations}
+                  paginationPerPage={5}
                   pagination
                   defaultSortFieldId
                   sortable
@@ -872,9 +941,9 @@ function Edit(props) {
                 <CModalTitle></CModalTitle>
               </CModalHeader>
               <CModalBody>
-                <MapGL
+                {/* <MapGL
                   {...viewport}
-                  width="53vw"
+                  width="48vw"
                   height="60vh"
                   ref={mapRef}
                   //  onViewportChange={setViewport}
@@ -883,8 +952,8 @@ function Edit(props) {
                   mapboxApiAccessToken={
                     "pk.eyJ1IjoicmV6aGEiLCJhIjoiY2txbG9sN3ZlMG85dDJ4bnNrOXI4cHhtciJ9.jWHZ8m3S6yZqEyL-sUgdfg"
                   }
-                >
-                  <Geocoder
+                > */}
+                {/* <Geocoder
                     mapRef={mapRef}
                     onViewportChange={handleGeocoderViewportChange}
                     mapboxApiAccessToken={
@@ -892,8 +961,8 @@ function Edit(props) {
                     }
                     marker={false}
                     position="top-right"
-                  />
-                  <Marker
+                  /> */}
+                {/* <Marker
                     longitude={marker.longitude}
                     latitude={marker.latitude}
                     style={{
@@ -915,7 +984,7 @@ function Edit(props) {
                   <FullscreenControl style={fullscreenControlStyle} />
                   <NavigationControl style={navStyle} />
                   <ScaleControl style={scaleControlStyle} />
-                </MapGL>
+                </MapGL> */}
                 <ControlPanel events={events} />
               </CModalBody>
               <CModalFooter>

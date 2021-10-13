@@ -1,50 +1,55 @@
-import React from 'react';
+import React from "react";
 
 // const Toaster = React.lazy(() => import('./views/notifications/toaster/Toaster'));
 // const Tables = React.lazy(() => import('./views/base/tables/Tables'));
 
 //Projects
-const CreateProject = React.lazy(() => import('./views/base/events/Create'));
-const ManageProject = React.lazy(() => import('./views/base/events/Manage'));
-const EditProject = React.lazy(() => import('./views/base/events/Edit'));
-const Mapping = React.lazy(() => import('./views/base/mapping-events/Manage'));
-const LRProject = React.lazy(() => import('./views/base/mapping-events/LRProject'));
+const CreateProject = React.lazy(() => import("./views/base/events/Create"));
+const ManageProject = React.lazy(() => import("./views/base/events/Manage"));
+const EditProject = React.lazy(() => import("./views/base/events/Edit"));
+const Mapping = React.lazy(() => import("./views/base/mapping-events/Manage"));
+const LRProject = React.lazy(() =>
+  import("./views/base/mapping-events/LRProject")
+);
 //const Menu = React.lazy(() => import('./views/base/mapping-events/Menu'));
 
 //Mapping Event
-const Members= React.lazy(() => import('./views/base/mapping-events/Members'));
-const Budgets = React.lazy(() => import('./views/base/mapping-events/Budgets'));
-const Approval = React.lazy(() => import('./views/base/mapping-events/Approval'));
-const Tasks = React.lazy(() => import('./views/base/mapping-events/Tasks'));
-const Transactions = React.lazy(() => import('./views/base/mapping-events/Transaction'));
+const Members = React.lazy(() => import("./views/base/mapping-events/Members"));
+const Budgets = React.lazy(() => import("./views/base/mapping-events/Budgets"));
+const Approval = React.lazy(() =>
+  import("./views/base/mapping-events/Approval")
+);
+const Tasks = React.lazy(() => import("./views/base/mapping-events/Tasks"));
+const Transactions = React.lazy(() =>
+  import("./views/base/mapping-events/Transaction")
+);
 
 //account
-const ManageAccount = React.lazy(() => import('./views/base/account/Manage'));
-const AddAccount = React.lazy(() => import('./views/base/account/Create'));
-const EditAccount = React.lazy(() => import('./views/base/account/Edit'));
-const DetailAccount = React.lazy(() => import('./views/base/account/Detail'));
+const ManageAccount = React.lazy(() => import("./views/base/account/Manage"));
+const AddAccount = React.lazy(() => import("./views/base/account/Create"));
+const EditAccount = React.lazy(() => import("./views/base/account/Edit"));
+const DetailAccount = React.lazy(() => import("./views/base/account/Detail"));
 
 //pic tb
-const CreatePIC=React.lazy(()=>import('./views/base/tbpic/Create'))
-const AddPIC=React.lazy(()=>import('./views/base/tbpic/Add'))
-const ManagePIC=React.lazy(()=>import('./views/base/tbpic/Manage'))
-const EditPIC=React.lazy(()=>import('./views/base/tbpic/Edit'))
-const INTransaction = React.lazy(() => import('./views/base/tbpic/IN'));
-const OUTTransaction = React.lazy(() => import('./views/base/tbpic/OUT'));
-const TransactionPICTB = React.lazy(() => import('./views/base/tbpic/Transactions'));
+const CreatePIC = React.lazy(() => import("./views/base/tbpic/Create"));
+const AddPIC = React.lazy(() => import("./views/base/tbpic/Add"));
+const ManagePIC = React.lazy(() => import("./views/base/tbpic/Manage"));
+const EditPIC = React.lazy(() => import("./views/base/tbpic/Edit"));
+const INTransaction = React.lazy(() => import("./views/base/tbpic/IN"));
+const OUTTransaction = React.lazy(() => import("./views/base/tbpic/OUT"));
+const TransactionPICTB = React.lazy(() =>
+  import("./views/base/tbpic/Transactions")
+);
+const quotationPo = React.lazy(() => import("./views/base/tbpic/quotation-po"));
+const quotationPoTransaaction = React.lazy(() =>
+  import("./views/base/tbpic/quotation-po-transactions")
+);
 
+const InOutTransaction = React.lazy(() => import("./views/base/inout/InOut"));
 
-const InOutTransaction = React.lazy(() => import('./views/base/inout/InOut'));
+const Dashboard = React.lazy(() => import("./views/dashboard/Dashboard"));
 
-
-
-const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
-
-const Login = React.lazy(() => import('./views/pages/login/Login'));
-
-
-
-
+const Login = React.lazy(() => import("./views/pages/login/Login"));
 
 // const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'));
 // const Cards = React.lazy(() => import('./views/base/cards/Cards'));
@@ -82,45 +87,92 @@ const Login = React.lazy(() => import('./views/pages/login/Login'));
 // const User = React.lazy(() => import('./views/users/User'));
 
 const routes = [
-  { path: '/', exact: true, name: 'Dashboard' },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: "/", exact: true, name: "Dashboard" },
+  { path: "/dashboard", name: "Dashboard", component: Dashboard },
 
   //projects
-  { path: '/projects/create', name: 'Projects / Create', component: CreateProject },
-  { path: '/projects/manage', name: 'Projects / Manage', component: ManageProject },
-  { path: '/projects/edit/:id', name: 'Edit', component: EditProject },  
-  
+  {
+    path: "/projects/create",
+    name: "Projects / Create",
+    component: CreateProject,
+  },
+  {
+    path: "/projects/manage",
+    name: "Projects / Manage",
+    component: ManageProject,
+  },
+  { path: "/projects/edit/:id", name: "Edit", component: EditProject },
+
   //mapping projects
-  { path: '/mapping', name: 'Projects / Mapping', component: Mapping ,exact: true},
-  { path: '/mapping/budgets/:id', name: 'Budgets', component: Budgets },
-  { path: '/mapping/tasks/:id', name: 'Tasks', component: Tasks },
-  { path: '/mapping/approval/:id', name: 'Approval', component: Approval },
-  { path: '/mapping/members/:id', name: 'Members', component: Members },
-  { path: '/mapping/transactions/:id/:project_number', name: 'Transactions', component:Transactions },
-  { path: '/mapping/profit-cost/:id', name: 'Profit-cost', component:LRProject },
+  {
+    path: "/mapping",
+    name: "Projects / Mapping",
+    component: Mapping,
+    exact: true,
+  },
+  { path: "/mapping/budgets/:id", name: "Budgets", component: Budgets },
+  { path: "/mapping/tasks/:id", name: "Tasks", component: Tasks },
+  { path: "/mapping/approval/:id", name: "Approval", component: Approval },
+  { path: "/mapping/members/:id", name: "Members", component: Members },
+  {
+    path: "/mapping/transactions/:id/:project_number",
+    name: "Transactions",
+    component: Transactions,
+  },
+  {
+    path: "/mapping/profit-cost/:id",
+    name: "Profit-cost",
+    component: LRProject,
+  },
 
   //account
-  { path: '/account/manage', name: 'Account / Manage', component: ManageAccount },
-  { path: '/account/create', name: 'Account / Create', component: AddAccount },
-  { path: '/account/edit/:id', name: 'Account / Edit', component: EditAccount },
-  { path: '/account/detail/:id', name: 'Account / Detail', component: DetailAccount },
+  {
+    path: "/account/manage",
+    name: "Account / Manage",
+    component: ManageAccount,
+  },
+  { path: "/account/create", name: "Account / Create", component: AddAccount },
+  { path: "/account/edit/:id", name: "Account / Edit", component: EditAccount },
+  {
+    path: "/account/detail/:id",
+    name: "Account / Detail",
+    component: DetailAccount,
+  },
 
   //pic tb
-  { path: '/pictb/create', name: 'PICTB / Create', component: CreatePIC },
-  { path: '/pictb/add/:id', name: 'PICTB / Add', component: AddPIC },
-  { path: '/pictb/manage', name: 'PICTB / Manage', component: ManagePIC },
-  { path: '/pictb/edit/:id', name: 'PICTB / Edit', component: EditPIC },
-  { path: '/pictb/in-transaction/:id', name: 'PICTB / In Transaction', component: INTransaction },
-  { path: '/pictb/out-transaction/:id', name: 'PICTB / Out Transaction', component: OUTTransaction },
-  { path: '/pictb/transaction-pictb/:id', name: 'PICTB / Transactions PICTB', component: TransactionPICTB },
-  
-  { path: '/in-out', name: 'In-Out', component:InOutTransaction },
+  { path: "/pictb/create", name: "PICTB / Create", component: CreatePIC },
+  { path: "/pictb/add/:id", name: "PICTB / Add", component: AddPIC },
+  { path: "/pictb/manage", name: "PICTB / Manage", component: ManagePIC },
+  { path: "/pictb/edit/:id", name: "PICTB / Edit", component: EditPIC },
+  {
+    path: "/pictb/in-transaction/:id",
+    name: "PICTB / In Transaction",
+    component: INTransaction,
+  },
+  {
+    path: "/pictb/out-transaction/:id",
+    name: "PICTB / Out Transaction",
+    component: OUTTransaction,
+  },
+  {
+    path: "/pictb/transaction-pictb/:id",
+    name: "PICTB / Transactions PICTB",
+    component: TransactionPICTB,
+  },
+  {
+    path: "/pictb/quotation-po/:id",
+    name: "PICTB / Transactions PICTB",
+    component: quotationPo,
+  },
+  {
+    path: "/pictb/:pictb_id/quotation-po-transaction/:quotation_po_id",
+    name: "PICTB / Transactions PICTB",
+    component: quotationPoTransaaction,
+  },
 
-  { path: '/login', name: 'In-Out', component:Login },
+  { path: "/in-out", name: "In-Out", component: InOutTransaction },
 
-
-
-  
+  { path: "/login", name: "In-Out", component: Login },
 
   // { path: '/theme', name: 'Theme', component: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', component: Colors },
@@ -133,7 +185,7 @@ const routes = [
   // { path: '/base/forms', name: 'Forms', component: BasicForms },
   // { path: '/base/jumbotrons', name: 'Jumbotrons', component: Jumbotrons },
   // { path: '/base/list-groups', name: 'List Groups', component: ListGroups },
- //  { path: '/base/navbars', name: 'Navbars', component: Navbars },
+  //  { path: '/base/navbars', name: 'Navbars', component: Navbars },
   // { path: '/base/navs', name: 'Navs', component: Navs },
   // { path: '/base/paginations', name: 'Paginations', component: Paginations },
   // { path: '/base/popovers', name: 'Popovers', component: Popovers },
@@ -152,7 +204,7 @@ const routes = [
   // { path: '/icons/coreui-icons', name: 'CoreUI Icons', component: CoreUIIcons },
   // { path: '/icons/flags', name: 'Flags', component: Flags },
   // { path: '/icons/brands', name: 'Brands', component: Brands },
-   //{ path: '/notifications', name: 'Notifications', component: Alerts, exact: true },
+  //{ path: '/notifications', name: 'Notifications', component: Alerts, exact: true },
   // { path: '/notifications/alerts', name: 'Alerts', component: ManageProject },
   // { path: '/notifications/badges', name: 'Badges', component: Badges },
   // { path: '/notifications/modals', name: 'Modals', component: Modals },
