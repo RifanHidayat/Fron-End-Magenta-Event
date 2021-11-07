@@ -1,22 +1,29 @@
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 require("dotenv").config();
 
 var dateFormat = require("dateformat");
 export const data = async (props) =>
-  fetch(`${API_URL}/api/accounts/detail-account/` + props)
+  fetch(`${FINANCE_API}/api/account/` + props)
     .then((response) => response.json())
-    .then((json) => json["data"]);
+    .then((json) => json["data"][0]);
 
 export const dataPDF = async (props) =>
   fetch(`${API_URL}/api/accounts/detail-account/` + props)
     .then((response) => response.json())
     .then((json) => json);
 export const dataAccounts = async (props) =>
-  fetch(`${API_URL}/api/accounts`)
+  fetch(`${FINANCE_API}/api/account`)
     .then((response) => response.json())
     .then((json) => json);
 
 export const columns = [
+  {
+    name: "COA",
+    selector: "",
+    sortable: true,
+    width: "12%",
+    cell: (row) => <span>{row.coa_id == null ? "" : row.coa_id.name}</span>,
+  },
   {
     name: "Tanggal",
     selector: "date",
@@ -38,13 +45,7 @@ export const columns = [
       />
     ),
   },
-  {
-    name: "Tipe",
-    selector: "type",
-    sortable: true,
-    width: "15%",
-    cell: (row) => <span>{row.type === "in" ? "Deposit" : "Expense"}</span>,
-  },
+
   {
     name: "In",
     selector: "amount",

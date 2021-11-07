@@ -210,6 +210,8 @@ function OUT(props) {
   const [hiddenAmountMain, setHiddenMain] = useState(false);
   const [hiddenAccountDescription, setHiddenAccountDescription] =
     useState(true);
+  const [oppenentAcountName, setOppenentAccountName] = useState();
+  const [oppenentAccountNumber, setOppenentAccountNumber] = useState();
 
   //variable push page
   const navigator = useHistory();
@@ -315,6 +317,7 @@ function OUT(props) {
   };
 
   const onSelectedAccount = (selectedOptions) => {
+    console.log(selectedOptions);
     setLbael(selectedOptions.label);
     setValueproject(null);
     setValuePictb(null);
@@ -364,17 +367,13 @@ function OUT(props) {
       });
 
     getAcounts().then((response) => {
+      console.log("response data", response.data);
       response.data.map((values) => {
         var data = {
           value: values.id,
-          label: values.bank_name + ` (${values.account_number})`,
+          label: values.name + ` (${values.number})`,
         };
-        if (
-          values.id === 108 ||
-          values.id === 100 ||
-          values.id === 101 ||
-          values.status !== "Active"
-        ) {
+        if (values.is_default === 1 || values.active !== 1) {
         } else {
           option_accounts.push(data);
         }
@@ -651,7 +650,6 @@ function OUT(props) {
               const data = {
                 description: $("#description").val(),
                 account_description: $("#AccountDescription").val(),
-                in_account_amount: $("#in_account_amount").val(),
 
                 date:
                   values.out_date === ""
@@ -661,6 +659,12 @@ function OUT(props) {
                   $("#out_amount").val() == null
                     ? 0
                     : $("#out_amount")
+                        .val()
+                        .replace(/[^\w\s]/gi, ""),
+                in_account_amount:
+                  $("#in_account_amount").val() == null
+                    ? 0
+                    : $("#in_account_amount")
                         .val()
                         .replace(/[^\w\s]/gi, ""),
                 pictb_id: pictbID,

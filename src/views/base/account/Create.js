@@ -5,7 +5,7 @@ import axios from "axios";
 import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import $ from "jquery";
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 
 import {
   CButton,
@@ -101,20 +101,19 @@ function Add() {
             onSubmit={(values, { setSubmitting }) => {
               setTempIsloading(true);
               const data = {
-                bank_account_name: values.bank_account_name,
-                bank_account_number: values.bank_account_number,
-                status: tempSelectedStatus,
+                name: values.bank_account_name,
+                number: values.bank_account_number,
+                is_active: tempSelectedStatus === "Active" ? 1 : 0,
                 //bank_account_owner:values.bank_account_owner,
-                bank_account_balance: values.bank_account_balance.replace(
+                init_balance: values.bank_account_balance.replace(
                   /[^\w\s]/gi,
                   ""
                 ),
-                type: tempSelected,
                 date: values.date,
               };
 
               axios
-                .post(`${API_URL}/api/accounts/create-account`, data)
+                .post(`${FINANCE_API}/api/account/`, data)
                 .then((response) => {
                   console.log(response);
                   Swal.fire({
@@ -150,6 +149,17 @@ function Add() {
               <form onSubmit={handleSubmit} autoComplete="off">
                 <CCol xs="6">
                   <CFormGroup>
+                    <CLabel htmlFor="bank_account_number">No. Akun</CLabel>
+                    <CInput
+                      id="bank_account_number"
+                      name="bank_account_number"
+                      onChange={handleChange}
+                      value={values.bank_account_number}
+                    />
+                  </CFormGroup>
+                </CCol>
+                <CCol xs="6">
+                  <CFormGroup>
                     <CLabel htmlFor="bank_account_name">Nama Akun</CLabel>
                     <CInput
                       required
@@ -160,17 +170,7 @@ function Add() {
                     />
                   </CFormGroup>
                 </CCol>
-                <CCol xs="6">
-                  <CFormGroup>
-                    <CLabel htmlFor="bank_account_number">No. Akun</CLabel>
-                    <CInput
-                      id="bank_account_number"
-                      name="bank_account_number"
-                      onChange={handleChange}
-                      value={values.bank_account_number}
-                    />
-                  </CFormGroup>
-                </CCol>
+
                 <CCol xs="6">
                   <CFormGroup>
                     <CLabel htmlFor="bank_account_number">Tanggal</CLabel>
@@ -208,7 +208,7 @@ function Add() {
                   </CFormGroup>
                 </CCol>
 
-                <CCol xs="6">
+                {/* <CCol xs="6">
                   <CFormGroup>
                     <CLabel htmlFor="type">Jenis Akun</CLabel>
                     <Select
@@ -220,8 +220,8 @@ function Add() {
                       name="color"
                     />
                   </CFormGroup>
-                </CCol>
-                <br />
+                </CCol> */}
+                {/* <br /> */}
                 <CCol xs="6">
                   <CFormGroup>
                     <CLabel htmlFor="type">Status</CLabel>

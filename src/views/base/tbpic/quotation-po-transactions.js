@@ -317,7 +317,14 @@ function Transaction(props) {
           {/* <Button variant="outline" color="secondary" onClick={() => showPDF()}>
             PDF
           </Button> */}
-          <Button variant="outlined" onClick={() => showPDF()}>PDF</Button>
+          <Button
+            variant="outlined"
+            variant="contained"
+            color="secondary"
+            onClick={() => showPDF()}
+          >
+            PDF
+          </Button>
           &nbsp; &nbsp;
           <ExcelFile
             filename="Rekap Transaksi PIC TB"
@@ -329,8 +336,16 @@ function Transaction(props) {
               // >
               //   Excel
               // </Button>
-              <Button variant="outlined"
-              >Excel</Button>
+              <Button
+                variant="contained"
+                color="success"
+                variant="outlined"
+                variant="contained"
+                color="success"
+                style={{ backgroundColor: "green", color: "white" }}
+              >
+                Excel
+              </Button>
             }
           >
             <ExcelSheet dataSet={dataExcel} name="Organization" />

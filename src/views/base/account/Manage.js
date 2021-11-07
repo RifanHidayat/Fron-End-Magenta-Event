@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import DataTable from "react-data-table-component";
 import axios from "axios";
 import FilterComponent from "src/views/base/components/FilterComponent";
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 import BeatLoader from "react-spinners/BeatLoader";
 
 import {
@@ -16,38 +16,39 @@ import {
 } from "@coreui/react";
 
 import env from "react-dotenv";
-
+var lodash = require("lodash");
 function Manage() {
   const getBadge = (status) => {
     switch (status) {
-      case "Active":
+      case 1:
         return "success";
-      case "In Active":
+      case 0:
         return "danger";
     }
   };
 
   const columns = [
     {
+      name: "No. Akun",
+      width: "20%",
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.number}</div>
+        </div>
+      ),
+    },
+    {
       name: "Nama Akun",
       sortable: true,
       width: "20%",
       cell: (row) => (
         <div style={{ width: "100%" }} data-tag="allowRowEvents">
-          <div>{row.bank_name}</div>
+          <div>{row.name}</div>
         </div>
       ),
     },
-    {
-      name: "No. Rekening",
-      width: "20%",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.account_number}</div>
-        </div>
-      ),
-    },
+
     {
       name: "Saldo",
       width: "30%",
@@ -56,8 +57,18 @@ function Manage() {
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {"IDR " +
-              row.balance.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
+            {row.account_transactions.length > 0
+              ? (
+                  lodash.sumBy(row.account_transactions, function (item) {
+                    return item.type === "in" ? item.amount : "";
+                  }) -
+                  lodash.sumBy(row.account_transactions, function (item) {
+                    return item.type === "out" ? item.amount : "";
+                  })
+                )
+                  .toString()
+                  .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+              : "0"}
           </div>
         </div>
       ),
@@ -69,10 +80,10 @@ function Manage() {
       cell: (row) => (
         <div>
           <div></div>
-          <CBadge style={{ width: "100%" }} color={getBadge(row.status)}>
+          <CBadge style={{ width: "100%" }} color={getBadge(row.active)}>
             <span style={{ color: "white", alignContent: "center" }}>
               {" "}
-              {row.status}
+              {row.active === 1 ? "Active" : "In Active"}
             </span>
           </CBadge>
         </div>
@@ -175,9 +186,8 @@ function Manage() {
   };
 
   const getDataAccounts = () => {
- 
     axios
-      .get(`${API_URL}/api/accounts`)
+      .get(`${FINANCE_API}/api/account`)
       .then((response) => {
         setAccounts([...response.data.data]);
         setIsLoading(false);

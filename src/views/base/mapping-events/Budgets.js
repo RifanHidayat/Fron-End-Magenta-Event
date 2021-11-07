@@ -165,20 +165,16 @@ function Budgets(props) {
     // eslint-disable-next-line no-lone-blocks
     {
       account.map((data) =>
-        data.status == "Active"
-          ? data.id === 100
-            ? ""
-            : data.id === 108
-            ? ""
-            : data.id === 101
+        data.active == 1
+          ? data.is_default === 1
             ? ""
             : (row +=
                 '<option value="' +
                 data.id +
                 '">' +
-                data.bank_name +
+                data.name +
                 "(" +
-                data.account_number +
+                data.number +
                 ")</option>")
           : ""
       );
@@ -230,11 +226,7 @@ function Budgets(props) {
     // eslint-disable-next-line no-lone-blocks
     {
       accounts.map((data) =>
-        data.id === 100
-          ? ""
-          : data.id === 108
-          ? ""
-          : data.id == 101
+        data.is_default === 1
           ? ""
           : (row += `<option ${
               data.id === account_id ? "selected" : ""
@@ -657,6 +649,7 @@ function Budgets(props) {
                           description: "Penambahan anggaran project",
                           image: "",
                           account_id: account_bank,
+
                           project_id: project_id,
                           transfer_to: transfer_to,
                           id: id,
@@ -669,6 +662,7 @@ function Budgets(props) {
                           description: "Penambahan anggaran project",
                           image: "",
                           account_id: account_bank,
+
                           project_id: project_id,
                           transfer_to: transfer_to,
                           id: "",
@@ -676,13 +670,16 @@ function Budgets(props) {
                       }
 
                       account = [
+                        project_number,
                         budget,
                         transfer_date,
                         "out",
                         description,
                         "",
                         account_bank,
-                        transaction_id,
+                        "111",
+                        props.match.params.id,
+                        "budget_transaction_project",
                       ];
 
                       //inialisai insert multipel row to database

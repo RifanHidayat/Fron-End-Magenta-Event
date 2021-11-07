@@ -1,25 +1,14 @@
 import ReactExport from "react-data-export";
 import "jspdf-autotable";
 import React, { useState, useEffect, useMemo } from "react";
-import Table from "react-bootstrap/Table";
-import ReactDOM from "react-dom";
 import DataTable from "react-data-table-component";
-import DataTableExtensions from "react-data-table-component-extensions";
 import "react-data-table-component-extensions/dist/index.css";
 import { columns, data, dataPDF } from "./data/transaction";
 import Button from "@material-ui/core/Button";
 import jsPDF from "jspdf";
-import img from "../account/images/logo.png";
 import FilterComponent from "src/views/base/components/FilterComponent";
 
-import {
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CFormGroup,
-} from "@coreui/react";
+import { CCard, CCardBody, CCardHeader, CCol, CFormGroup } from "@coreui/react";
 
 function Transaction(props) {
   //const [accounts,setAccounts]=useState([]);
@@ -55,40 +44,60 @@ function Transaction(props) {
 
     setProjectNumber(project_number);
     data(id).then((response) => {
-      //setProjectNumber(props.project_number)
-      console.log(props.project_number);
-      setAccountName(`${response.bank_name} (${response.account_number})`);
+      console.log("account", response);
+      setProjectNumber(props.project_number);
+      console.log("tes", response);
+      setAccountName(`${response.name} (${response.number})`);
       setFileName(
-        `Rekap Transaksi akun ${response.bank_name} (${
-          response.account_number != null ? response.account_number : ""
+        `Rekap Transaksi akun ${response.name} (${
+          response.number != null ? response.number : ""
         })`
       );
 
-      if (response.transactions.length > 0) {
-        setTransaction([...response.transactions]);
-        setTotalIn(
-          "IDR " +
-            response.total_in
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+      //console.log("tes", response.account_transactions);
+      if (response.account_transactions.length > 0) {
+        setTransaction([...response.account_transactions]);
+
+        const inTotal = response.account_transactions.reduce(function summarize(
+          sum,
+          item
+        ) {
+          return item.type === "in" ? sum + item.amount : (sum = sum + 0);
+        },
+        0);
+        const outTotal = response.account_transactions.reduce(
+          function summarize(sum, item) {
+            return item.type === "out" ? sum + item.amount : (sum = sum + 0);
+          },
+          0
         );
+
+        setTotalIn(
+          "IDR " + inTotal.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+        );
+
         setTotalOut(
           "IDR " +
-            response.total_out
-              .toString()
-              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+            outTotal.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
+
         setBalance(
           "IDR " +
-            response.balance
+            (inTotal - outTotal)
               .toString()
               .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
-        console.log(response.transactions);
 
-        //  setProjectNumber(response.project_number)
+        // setTotalOut(
+        //   "IDR " +
+        //     response.total_out
+        //       .toString()
+        //       .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+        // );
 
-        response.transactions.map((value, index) => {
+        setProjectNumber(response.project_number);
+
+        response.account_transactions.map((value, index) => {
           var data = [
             {
               value: dateFormat(value.date, "dd/mm/yyyy"),
@@ -116,7 +125,7 @@ function Transaction(props) {
             },
           ];
           data_transactions.push(data);
-          if (index + 1 >= response.transactions.length) {
+          if (index + 1 >= response.account_transactions.length) {
             const header = [
               { value: response.total_in, width: { wpx: 100 } },
               { value: response.total_out, width: { wpx: 100 } },
@@ -126,7 +135,7 @@ function Transaction(props) {
               {
                 columns: [
                   {
-                    title: "Total Cash In",
+                    title: "Total In",
                     width: { wpx: 100 },
                     style: {
                       fill: {
@@ -244,7 +253,7 @@ function Transaction(props) {
         10,
         20
       );
-      doc.addImage(img, "png", 380, 10, 50, 50);
+
       doc.autoTable({ html: "#my-table" });
 
       response.data.transactions.map((values) => {
@@ -268,7 +277,8 @@ function Transaction(props) {
       });
       doc.autoTable({
         headStyles: {
-          fillColor: "#df0c8f",
+          fillColor: "#74b9ff",
+
           textColor: [255, 255, 255],
           fontSize: 10,
           padding: 0,
@@ -289,7 +299,7 @@ function Transaction(props) {
 
         margin: { left: 10, right: "70%", top: "10%" },
 
-        head: [["Total Cash In", "Total Cash Out", "Saldo"]],
+        head: [["Total Cash In", "Total Out", "Saldo"]],
         body: [
           [
             response.data.total_in
@@ -309,7 +319,7 @@ function Transaction(props) {
       doc.autoTable({
         margin: { top: 20 },
         headStyles: {
-          fillColor: "#df0c8f",
+          fillColor: "#74b9ff",
           textColor: [255, 255, 255],
           fontSize: 10,
           padding: 0,
@@ -324,7 +334,7 @@ function Transaction(props) {
         },
         thema: "grid",
         margin: { left: 10, right: 10 },
-        head: [["tanggal", "Deskripsi", "Cash In", "Cash Out", "Saldo"]],
+        head: [["Tanggal", "Deskripsi", "In", "Out", "Saldo"]],
         body: data_transactions_pdf,
       });
       window.open(doc.output("bloburl"), "_blank");

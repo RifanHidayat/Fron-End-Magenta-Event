@@ -500,6 +500,7 @@ function Create() {
       );
 
       //set data value quotation
+      console.log(tempQuotation);
       setTempEventPic(tempQuotation[0]["pic_event"]);
       setProjectNumber(`${tempQuotation[0]["code"]}${tempProjectNumber}`);
       setTempEventCustomer(tempQuotation[0]["customer_event"]);
@@ -527,6 +528,7 @@ function Create() {
 
   var lenghth = 0;
   const onCheck1 = (row) => {
+    console.log(row);
     //setTempQuotation([...tempQuotation,row ])
     const index = _.findIndex(tempQuotation, {
       quotation_number: row.quotation_number,

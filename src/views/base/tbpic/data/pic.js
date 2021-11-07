@@ -1,4 +1,4 @@
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 export const getAllPIC = async (props) =>
   fetch(`${API_URL}/api/pic`)
     .then((response) => response.json())
@@ -45,7 +45,7 @@ export const getInOutNumber = async (props) =>
     .then((json) => json);
 
 export const getAcounts = async (props) =>
-  fetch(`${API_URL}/api/accounts`)
+  fetch(`${FINANCE_API}/api/account`)
     .then((response) => response.json())
     .then((json) => json);
 

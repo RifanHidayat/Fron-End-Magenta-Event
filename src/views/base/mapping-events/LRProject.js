@@ -167,11 +167,7 @@ function Approval(props) {
               .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
 
-        console.log("da", response.data.data.transactions.length);
-
         if (response.data.data.transactions.length > 0) {
-          console.log("da", response.data.data.transactions);
-
           response.data.data.transactions.map((value, index) => {
             var data = [
               {
@@ -220,7 +216,7 @@ function Approval(props) {
                       },
                     }, //pixels width
                     {
-                      title: "Total Ou",
+                      title: "Total Out",
                       width: { wpx: 100 },
                       style: {
                         fill: {
@@ -256,16 +252,6 @@ function Approval(props) {
                         },
                       },
                     }, //pixels width
-                    {
-                      title: "Tipe",
-                      width: { wpx: 100 },
-                      style: {
-                        fill: {
-                          patternType: "solid",
-                          fgColor: { rgb: "808080" },
-                        },
-                      },
-                    },
 
                     {
                       title: "Deskripsi",
@@ -336,9 +322,9 @@ function Approval(props) {
   };
   const columns = [
     {
-      name: "AKun",
+      name: "Akun",
       sortable: true,
-      cell: (row) => `${row.bank_name} (${row.account_number})`,
+      cell: (row) => `${row.name} (${row.number})`,
     },
     {
       name: "Tanggal",
@@ -381,9 +367,9 @@ function Approval(props) {
                   row.date,
                   row.description,
                   row.amount,
-                  row.account_id,
-                  row.bank_name,
-                  row.account_number
+                  row.accountId,
+                  row.name,
+                  row.number
                 )
               }
             >
@@ -518,14 +504,9 @@ function Approval(props) {
       response.map((values) => {
         var data = {
           value: values.id,
-          label: values.bank_name + ` (${values.account_number})`,
+          label: values.name + ` (${values.number})`,
         };
-        if (
-          values.id === 100 ||
-          values.id === 108 ||
-          values.id === 101 ||
-          values.status !== "Active"
-        ) {
+        if (values.id === 1 || values.active !== 1) {
         } else {
           option_accounts.push(data);
         }
@@ -653,7 +634,7 @@ function Approval(props) {
       var data_transactions_pdf = [];
       var doc = new jsPDF("p", "px", "a4");
       doc.text(`Laba Rugi Project ${$("#project_number").val()} `, 10, 20);
-      doc.addImage(img, "png", 380, 10, 50, 50);
+      // doc.addImage(img, "png", 380, 10, 50, 50);
       doc.autoTable({ html: "#my-table" });
 
       response.data.transactions.map((values) => {
@@ -679,7 +660,7 @@ function Approval(props) {
         margin: { top: 20 },
 
         headStyles: {
-          fillColor: "#df0c8f",
+          fillColor: "#74b9ff",
           textColor: [255, 255, 255],
           fontSize: 10,
           padding: 0,
@@ -719,7 +700,7 @@ function Approval(props) {
         margin: { top: 20 },
 
         headStyles: {
-          fillColor: "#df0c8f",
+          fillColor: "#74b9ff",
           textColor: [255, 255, 255],
           fontSize: 10,
           padding: 0,
@@ -733,7 +714,7 @@ function Approval(props) {
         },
         thema: "grid",
         margin: { left: 10, right: 10 },
-        head: [["tanggal", "Deskripsi", "In", "Out", "Saldo"]],
+        head: [["Tanggal", "Deskripsi", "In", "Out", "Saldo"]],
         body: data_transactions_pdf,
       });
       window.open(doc.output("bloburl"), "_blank");

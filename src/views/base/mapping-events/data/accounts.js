@@ -1,5 +1,5 @@
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 export const getDataAccounts = async () =>
-  fetch(`${API_URL}/api/accounts`)
+  fetch(`${FINANCE_API}/api/account`)
     .then((response) => response.json())
     .then((json) => json["data"]);

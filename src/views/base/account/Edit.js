@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import BeatLoader from "react-spinners/BeatLoader";
 import $ from "jquery";
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 
 import {
   CButton,
@@ -77,14 +77,12 @@ function Edit(props) {
 
     //get data detail
     axios
-      .get(`${API_URL}/api/accounts/detail-account/` + id)
+      .get(`${FINANCE_API}/api/account/` + id)
       .then((response) => {
-        console.log("detail project :", response);
-
-        setTempBankAccountName(response.data.data.bank_name);
-        setTempBankAccountNumber(response.data.data.account_number);
+        setTempBankAccountName(response.data.data.name);
+        setTempBankAccountNumber(response.data.data.number);
         setTempBankAccountBalance(
-          response.data.data.account_balance
+          response.data.data.init_balance
             .toString()
             .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
@@ -92,27 +90,11 @@ function Edit(props) {
         setTempSelected(response.data.data.type);
         //eo =1.metaprint=2,all =3
 
-        setTempSelectedStatus();
-        if (response.data.data.type === "eo") {
-          var optionType = {
-            value: "eo",
-            label: "Event organizer",
-          };
-          setvalueTypeAccount(optionType);
+        setTempSelectedStatus(
+          response.data.data.active === 1 ? "Active" : "In Active"
+        );
 
-          setTempIndexSelected(0);
-        } else if (response.data.data.type === "metaprint") {
-          setTempIndexSelected(1);
-        } else if (response.data.data.type === "all") {
-          var optionType = {
-            value: "all",
-            label: "Semua",
-          };
-          setvalueTypeAccount(optionType);
-          setTempSelected(response.data.data.type);
-          setTempIndexSelected(2);
-        }
-        if (response.data.data.status === "Active") {
+        if (response.data.data.active === 1) {
           var optionStatus = {
             value: "Active",
             label: "Active",
@@ -191,23 +173,22 @@ function Edit(props) {
                 //setTempIsloading(true);
                 var id = props.match.params.id;
                 console.log("selectead:", tempSelected);
+                console.log(tempSelectedStatus);
 
                 const data = {
                   date: values.date,
-                  bank_account_name: values.bank_account_name,
-                  bank_account_number: values.bank_account_number,
+                  name: values.bank_account_name,
+                  number: values.bank_account_number,
                   //bank_account_owner:values.bank_account_owner,
                   status: tempSelectedStatus,
-                  bank_account_balance: values.bank_account_balance.replace(
+                  init_balance: values.bank_account_balance.replace(
                     /[^\w\s]/gi,
                     ""
                   ),
-                  type: tempSelected,
                 };
-                console.log(data);
 
                 axios
-                  .patch(`${API_URL}/api/accounts/edit-account/` + id, data)
+                  .patch(`${FINANCE_API}/api/account/` + id, data)
                   .then((response) => {
                     console.log(response);
                     Swal.fire({
@@ -301,7 +282,7 @@ function Edit(props) {
                     </CFormGroup>
                   </CCol>
 
-                  <CCol xs="6">
+                  {/* <CCol xs="6">
                     <CFormGroup>
                       <CLabel htmlFor="type">Jenis Akun</CLabel>
                       <Select
@@ -314,7 +295,7 @@ function Edit(props) {
                       />
                     </CFormGroup>
                   </CCol>
-                  <br />
+                  <br /> */}
                   <CCol xs="6">
                     <CFormGroup>
                       <CLabel htmlFor="type">Status</CLabel>

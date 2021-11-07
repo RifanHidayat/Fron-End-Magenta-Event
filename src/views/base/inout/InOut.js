@@ -12,9 +12,8 @@ import DataTable from "react-data-table-component";
 import FilterComponent from "src/views/base/components/FilterComponent";
 import Select from "react-select";
 import { getInOutNumber, getAcounts, getInOutTransaction } from "./data/Data";
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, FINANCE_API } from "src/views/base/components/constants";
 import BeatLoader from "react-spinners/BeatLoader";
-
 import Swal from "sweetalert2";
 
 import {
@@ -32,6 +31,7 @@ import {
   CCardFooter,
   CTooltip,
 } from "@coreui/react";
+
 import { getProjects } from "src/views/dashboard/data/Data";
 import { getDataAccounts } from "../mapping-events/data/accounts";
 var dateFormat = require("dateformat");
@@ -54,7 +54,6 @@ function InOut(props) {
 
   const getAllInOutDataCostProject = () => {
     getInOutTransaction().then((response) => {
-      console.log(response.data);
       setInOutTransactions([...response.data]);
       setIsLoading(false);
     });
@@ -63,7 +62,7 @@ function InOut(props) {
     {
       name: "No. In Out",
       sortable: true,
-      cell: (row) => row.inout_number,
+      cell: (row) => row.group_number,
     },
     {
       name: "Tanggal",
@@ -91,13 +90,13 @@ function InOut(props) {
       name: "Akun In",
       sortable: true,
       right: true,
-      cell: (row) => row.account_in_name + ` (${row.account_in_number})`,
+      cell: (row) => row.account.name + ` (${row.account.number})`,
     },
     {
       name: "Akun Out",
       sortable: true,
       right: true,
-      cell: (row) => row.account_out_name + ` (${row.account_out_number})`,
+      cell: (row) => row.account.name + ` (${row.account.number})`,
     },
     {
       name: "Aksi",
@@ -115,16 +114,16 @@ function InOut(props) {
               onClick={() =>
                 editData(
                   row.id,
-                  row.inout_number,
+                  row.group_number,
                   row.date,
                   row.description,
                   row.amount,
-                  row.account_in_id,
-                  row.account_out_id,
-                  row.account_in_name,
-                  row.account_out_name,
-                  row.account_in_number,
-                  row.account_out_number
+                  row.account.id,
+                  row.account.id,
+                  row.account.name,
+                  row.account.name,
+                  row.account.number,
+                  row.account.number
                 )
               }
             >
@@ -136,7 +135,7 @@ function InOut(props) {
             <CButton
               color="secondary"
               size="sm"
-              onClick={() => deleteData(row.inout_number)}
+              onClick={() => deleteData(row.group_number)}
             >
               <i class="fa fa-trash"></i>
             </CButton>
@@ -216,7 +215,7 @@ function InOut(props) {
       showLoaderOnConfirm: true,
       preConfirm: () => {
         return axios
-          .delete(`${API_URL}/api/inout/` + id)
+          .delete(`${FINANCE_API}/api/inout-transaction/` + id)
           .then(function (response) {
             console.log(response.data);
           })
@@ -294,11 +293,11 @@ function InOut(props) {
 
     getAcounts().then((response) => {
       response.data.map((values) => {
-        if (values.status !== "Active") {
+        if (values.active !== 1) {
         } else {
           var data = {
             value: values.id,
-            label: values.bank_name + ` (${values.account_number})`,
+            label: values.name + ` (${values.number})`,
           };
           option_accounts.push(data);
         }
@@ -365,14 +364,14 @@ function InOut(props) {
                 amount: $("#amount_in_out")
                   .val()
                   .replace(/[^\w\s]/gi, ""),
-                in_account: idAccountIn,
-                out_account: idAccountOut,
-                inout_number: inoutNumber,
+                account_id_in: idAccountIn,
+                account_id_out: idAccountOut,
+                number: inoutNumber,
               };
 
               if (idInOutTransaction === "") {
                 axios
-                  .post(`${API_URL}/api/inout`, data)
+                  .post(`${FINANCE_API}/api/inout-transaction`, data)
                   .then((response) => {
                     getAllInOutDataCostProject();
 
@@ -392,7 +391,10 @@ function InOut(props) {
                   .catch((error) => {});
               } else {
                 axios
-                  .patch(`${API_URL}/api/inout/` + inoutNumber, data)
+                  .patch(
+                    `${FINANCE_API}/api/inout-transaction/` + inoutNumber,
+                    data
+                  )
                   .then((response) => {
                     getAllInOutDataCostProject();
 

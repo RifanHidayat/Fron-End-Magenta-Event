@@ -314,7 +314,7 @@ function Transaction(props) {
       var data_transactions_pdf = [];
       var doc = new jsPDF("p", "px", "a4");
       doc.text(`TB:${namePIC}`, 10, 20);
-      doc.addImage(img, "png", 380, 10, 50, 50);
+     
       doc.autoTable({ html: "#my-table" });
       response.data.transactions.map((values) => {
         var data = [
@@ -342,7 +342,7 @@ function Transaction(props) {
       doc.autoTable({
         margin: { top: 20 },
         headStyles: {
-          fillColor: "#df0c8f",
+          fillColor: "#74b9ff",
           textColor: [255, 255, 255],
           fontSize: 10,
           padding: 0,
@@ -382,7 +382,7 @@ function Transaction(props) {
       doc.autoTable({
         margin: { top: 20 },
         headStyles: {
-          fillColor: "#df0c8f",
+          fillColor: "#74b9ff",
           textColor: [255, 255, 255],
           fontSize: 10,
           padding: 0,

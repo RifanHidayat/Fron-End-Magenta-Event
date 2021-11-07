@@ -93,6 +93,8 @@ function Edit(props) {
   //data edit projects
   const [tempQuotation, setTempQuotation] = useState([]);
   const [tempProjectNumber, setTempProjectNumber] = useState("");
+  const [projectNumber, setProjectNumber] = useState("");
+  const [projectNumber1, setProjectNumber1] = useState("");
   const [tempEventCustomer, setTempEventCustomer] = useState("");
   const [tempEventPic, setTempEventPic] = useState("");
   const [tempTotalProjectCost, setTotalProjectost] = useState("0");
@@ -392,7 +394,7 @@ function Edit(props) {
   let quotationNumber = [];
 
   const onCheck1 = (row) => {
-    console.log("tes", row);
+    console.log(row);
 
     //setTempQuotation([...tempQuotation,row ])
     const index = _.findIndex(tempQuotation, {
@@ -429,7 +431,8 @@ function Edit(props) {
       .get(`${API_URL}/api/projects/detail-project/` + id)
       .then((response) => {
         console.log("detail projecs :", response);
-        setTempProjectNumber(response.data.data.project_number);
+        setProjectNumber(response.data.data.project_number);
+        setProjectNumber1(response.data.data.project_number);
 
         //projecct create data
         let project_created_date = new Date(
@@ -525,7 +528,18 @@ function Edit(props) {
       .then((response) => response.json())
       .then((json) => {
         quotations = json["data"];
-        console.log("data", quotations);
+        console.log(quotations);
+      });
+    //get project number
+    axios
+      .get(`${API_URL}/api/projects/project-number`)
+      .then((response) => {
+        console.log("data project number ", response.data.data);
+        setTempProjectNumber(response.data.data);
+      })
+      .catch((error) => {
+        // this.setState({ errorMessage: error.message });
+        console.error("There was an error!", error);
       });
   }, []);
 
@@ -537,10 +551,15 @@ function Edit(props) {
       tempQuotation.map((value) =>
         quotationNumber.push(value.quotation_number)
       );
+      console.log(tempQuotation);
 
       //set data value quotation
       setTempEventPic(tempQuotation[0]["pic_event"]);
       setTempEventCustomer(tempQuotation[0]["customer_event"]);
+      console.log(`${tempQuotation[0]["code"]}`);
+      tempQuotation[0]["code"] == null
+        ? setProjectNumber(`${projectNumber1}`)
+        : setProjectNumber(`${tempQuotation[0]["code"]}${tempProjectNumber}`);
       setTotalProjectost(tempQuotation[0]["netto"]);
       setTotalProjectost(
         grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
@@ -623,7 +642,7 @@ function Edit(props) {
               onSubmit={(values, { setSubmitting }) => {
                 setIsloading(true);
                 const data = {
-                  project_number: tempProjectNumber,
+                  project_number: projectNumber,
                   project_created_date: tempDateCreatedProject,
                   project_start_date: values.project_start_date,
                   project_end_date: values.project_end_date,
@@ -687,7 +706,7 @@ function Edit(props) {
                           placeholder=""
                           name="project_number"
                           onChange={handleChange}
-                          value={tempProjectNumber}
+                          value={projectNumber}
                         />
                       </CFormGroup>
                     </CCol>
