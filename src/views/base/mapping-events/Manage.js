@@ -48,6 +48,16 @@ function Manage() {
   var dateFormat = require("dateformat");
   const columns = [
     {
+      name: "Source",
+      width: "12%",
+      sortable: true,
+      cell: (row) => (
+        <div style={{ width: "100%" }} data-tag="allowRowEvents">
+          <div>{row.source}</div>
+        </div>
+      ),
+    },
+    {
       name: "No. Project",
       width: "12%",
       sortable: true,
@@ -130,57 +140,58 @@ function Manage() {
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {row.budget.balance !== 0
-              ? `IDR ${row.budget.balance
-                  .toString()
-                  .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}`
-              : "IDR 0"
-                // <CBadge
-                //   style={{ width: "100%" }}
-                //   color={getBadge(
-                //     row.status === "approved"
-                //       ? "paid_off"
-                //       : row.status === "closed"
-                //       ? "paid_off"
-                //       : ""
-                //   )}
-                // >
-                // {row.status === "approved" ? (
-                //   "IDR 0"
-                // ) :
-                // <span
-                //   style={{
-                //     color: "white",
-                //     alignContent: "center",
-                //     width: "120px",
-                //   }}
-                // >
+            {
+              row.budget.balance !== 0
+                ? `IDR ${row.budget.balance
+                    .toString()
+                    .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}`
+                : "IDR 0"
+              // <CBadge
+              //   style={{ width: "100%" }}
+              //   color={getBadge(
+              //     row.status === "approved"
+              //       ? "paid_off"
+              //       : row.status === "closed"
+              //       ? "paid_off"
+              //       : ""
+              //   )}
+              // >
+              // {row.status === "approved" ? (
+              //   "IDR 0"
+              // ) :
+              // <span
+              //   style={{
+              //     color: "white",
+              //     alignContent: "center",
+              //     width: "120px",
+              //   }}
+              // >
 
-                // </span>
-                // row.status === "closed" ? (
-                //   "IDR 0"
-                // ) : (
-                // <span
-                //   style={{
-                //     color: "white",
-                //     alignContent: "center",
-                //     width: "120px",
-                //   }}
-                // >
-                //   &nbsp;&nbsp; Lunas &nbsp;&nbsp;{" "}
-                //   // </span>
-                //   <span
-                //     style={{
-                //       color: "black",
-                //       alignContent: "center",
-                //       width: "120px",
-                //     }}
-                //   >
-                //     &nbsp;&nbsp;<span></span> &nbsp;&
-                //     nbsp;{" "}
-                //   </span>
-                // )}
-                // </CBadge>
+              // </span>
+              // row.status === "closed" ? (
+              //   "IDR 0"
+              // ) : (
+              // <span
+              //   style={{
+              //     color: "white",
+              //     alignContent: "center",
+              //     width: "120px",
+              //   }}
+              // >
+              //   &nbsp;&nbsp; Lunas &nbsp;&nbsp;{" "}
+              //   // </span>
+              //   <span
+              //     style={{
+              //       color: "black",
+              //       alignContent: "center",
+              //       width: "120px",
+              //     }}
+              //   >
+              //     &nbsp;&nbsp;<span></span> &nbsp;&
+              //     nbsp;{" "}
+              //   </span>
+              // )}
+              // </CBadge>
             }
           </div>
         </div>
@@ -270,31 +281,39 @@ function Manage() {
               </CDropdownToggle>
 
               <CDropdownMenu placement="left-end">
-                <CDropdownItem to={`/mapping/members/${row.id}`}>
-                  Pemetaan
-                </CDropdownItem>
-                <CDropdownItem
-                  to={`/mapping/Transactions/${row.id}/${row.project_number}`}
-                >
-                  Advance Transaksi &nbsp;
-                  {row.budget.status_pending > 0 ? (
-                    <div
-                      id="exampleCircle"
-                      style={{
-                        borderRadius: "50%",
-                        backgroundColor: "red",
-                        width: "20px",
-                        height: "20px",
-                      }}
-                    >
-                      <p align="center" style={{ color: "white" }}>
-                        {row.budget.status_pending}
-                      </p>
-                    </div>
-                  ) : (
-                    <p></p>
-                  )}
-                </CDropdownItem>
+                {row.source === "metaprint" ? (
+                  ""
+                ) : (
+                  <CDropdownItem to={`/mapping/members/${row.id}`}>
+                    Pemetaan
+                  </CDropdownItem>
+                )}
+                {row.source === "metaprint" ? (
+                  ""
+                ) : (
+                  <CDropdownItem
+                    to={`/mapping/Transactions/${row.id}/${row.project_number}`}
+                  >
+                    Advance Transaksi &nbsp;
+                    {row.budget.status_pending > 0 ? (
+                      <div
+                        id="exampleCircle"
+                        style={{
+                          borderRadius: "50%",
+                          backgroundColor: "red",
+                          width: "20px",
+                          height: "20px",
+                        }}
+                      >
+                        <p align="center" style={{ color: "white" }}>
+                          {row.budget.status_pending}
+                        </p>
+                      </div>
+                    ) : (
+                      <p></p>
+                    )}
+                  </CDropdownItem>
+                )}
                 {row.status === "approved" ? (
                   <CDropdownItem to={`/mapping/profit-cost/${row.id}`}>
                     L/R Project

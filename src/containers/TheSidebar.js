@@ -25,7 +25,7 @@ import CIcon from "@coreui/icons-react";
 // sidebar nav config
 import navigation from "./_nav";
 let iconStyles = {
-  color: "white",
+  color: "",
   fontSize: "1.5em",
   marginRight: "20px",
   right: "15px",
@@ -189,11 +189,12 @@ const TheSidebar = () => {
   return (
     <CSidebar
       show={show}
+      className="c-sidebar c-sidebar-light"
       onShowChange={(val) => dispatch({ type: "set", sidebarShow: val })}
     >
-      <CSidebarBrand className="d-md-down-none" to="/">
+      <CSidebarBrand className="d-md-down-none bg-white text-left" to="/">
         <CLabel size="30px" className="c-sidebar-brand-full">
-          Magenta Projects
+          <span className="text-dark">Magenta Finance</span>
         </CLabel>
         {/* <CIcon
           className="c-sidebar-brand-full"

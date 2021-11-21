@@ -3,12 +3,11 @@ import CIcon from "@coreui/icons-react";
 import { GoProject } from "react-icons/go";
 import { RiDashboardFill } from "react-icons/ri";
 import { ImUserTie } from "react-icons/im";
-import { GrMoney } from "react-icons/gr";
 import account from "./icons/account.svg";
 import money from "./icons/money-flow.svg";
 let circleClasses = "inline-block p-7 rounded-full w-20 mx-auto";
 let iconStyles = {
-  color: "white",
+  color: "red",
   fontSize: "1.5em",
   marginRight: "20px",
   right: "15px",

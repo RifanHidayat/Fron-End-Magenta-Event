@@ -74,7 +74,7 @@ function Create() {
         if (values.pic_id == null) {
           var data = {
             value: values.id_event,
-            label: `${values.pic_name} | ${values.name}`,
+            label: `${values.pic_name} `,
             position: values.jabatan,
             email: values.email,
           };

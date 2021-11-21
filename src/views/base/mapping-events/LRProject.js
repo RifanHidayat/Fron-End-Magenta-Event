@@ -29,7 +29,7 @@ import img from "../account/images/logo.png";
 import Table from "react-bootstrap/Table";
 import Select from "react-select";
 import { getDataAccounts } from "./data/accounts";
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, METAPRINT_API } from "src/views/base/components/constants";
 
 import {
   CCard,
@@ -311,7 +311,6 @@ function Approval(props) {
   const getAllDataCostProject = () => {
     getDataCostProjects(props.match.params.id)
       .then((response) => {
-        console.log(response);
         setCostProject([...response.data]);
 
         setTempsIsLoadingCostProject(false);
@@ -499,6 +498,7 @@ function Approval(props) {
     if (permission <= 0) {
       Navigator.push("/dashboard");
     }
+    getAllTransactions();
     var option_accounts = [];
     getDataAccounts().then((response) => {
       response.map((values) => {
@@ -518,82 +518,98 @@ function Approval(props) {
     axios
       .get(`${API_URL}/api/projects/detail-project/${id}`)
       .then((response) => {
-        setQuotations([...response.data.data.quotations]);
+        // axios
+        //   .get(`http://192.168.100.109:8000/api/sales-orders`)
+        //   .then((res) => {
+        //     console.log("data metaprint", res);
+        //   })
+        //   .catch((e) => {
+        //     console.log(e);
+        //   });
+
         setTempProjectNumber(response.data.data.project_number);
-        //projecct create data
-        let project_created_date = new Date(
-          response.data.data.project_created_date
-        );
-        let date_crated = project_created_date.getDate();
-        let month_created = project_created_date.getMonth() + 1;
-        let year_created = project_created_date.getFullYear();
-        setTempProjectCreatedDate(
-          year_created +
-            "-" +
-            "00".substr(String(month_created).length) +
-            month_created +
-            "-" +
-            "00".substr(String(date_crated).length) +
-            date_crated
-        );
 
-        //project start date
-        let project_start_date = new Date(
-          response.data.data.project_start_date
-        );
-        let date_start = project_start_date.getDate();
-        let month_start = project_start_date.getMonth() + 1;
-        let year_start = project_start_date.getFullYear();
-        setTempProjectStartDate(
-          year_start +
-            "-" +
-            "00".substr(String(month_start).length) +
-            month_start +
-            "-" +
-            "00".substr(String(date_start).length) +
-            date_start
-        );
-        // console.log('tanggal mulai',tempProjectStartDate)
+        const ids = response.data.data.id_quotation.split(",");
 
-        //project end date
-        let project_end_date = new Date(response.data.data.project_end_date);
-        let date_end = project_end_date.getDate();
-        let month_end = project_end_date.getMonth() + 1;
-        let year_end = project_end_date.getFullYear();
-        setTempProjectEndDate(
-          year_end +
-            "-" +
-            "00".substr(String(month_end).length) +
-            month_end +
-            "-" +
-            "00".substr(String(date_end).length) +
-            date_end
-        );
+        if (response.data.data.source == "metaprint") {
+          //setQuotations([...[]]);
 
-        setTempEventCustomer(response.data.data.event_customer);
-        setTempEventPic(response.data.data.event_pic);
-        setTempDescription(response.data.data.description);
-        setTempLatitude(response.data.data.latitude);
-        setTempLongtitude(response.data.data.longtitude);
-        setTempTotalProjectCos(
-          response.data.data.total_project_cost
-            .toString()
-            .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
-        );
-        setTempLocation(response.data.data.location);
+          let project_created_date = new Date(
+            response.data.data.project_created_date
+          );
+          let date_crated = project_created_date.getDate();
+          let month_created = project_created_date.getMonth() + 1;
+          let year_created = project_created_date.getFullYear();
+          setTempProjectCreatedDate(
+            year_created +
+              "-" +
+              "00".substr(String(month_created).length) +
+              month_created +
+              "-" +
+              "00".substr(String(date_crated).length) +
+              date_crated
+          );
 
-        getAllTransactions();
-        setMarker({
-          latitude: parseFloat(response.data.data.latitude),
-          longitude: parseFloat(response.data.data.longtitude),
-        });
-        setViewport({
-          latitude: parseFloat(response.data.data.latitude),
-          longitude: parseFloat(response.data.data.longtitude),
-          zoom: 13.5,
-        });
+          //project start date
+          let project_start_date = new Date(
+            response.data.data.project_start_date
+          );
+          let date_start = project_start_date.getDate();
+          let month_start = project_start_date.getMonth() + 1;
+          let year_start = project_start_date.getFullYear();
+          setTempProjectStartDate(
+            year_start +
+              "-" +
+              "00".substr(String(month_start).length) +
+              month_start +
+              "-" +
+              "00".substr(String(date_start).length) +
+              date_start
+          );
+
+          //project end date
+          let project_end_date = new Date(response.data.data.project_end_date);
+          let date_end = project_end_date.getDate();
+          let month_end = project_end_date.getMonth() + 1;
+          let year_end = project_end_date.getFullYear();
+          setTempProjectEndDate(
+            year_end +
+              "-" +
+              "00".substr(String(month_end).length) +
+              month_end +
+              "-" +
+              "00".substr(String(date_end).length) +
+              date_end
+          );
+
+          setTempEventCustomer(response.data.data.event_customer);
+          setTempEventPic(response.data.data.event_pic);
+          setTempDescription(response.data.data.description);
+          setTempLatitude(response.data.data.latitude);
+          setTempLongtitude(response.data.data.longtitude);
+          setTempTotalProjectCos(
+            response.data.data.total_project_cost
+              .toString()
+              .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
+          );
+          setTempLocation(response.data.data.location);
+
+          getAllTransactions();
+          setMarker({
+            latitude: parseFloat(response.data.data.latitude),
+            longitude: parseFloat(response.data.data.longtitude),
+          });
+          setViewport({
+            latitude: parseFloat(response.data.data.latitude),
+            longitude: parseFloat(response.data.data.longtitude),
+            zoom: 13.5,
+          });
+        } else {
+          setQuotations([...response.data.data.quotations]);
+        }
       })
       .catch((error) => {});
+
     getAllDataCostProject();
   }, []);
 
@@ -615,7 +631,6 @@ function Approval(props) {
     dataPDFLR(props.match.params.id).then((response) => {
       var data_transactions_excel = [];
       response.data.transactions.map((values) => {
-        console.log("tee", values);
         var data = {
           date: values.date,
           description: values.description,

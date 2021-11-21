@@ -96,7 +96,7 @@ function InOut(props) {
       name: "Akun Out",
       sortable: true,
       right: true,
-      cell: (row) => row.account.name + ` (${row.account.number})`,
+      cell: (row) => row.coa_id.name + ` (${row.coa_id.number})`,
     },
     {
       name: "Aksi",
@@ -119,11 +119,11 @@ function InOut(props) {
                   row.description,
                   row.amount,
                   row.account.id,
-                  row.account.id,
+                  row.coa_id.id,
                   row.account.name,
-                  row.account.name,
+                  row.coa_id.name,
                   row.account.number,
-                  row.account.number
+                  row.coa_id.number
                 )
               }
             >

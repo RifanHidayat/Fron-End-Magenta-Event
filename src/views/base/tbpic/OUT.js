@@ -48,7 +48,7 @@ function OUT(props) {
       cell: (row) => <span>{row.quotation_po.code}</span>,
     },
     {
-      name: "Nama PICTB/ No. Project",
+      name: "Nama PICTB/ No. Account",
       sortable: true,
       width: "15%",
       filterable: true,

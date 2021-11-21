@@ -14,7 +14,6 @@ import { getAcounts, getInOutTransaction, getDetailPIC } from "./data/pic";
 import { API_URL } from "src/views/base/components/constants";
 import Swal from "sweetalert2";
 
-
 import {
   CCard,
   CCardBody,
@@ -50,6 +49,7 @@ function InOut(props) {
   const [nameTb, setNameTb] = useState();
   //variable push page
   const navigator = useHistory();
+  let dataaaa = [];
 
   const getAllInOutDataCostProject = () => {
     getInOutTransaction(props.match.params.id).then((response) => {

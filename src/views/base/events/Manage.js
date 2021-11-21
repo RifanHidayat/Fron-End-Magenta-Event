@@ -258,7 +258,7 @@ function Manage() {
               </span>
             </div>
             <div style={{ float: "right" }}>
-              <CButton size="sm" to="/projects/create" color="primary">
+              <CButton size="sm" to="/projects/eo/create" color="primary">
                 <i className="fa fa-plus"></i> <span>Tambah </span>
               </CButton>
             </div>

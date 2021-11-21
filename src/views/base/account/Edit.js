@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import Select from "react-select";
 import BeatLoader from "react-spinners/BeatLoader";
 import $ from "jquery";
-import { API_URL, FINANCE_API } from "src/views/base/components/constants";
+import { FINANCE_API } from "src/views/base/components/constants";
 
 import {
   CButton,
@@ -38,11 +38,8 @@ function Edit(props) {
   const [tempBankAccountNumber, setTempBankAccountNumber] = useState();
   const [tempBankAccountBalance, setTempBankAccountBalance] = useState();
   const [mainLoading, setMainloading] = useState(true);
-  const [tempIndexSelected, setTempIndexSelected] = useState(0);
   const [tempIndexSelectedStatus, setTempIndexSelectedStatus] = useState(0);
-  const [valueTypeAccount, setvalueTypeAccount] = useState(null);
   const [valueStatusAccount, setvalueStatusAccount] = useState(null);
-
   const [date, setDate] = useState();
 
   //masking
@@ -79,22 +76,22 @@ function Edit(props) {
     axios
       .get(`${FINANCE_API}/api/account/` + id)
       .then((response) => {
-        setTempBankAccountName(response.data.data.name);
-        setTempBankAccountNumber(response.data.data.number);
+        setTempBankAccountName(response.data.data[0].name);
+        setTempBankAccountNumber(response.data.data[0].number);
         setTempBankAccountBalance(
-          response.data.data.init_balance
+          response.data.data[0].init_balance
             .toString()
             .replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
         );
-        setDate(dateFormat(response.data.data.date, "yyyy-mm-dd"));
-        setTempSelected(response.data.data.type);
+        setDate(dateFormat(response.data.data[0].date, "yyyy-mm-dd"));
+        setTempSelected(response.data.data[0].type);
         //eo =1.metaprint=2,all =3
 
         setTempSelectedStatus(
-          response.data.data.active === 1 ? "Active" : "In Active"
+          response.data.data[0].active === 1 ? "Active" : "In Active"
         );
 
-        if (response.data.data.active === 1) {
+        if (response.data.data[0].active === 1) {
           var optionStatus = {
             value: "Active",
             label: "Active",
@@ -110,7 +107,7 @@ function Edit(props) {
           };
           setvalueStatusAccount(optionStatus);
         }
-        setTempSelectedStatus(response.data.data.status);
+        //setTempSelectedStatus(response.data.data.status);
         //laading false
         setMainloading(false);
       })
@@ -124,21 +121,11 @@ function Edit(props) {
   //variable push page
   const navigator = useHistory();
 
-  const onSelected = (selectedOptions) => {
-    setTempSelected(selectedOptions["value"]);
-    setvalueTypeAccount(selectedOptions);
-  };
-
   const onSelectedStatus = (selectedOptions) => {
     setTempSelectedStatus(selectedOptions["value"]);
     setvalueStatusAccount(selectedOptions);
   };
 
-  const options = [
-    { value: "eo", label: "Event Organizer" },
-
-    { value: "all", label: "Semua" },
-  ];
   const optionsStatus = [
     { value: "Active", label: "Active" },
 
@@ -175,16 +162,27 @@ function Edit(props) {
                 console.log("selectead:", tempSelected);
                 console.log(tempSelectedStatus);
 
+                // const data = {
+                //   date: values.date,
+                //   name: values.bank_account_name,
+                //   number: values.bank_account_number,
+                //   //bank_account_owner:values.bank_account_owner,
+                //   status: tempSelectedStatus,
+                //   init_balance: values.bank_account_balance.replace(
+                //     /[^\w\s]/gi,
+                //     ""
+                //   ),
+                // };
                 const data = {
-                  date: values.date,
                   name: values.bank_account_name,
                   number: values.bank_account_number,
+                  is_active: tempSelectedStatus === "Active" ? 1 : 0,
                   //bank_account_owner:values.bank_account_owner,
-                  status: tempSelectedStatus,
                   init_balance: values.bank_account_balance.replace(
                     /[^\w\s]/gi,
                     ""
                   ),
+                  date: values.date,
                 };
 
                 axios
@@ -258,11 +256,6 @@ function Edit(props) {
                     </CFormGroup>
                   </CCol>
                   <CCol xs="6">
-                    {/* <CFormGroup>
-                        <CLabel htmlFor="bank_account_balance">Saldo Awal</CLabel>
-                        <CInput required  style={{textAlign:'right'}} id="bank_account_balance" name="bank_account_balance" onChange={handleChange}  value={values.bank_account_balance} />
-                    </CFormGroup> */}
-
                     <CFormGroup>
                       <CLabel htmlFor="total_project_cost">Saldo Awal</CLabel>
                       <CInputGroup>
@@ -282,20 +275,6 @@ function Edit(props) {
                     </CFormGroup>
                   </CCol>
 
-                  {/* <CCol xs="6">
-                    <CFormGroup>
-                      <CLabel htmlFor="type">Jenis Akun</CLabel>
-                      <Select
-                        onChange={onSelected}
-                        className="basic-single"
-                        classNamePrefix="select"
-                        options={options}
-                        value={valueTypeAccount}
-                        name="color"
-                      />
-                    </CFormGroup>
-                  </CCol>
-                  <br /> */}
                   <CCol xs="6">
                     <CFormGroup>
                       <CLabel htmlFor="type">Status</CLabel>

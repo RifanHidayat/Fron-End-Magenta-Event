@@ -11,6 +11,9 @@ const Mapping = React.lazy(() => import("./views/base/mapping-events/Manage"));
 const LRProject = React.lazy(() =>
   import("./views/base/mapping-events/LRProject")
 );
+const CreateProjectMetaPrint = React.lazy(() =>
+  import("./views/base/events/metaprint")
+);
 //const Menu = React.lazy(() => import('./views/base/mapping-events/Menu'));
 
 //Mapping Event
@@ -92,9 +95,14 @@ const routes = [
 
   //projects
   {
-    path: "/projects/create",
+    path: "/projects/eo/create",
     name: "Projects / Create",
     component: CreateProject,
+  },
+  {
+    path: "/projects/metaprint/create",
+    name: "Projects / Create",
+    component: CreateProjectMetaPrint,
   },
   {
     path: "/projects/manage",

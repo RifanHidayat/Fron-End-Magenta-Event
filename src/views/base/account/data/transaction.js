@@ -45,6 +45,19 @@ export const columns = [
       />
     ),
   },
+  {
+    name: "Note",
+    selector: "Note",
+    sortable: true,
+    width: "20%",
+    cell: (row) => (
+      <div
+        dangerouslySetInnerHTML={{
+          __html: "" + row.note !== "" ? row.note : "",
+        }}
+      />
+    ),
+  },
 
   {
     name: "In",

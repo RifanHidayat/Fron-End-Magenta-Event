@@ -29,7 +29,7 @@ import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import _ from "lodash";
 import $ from "jquery";
-import { API_URL } from "src/views/base/components/constants";
+import { API_URL, METAPRINT_API } from "src/views/base/components/constants";
 import Alert from "@material-ui/lab/Alert";
 
 import Button from "@material-ui/core/Button";
@@ -149,95 +149,104 @@ function Create() {
       ),
     },
     {
-      name: "No. quotation",
-      width: "13%",
+      name: "No. SO",
+      width: "15%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{row.quotation_number}</div>
+          <div>{row.number}</div>
         </div>
       ),
     },
     {
-      name: "Tanggal Quotation",
-      width: "13%",
+      name: "Tanggal SO",
+      width: "15%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{dateFormat(row.date_quotation, "dd/mm/yyyy")}</div>
-        </div>
-      ),
-    },
-    {
-      name: "Title Event",
-      width: "13%",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.tittle_event}</div>
-        </div>
-      ),
-    },
-    {
-      name: "Venue",
-      width: "10%",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.venue_event}</div>
-        </div>
-      ),
-    },
-    {
-      name: "No. PO",
-      width: "10%",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.po_number}</div>
+          <div>{row.date}</div>
         </div>
       ),
     },
 
     {
-      name: "Tanggal PO",
-      width: "13%",
+      name: "Deskripsi",
+      width: "20%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{dateFormat(row.date_po_number, "dd/mm/yy")}</div>
+          <div>
+            {row.source === "quotation"
+              ? row.v2_quotation.description
+              : row.source === "purchase_order"
+              ? row.customer_purchase_order.description
+              : ""}
+          </div>
         </div>
       ),
     },
+    {
+      name: "Source",
+      width: "20%",
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.source}</div>
+        </div>
+      ),
+    },
+    {
+      name: "Deskripsi",
+      width: "20%",
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>
+            {row.source === "quotation"
+              ? row.v2_quotation.number
+              : row.source === "purchase_order"
+              ? row.customer_purchase_order.number
+              : ""}
+          </div>
+        </div>
+      ),
+    },
+
     {
       name: "Customer",
-      width: "13%",
+      width: "15%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{row.customer_event}</div>
+          <div>{row.customer == null ? "" : row.customer.name}</div>
         </div>
       ),
     },
 
-    {
-      name: "PIC Event",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.pic_event}</div>
-        </div>
-      ),
-    },
+    // {
+    //   name: "PIC Event",
+    //   sortable: true,
+    //   cell: (row) => (
+    //     <div data-tag="allowRowEvents">
+    //       <div>{row.number}</div>
+    //     </div>
+    //   ),
+    // },
     {
       name: "Nominal",
       sortable: true,
       right: true,
-      width: "13%",
+      width: "15%",
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {row.netto.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
+            <div>
+              {row.source === "quotation"
+                ? row.v2_quotation.total
+                : row.source === "purchase_order"
+                ? row.customer_purchase_order.total
+                : ""}
+            </div>
           </div>
         </div>
       ),
@@ -246,89 +255,104 @@ function Create() {
 
   const columns_selected = [
     {
-      name: "No. quotation",
+      name: "No. SO",
+      width: "15%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{row.quotation_number}</div>
+          <div>{row.number}</div>
         </div>
       ),
     },
     {
-      name: "Tanggal Quotation",
+      name: "Tanggal SO",
+      width: "15%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{dateFormat(row.date_quotation, "dd/mm/yyyy")}</div>
-        </div>
-      ),
-    },
-    {
-      name: "No. PO",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.po_number}</div>
-        </div>
-      ),
-    },
-    {
-      name: "Title Event",
-      width: "13%",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.tittle_event}</div>
-        </div>
-      ),
-    },
-    {
-      name: "Venue",
-      width: "10%",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.venue_event}</div>
+          <div>{row.date}</div>
         </div>
       ),
     },
 
     {
-      name: "Tanggal PO",
+      name: "Deskripsi",
+      width: "20%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{row.date_po_number}</div>
+          <div>
+            {row.source === "quotation"
+              ? row.v2_quotation.description
+              : row.source === "purchase_order"
+              ? row.customer_purchase_order.description
+              : ""}
+          </div>
         </div>
       ),
     },
+    {
+      name: "Source",
+      width: "20%",
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>{row.source}</div>
+        </div>
+      ),
+    },
+    {
+      name: "Number",
+      width: "20%",
+      sortable: true,
+      cell: (row) => (
+        <div data-tag="allowRowEvents">
+          <div>
+            {row.source === "quotation"
+              ? row.v2_quotation.number
+              : row.source === "purchase_order"
+              ? row.customer_purchase_order.number
+              : ""}
+          </div>
+        </div>
+      ),
+    },
+
     {
       name: "Customer",
+      width: "15%",
       sortable: true,
       cell: (row) => (
         <div data-tag="allowRowEvents">
-          <div>{row.customer_event}</div>
+          <div>{row.customer == null ? "" : row.customer.name}</div>
         </div>
       ),
     },
 
-    {
-      name: "PIC Event",
-      sortable: true,
-      cell: (row) => (
-        <div data-tag="allowRowEvents">
-          <div>{row.pic_event}</div>
-        </div>
-      ),
-    },
+    // {
+    //   name: "PIC Event",
+    //   sortable: true,
+    //   cell: (row) => (
+    //     <div data-tag="allowRowEvents">
+    //       <div>{row.number}</div>
+    //     </div>
+    //   ),
+    // },
     {
       name: "Nominal",
       sortable: true,
       right: true,
+      width: "15%",
       cell: (row) => (
         <div data-tag="allowRowEvents">
           <div>
-            {row.netto.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}
+            <div>
+              {row.source === "quotation"
+                ? row.v2_quotation.total
+                : row.source === "purchase_order"
+                ? row.customer_purchase_order.total
+                : ""}
+            </div>
           </div>
         </div>
       ),
@@ -471,11 +495,11 @@ function Create() {
     //console.log(year+'-'+month+'-'+date)
 
     //get data qutoation
-    fetch(`${API_URL}/api/quotations`)
+    fetch(`${METAPRINT_API}/api/sales-orders`)
       .then((response) => response.json())
       .then((json) => {
         quotations = json["data"];
-        console.log(quotations);
+        console.log("data metaprint", quotations);
       });
 
     //get project number
@@ -495,25 +519,39 @@ function Create() {
   useEffect(() => {
     var grand_total = 0;
     if (tempQuotation.length > 0) {
-      tempQuotation.map((value) => (grand_total += value.netto));
-      tempQuotation.map((value) => ids.push(value.id));
-      tempQuotation.map((value) =>
-        quotationNumber.push(value.quotation_number)
+      tempQuotation.map(
+        (value) =>
+          (grand_total +=
+            value.v2_quotation == null ? 0 : value.v2_quotation.total)
       );
+      tempQuotation.map((value) => ids.push(value.id));
+      tempQuotation.map((value) => quotationNumber.push(value.number));
 
       //set data value quotation
-      console.log(tempQuotation);
-      setTempEventPic(tempQuotation[0]["pic_event"]);
+      console.log("te", tempQuotation[0]);
+      setTempEventPic(
+        tempQuotation[0]["v2_quotation"] == null
+          ? ""
+          : tempQuotation[0]["v2_quotation"]["up"]
+      );
       setProjectNumber(`${tempQuotation[0]["code"]}${tempProjectNumber}`);
-      setTempEventCustomer(tempQuotation[0]["customer_event"]);
-      setTotalProjectost(tempQuotation[0]["netto"]);
+      setTempEventCustomer(
+        tempQuotation[0]["customer"] == null
+          ? ""
+          : tempQuotation[0]["customer"]["name"]
+      );
+      // setTotalProjectost(tempQuotation[0]["netto"]);
       setTotalProjectost(
         grand_total.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")
       );
-      setTitleEvent(tempQuotation[0]["tittle_event"]);
-      $("#description").val(
-        `${tempQuotation[0]["tittle_event"]} | ${tempQuotation[0]["venue_event"]} | ${tempQuotation[0]["date_event"]}`
+      setTitleEvent(
+        tempQuotation[0]["v2_quotation"] == null
+          ? ""
+          : tempQuotation[0]["v2_quotation"]["title"]
       );
+      // $("#description").val(
+      //   `${tempQuotation[0]["tittle_event"]} | ${tempQuotation[0]["venue_event"]} | ${tempQuotation[0]["date_event"]}`
+      // );
     } else {
       $("#description").val("");
 
@@ -533,7 +571,7 @@ function Create() {
     console.log(row);
     //setTempQuotation([...tempQuotation,row ])
     const index = _.findIndex(tempQuotation, {
-      quotation_number: row.quotation_number,
+      number: row.number,
     });
     if (index >= 0) {
       setTempQuotation(
@@ -578,13 +616,6 @@ function Create() {
     setTempQuotationNumber([...quotationNumber]);
   };
 
-  function pageEO() {
-    navigator.push(`/projects/eo/create`);
-  }
-  function pageMetaprint() {
-    navigator.push(`/projects/metaprint/create`);
-  }
-
   const SIZE = 100;
   const UNIT = "px";
 
@@ -597,6 +628,13 @@ function Create() {
       JSON.stringify(item).toLowerCase().indexOf(filterText.toLowerCase()) !==
       -1
   );
+
+  function pageEO() {
+    navigator.push(`/projects/eo/create`);
+  }
+  function pageMetaprint() {
+    navigator.push(`/projects/metaprint/create`);
+  }
 
   const subHeaderComponent = useMemo(() => {
     const handleClear = () => {
@@ -623,13 +661,7 @@ function Create() {
       <div class="pills-regular">
         <ul class="nav nav-pills mb-2" id="pills-tab" role="tablist">
           <li class="nav-item" id="members">
-            <Button
-              variant="contained"
-              color="primary"
-              to="/projects/eo/create"
-              // onClick={() => pageCashIN()}
-              onClick={() => pageEO()}
-            >
+            <Button variant="contained" onClick={() => pageEO()}>
               Event Organizer
             </Button>
           </li>
@@ -638,8 +670,7 @@ function Create() {
             {/* cash out by Ralf Schmitzer from the Noun Project */}
             <Button
               variant="contained"
-              to="/projects/metaprint/create"
-              //onClick={() => pageCashOut()}
+              color="primary"
               onClick={() => pageMetaprint()}
 
               // startIcon={<DeleteIcon />}
@@ -697,48 +728,49 @@ function Create() {
                 latitude: tempLatitude,
                 longtitude: tempLongtitude,
                 id_quotation: tempIds,
-                status: "pending",
+                status: "approved",
                 quotation_number: tempQuotationNumber.toString(),
                 quotations: tempQuotation,
                 location: values.location,
+                source: "metaprint",
               };
 
               axios
                 .get(`${API_URL}/api/quotations/checked?ids=${tempIds}`)
                 .then((response) => {
                   setIsloading(false);
-                  if (response.data.data.length > 0) {
-                    Swal.fire({
-                      title: "info",
-                      text: `Quotation dengan quotation number ${response.data.data[0].quotation_number}  telah tersedia di project lain`,
-                      icon: "info",
+                  // if (response.data.data.length > 0) {
+                  //   Swal.fire({
+                  //     title: "info",
+                  //     text: ``,
+                  //     icon: "info",
 
-                      showConfirmButton: true,
-                    });
-                  } else {
-                    axios
-                      .post(`${API_URL}/api/projects/create-project`, data)
-                      .then((response) => {
-                        console.log(response);
-                        Swal.fire({
-                          title: "success",
-                          text: "Project berhasil dibuat",
-                          icon: "success",
-                          timer: 2000,
-                          showConfirmButton: false,
-                        }).then((_) => {
-                          setIsloading(false);
-                          navigator.push("/projects/manage");
-                        });
-                      })
-                      .catch((error) => {
+                  //     showConfirmButton: true,
+                  //   });
+                  // } else {
+                  axios
+                    .post(`${API_URL}/api/projects/create-project`, data)
+                    .then((response) => {
+                      console.log(response);
+                      Swal.fire({
+                        title: "success",
+                        text: "Project berhasil dibuat",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false,
+                      }).then((_) => {
                         setIsloading(false);
-
-                        // this.setState({ errorMessage: error.message });
-                        console.error("There was an error!", error);
-                        setIsloading(false);
+                        navigator.push("/projects/manage");
                       });
-                  }
+                    })
+                    .catch((error) => {
+                      setIsloading(false);
+
+                      // this.setState({ errorMessage: error.message });
+                      console.error("There was an error!", error);
+                      setIsloading(false);
+                    });
+                  // }
                 })
                 .catch((error) => {});
             }}
@@ -987,7 +1019,7 @@ function Create() {
             </CModalHeader>
             <CModalBody>
               <DataTable
-                title="Quotation dengan status  Final"
+                title=""
                 columns={columns}
                 data={filteredItems}
                 defaultSortField="name"
